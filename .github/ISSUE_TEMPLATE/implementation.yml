@@ -1,0 +1,54 @@
+name: Controlled implementation task
+description: Propose one milestone-scoped implementation or verification task.
+title: ""
+labels: ["status: needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include credentials, private links, real device or network identifiers, camera media, logs, captures, or personal data.
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Roadmap gate
+      options:
+        - Gate 0
+        - Milestone 1
+        - Milestone 2
+        - Milestone 3
+        - Milestone 4
+        - Milestone 5
+        - Milestone 6
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Verifiable outcome
+      description: State one observable outcome and what is explicitly out of scope.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance evidence
+      description: List tests, simulator scenarios, documentation, and support-matrix changes required.
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Security, compatibility, and safety risks
+      description: Include malformed-peer, cancellation, reconnect, privacy, and physical safety considerations where applicable.
+    validations:
+      required: true
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: Boundaries
+      options:
+        - label: The core remains ESPHome-generic; domain behavior stays in adapters or examples.
+          required: true
+        - label: No support claim will exceed evidence in the support matrix.
+          required: true
+        - label: Third-party and generated material will follow the provenance policy.
+          required: true

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sync ESPHome Protocol"
+  short_description: "Update pinned ESPHome API definitions safely"
+  default_prompt: "Use $sync-esphome-protocol to update the pinned ESPHome protocol and compatibility records."

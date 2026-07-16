@@ -1,0 +1,36 @@
+name: Compatibility finding
+description: Record a sanitized ESPHome interoperability gap.
+title: "compat: "
+labels: ["area: compatibility", "status: needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: Use synthetic identifiers and redact addresses, keys, device IDs, logs, captures, paths, and private firmware details.
+  - type: input
+    id: esphome
+    attributes:
+      label: ESPHome release
+      placeholder: "Example: 2026.x.y"
+    validations:
+      required: true
+  - type: input
+    id: library
+    attributes:
+      label: Library revision
+      placeholder: Commit SHA or release; do not paste a private URL.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Sanitized behavior
+      description: Describe expected and observed protocol behavior without operational data.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Simulator-first reproduction
+      description: Provide or request a deterministic synthetic scenario.
+    validations:
+      required: true

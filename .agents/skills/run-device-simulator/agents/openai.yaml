@@ -1,0 +1,4 @@
+interface:
+  display_name: "Run Device Simulator"
+  short_description: "Run deterministic ESPHome device scenarios"
+  default_prompt: "Use $run-device-simulator to exercise a deterministic ESPHome device scenario."

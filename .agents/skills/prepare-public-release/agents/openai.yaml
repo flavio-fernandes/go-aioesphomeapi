@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prepare Public Release"
+  short_description: "Check privacy, licensing, and release safety"
+  default_prompt: "Use $prepare-public-release to audit this repository before a public release."
