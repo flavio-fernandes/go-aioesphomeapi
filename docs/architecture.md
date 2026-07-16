@@ -53,6 +53,12 @@ There are no `Conveyor`, `Belt`, `Station`, or `MotorSafetyPolicy` types in the 
 - Unknown enum values and future messages do not crash the process.
 - Unsupported commands fail locally with a typed error when capability data makes that knowable.
 
+## Approachability is an architecture constraint
+
+The first successful workflow must require only a supported Go toolchain and the in-process simulator. It must not require ESPHome hardware, a private network, or a real credential. Public APIs and errors should make the safe path easy to discover without hiding important lifecycle behavior.
+
+Every public feature needs a small, runnable example and a copy/paste path in `CHEATSHEET.md`. Examples use stable public APIs, not internal packages. Commands, prerequisites, expected results, and common failure remedies follow `docs/documentation-style.md`.
+
 ## Protocol evolution
 
 The source of truth is ESPHome's upstream `api.proto` at a pinned commit. A sync updates four things atomically: the vendored definition or digest, generated Go wire types, protocol inventory, and support matrix. Generated presence is recorded as `known`, not `implemented`.

@@ -9,6 +9,8 @@ Closes #
 - [ ] `./tools/validate-repo.sh`
 - [ ] Relevant tests, race checks, fuzz smoke, or simulator scenarios are listed below
 - [ ] Support matrix updated, or this change makes no compatibility claim
+- [ ] `CHEATSHEET.md` updated, or no user-facing command/prerequisite changed
+- [ ] Runnable documentation commands were tested from their stated starting point
 
 ## Required review
 

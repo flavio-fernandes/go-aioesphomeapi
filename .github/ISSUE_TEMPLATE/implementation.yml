@@ -52,3 +52,5 @@ body:
           required: true
         - label: Third-party and generated material will follow the provenance policy.
           required: true
+        - label: User-facing behavior will include friendly, tested, simulator-first commands in the cheatsheet.
+          required: true

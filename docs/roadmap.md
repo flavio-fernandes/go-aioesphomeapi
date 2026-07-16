@@ -14,10 +14,11 @@ Tasks:
 - inventory all current upstream messages and entity families;
 - accept stable public API conventions for contexts, errors, subscriptions, and capabilities;
 - accept simulator API, deterministic clock/randomness, and fault vocabulary;
+- accept the copy/paste install, build, simulator-first use, and troubleshooting command contract;
 - establish privacy, security, dependency, release, and branch-protection policy;
 - create a minimal MGMT adapter design in the MGMT repository, not here.
 
-Exit criteria: accepted ADRs, reviewed threat model, reproducible protocol sync design, zero unresolved license questions, and GitHub controls active.
+Exit criteria: accepted ADRs, reviewed threat model, reproducible protocol sync design, approved approachable-documentation contract, zero unresolved license questions, and GitHub controls active.
 
 ## Milestone 1 — secure vertical slice and conveyor acceptance demo
 
@@ -40,7 +41,7 @@ MGMT/demo tasks:
 - interactive demo shows normal routing, sensor-driven transitions, disconnect recovery, and a safe-stop fault;
 - a human-readable dashboard explains which behavior is MGMT, library, ESPHome, and physical hardware.
 
-Exit criteria: simulator demo is reproducible in CI; hardware demo passes a signed checklist without repository secrets; no race findings; secure-by-default connection verified; support matrix has evidence links.
+Exit criteria: simulator demo and cheatsheet first-use commands work from a clean clone in CI; hardware demo passes a signed checklist without repository secrets; no race findings; secure-by-default connection verified; support matrix has evidence links.
 
 ## Milestone 2 — reusable entity foundation
 

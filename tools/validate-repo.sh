@@ -4,9 +4,9 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 
 required=(
-  README.md LICENSE SECURITY.md CONTRIBUTING.md AGENTS.md
+  README.md CHEATSHEET.md LICENSE SECURITY.md CONTRIBUTING.md AGENTS.md
   THIRD_PARTY_NOTICES.md docs/architecture.md docs/security-threat-model.md
-  docs/provenance.md docs/support-matrix.md docs/roadmap.md
+  docs/documentation-style.md docs/provenance.md docs/support-matrix.md docs/roadmap.md
 )
 
 for path in "${required[@]}"; do
@@ -15,6 +15,16 @@ for path in "${required[@]}"; do
     exit 1
   fi
 done
+
+if ! grep -Fq '[cheatsheet](CHEATSHEET.md)' README.md; then
+  echo "README.md must link to the root cheatsheet" >&2
+  exit 1
+fi
+
+if ! grep -Fq '**Current phase: architecture only.**' CHEATSHEET.md; then
+  echo "CHEATSHEET.md must state the current implementation phase" >&2
+  exit 1
+fi
 
 if grep -RInE --exclude-dir=.git --exclude='validate-repo.sh' \
   '(TODO|FIXME|/home/[^ /]+|\.codex/attachments|chatgpt\.com/g/g-p-|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|api[_-]?key[[:space:]]*[:=][[:space:]]*[^${][^ ]+)' .; then
