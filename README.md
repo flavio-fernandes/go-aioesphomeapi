@@ -7,6 +7,15 @@ An independent, Go-native client library for the [ESPHome Native API](https://de
 
 The long-term aspiration is to offer Go users the kind of complete, current Native API client experience that [`esphome/aioesphomeapi`](https://github.com/esphome/aioesphomeapi) offers Python users. This project is unofficial, is not affiliated with or endorsed by ESPHome, and will earn compatibility through tests rather than name similarity.
 
+## Start here
+
+- Want copy/paste commands? Open the friendly [cheatsheet](CHEATSHEET.md).
+- Want to know what really works? Check the [support matrix](docs/support-matrix.md).
+- Want to help? Read the short [contributing guide](CONTRIBUTING.md).
+- Want the long-term sequence? See the [controlled roadmap](docs/roadmap.md).
+
+Documentation is part of the product. Runnable commands must be tested, safe by default, and explicit about prerequisites. The [documentation contract](docs/documentation-style.md) applies to every future feature.
+
 ## Design promises
 
 - Generic ESPHome concepts in the core library; no conveyor or MGMT domain types.
@@ -15,6 +24,7 @@ The long-term aspiration is to offer Go users the kind of complete, current Nati
 - Generated wire types kept separate from stable public APIs.
 - A deterministic in-process simulated device using the same transport and protocol stack.
 - Explicit upstream provenance and a continuously maintained support matrix.
+- A simulator-first beginner path and maintained copy/paste commands.
 - No credentials, private network data, device identifiers, camera media, or personal contact data in the repository.
 
 ## Intended shape

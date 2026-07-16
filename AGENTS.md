@@ -1,6 +1,6 @@
 # Agent operating contract
 
-Read `README.md`, `docs/architecture.md`, `docs/security-threat-model.md`, `docs/support-matrix.md`, and the nearest nested `AGENTS.md` before changing files.
+Read `README.md`, `CHEATSHEET.md`, `docs/architecture.md`, `docs/documentation-style.md`, `docs/security-threat-model.md`, `docs/support-matrix.md`, and the nearest nested `AGENTS.md` before changing files.
 
 ## Non-negotiable rules
 
@@ -9,6 +9,8 @@ Read `README.md`, `docs/architecture.md`, `docs/security-threat-model.md`, `docs
 - Do not add secrets, personal data, private URLs, local absolute paths, device identifiers, camera media, packet captures, or firmware binaries.
 - Do not copy reference-client implementation code. Follow `docs/provenance.md` for protocol material.
 - Do not claim a capability until the support matrix contains test evidence at the claimed level.
+- Keep user documentation friendly and honest. Test copy/paste commands, list prerequisites, show expected results, and update `CHEATSHEET.md` with user-facing behavior.
+- Make the simulator the default first-use path. Never make real hardware, secrets, flashing, cameras, motors, or actuators a beginner default.
 - Do not flash hardware, energize a motor, move an actuator, or use a camera unless the current task explicitly authorizes it and the `operate-esp-workbench` skill's preflight passes.
 - Use small pull requests tied to one issue and milestone. Preserve generated/handwritten boundaries.
 
