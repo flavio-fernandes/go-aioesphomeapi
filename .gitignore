@@ -1,0 +1,39 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.yaml
+secrets.yml
+credentials*
+local.yaml
+local.yml
+
+# Workbench outputs and private observations
+.workbench/
+captures/
+camera/
+firmware/
+*.bin
+*.elf
+*.uf2
+*.pcap
+*.pcapng
+*.log
+
+# Go/tool output
+/bin/
+/dist/
+/coverage/
+coverage.out
+*.test
+vendor/
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+*.swp

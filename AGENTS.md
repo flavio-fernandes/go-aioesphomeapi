@@ -1,0 +1,24 @@
+# Agent operating contract
+
+Read `README.md`, `docs/architecture.md`, `docs/security-threat-model.md`, `docs/support-matrix.md`, and the nearest nested `AGENTS.md` before changing files.
+
+## Non-negotiable rules
+
+- Keep the core library generic. Conveyor and MGMT domain behavior belongs in adapters or examples.
+- Treat ESPHome devices and simulator peers as untrusted network inputs.
+- Do not add secrets, personal data, private URLs, local absolute paths, device identifiers, camera media, packet captures, or firmware binaries.
+- Do not copy reference-client implementation code. Follow `docs/provenance.md` for protocol material.
+- Do not claim a capability until the support matrix contains test evidence at the claimed level.
+- Do not flash hardware, energize a motor, move an actuator, or use a camera unless the current task explicitly authorizes it and the `operate-esp-workbench` skill's preflight passes.
+- Use small pull requests tied to one issue and milestone. Preserve generated/handwritten boundaries.
+
+## Required checks
+
+Run `./tools/validate-repo.sh`. Once Go packages exist, also run the repository's documented format, vet, race, fuzz-smoke, and test commands. Never bypass a failing security or provenance check.
+
+## Project skills
+
+- `$sync-esphome-protocol` for upstream protocol changes.
+- `$run-device-simulator` for simulator scenarios and faults.
+- `$operate-esp-workbench` for firmware, flash, serial, and camera work.
+- `$prepare-public-release` before changing repository visibility or publishing a release.

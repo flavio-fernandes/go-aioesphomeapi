@@ -1,0 +1,6 @@
+interface:
+  display_name: "Operate ESP Workbench"
+  short_description: "Build, flash, and observe devices safely"
+  default_prompt: "Use $operate-esp-workbench to build, flash, and observe the approved ESPHome workbench target safely."
+policy:
+  allow_implicit_invocation: false
