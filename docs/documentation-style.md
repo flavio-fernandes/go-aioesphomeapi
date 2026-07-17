@@ -61,3 +61,11 @@ A change is not complete until:
 - a reviewer can follow the documented path without project-specific tribal knowledge.
 
 Review friendliness with the same seriousness as API compatibility, security, and test coverage.
+
+## Compatibility language
+
+- Distinguish "required by MGMT", "present in the reference client", "known upstream", and "implemented here".
+- Link immutable commits when describing external baselines.
+- Never say "drop-in" without reporting the Go adapter diff and MCL diff.
+- Treat zero MCL changes as a tested property, not an aspiration.
+- Explain dependency cost in direct, transitive, tool-only, Go-version, and MGMT terms.

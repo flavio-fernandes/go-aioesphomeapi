@@ -7,6 +7,9 @@ required=(
   README.md CHEATSHEET.md LICENSE SECURITY.md CONTRIBUTING.md AGENTS.md
   THIRD_PARTY_NOTICES.md docs/architecture.md docs/security-threat-model.md
   docs/documentation-style.md docs/provenance.md docs/support-matrix.md docs/roadmap.md
+  docs/mgmt-integration.md docs/dependency-policy.md docs/reference-baseline.md
+  docs/m1-implementation-plan.md
+  compatibility/mgmt-feat-esphome.json
 )
 
 for path in "${required[@]}"; do
@@ -21,9 +24,19 @@ if ! grep -Fq '[cheatsheet](CHEATSHEET.md)' README.md; then
   exit 1
 fi
 
-if ! grep -Fq '**Current phase: architecture only.**' CHEATSHEET.md; then
+if ! grep -Fq '**Current phase: compatibility architecture only.**' CHEATSHEET.md; then
   echo "CHEATSHEET.md must state the current implementation phase" >&2
   exit 1
+fi
+
+if ! grep -Fq '8eab220' compatibility/mgmt-feat-esphome.json ||
+  ! grep -Fq '982fb85860e7214e3384e68cb69bf94b16a6985b' compatibility/mgmt-feat-esphome.json; then
+  echo "compatibility manifest must pin the reviewed MGMT and reference-client revisions" >&2
+  exit 1
+fi
+
+if command -v python3 >/dev/null 2>&1; then
+  python3 -m json.tool compatibility/mgmt-feat-esphome.json >/dev/null
 fi
 
 if grep -RInE --exclude-dir=.git --exclude='validate-repo.sh' \

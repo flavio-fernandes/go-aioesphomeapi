@@ -1,87 +1,117 @@
 # Architecture
 
-## Scope
+## Scope and priority
 
-`go-aioesphomeapi` is an independent Go implementation of the ESPHome Native API client role. Its public model is ESPHome-generic and must remain useful when no MGMT or conveyor code is present.
+`go-aioesphomeapi` is an independent Go implementation of the ESPHome Native API client role. Its first hard consumer contract is the MGMT `feat/esphome` branch. Its core model remains useful without MGMT or a conveyor.
 
-The initial customer is MGMT. That priority affects lifecycle, concurrency, observability, cancellation, and Go-version choices; it does not place MGMT types or MGMT source code in this independent repository.
+Priority is explicit:
+
+1. preserve the existing MGMT `.mcl` behavior;
+2. make the MGMT migration mechanically small and reviewable;
+3. improve security, lifecycle correctness, simulation, and dependency cost;
+4. expand toward broad current ESPHome support using evidence.
+
+The GPL-3.0-only library imports no MGMT package or MGMT source. Cross-repository tests may check out MGMT at a pinned revision and run it as an external consumer.
 
 ## Layer boundaries
 
 ```mermaid
 flowchart TB
-    Public["Stable public client API"]
-    Device["Device session and state cache"]
-    Lifecycle["Connect, handshake, auth, keepalive, reconnect"]
+    Typed["Typed public API"]
+    Compat["MGMT compatibility facade"]
+    Session["Device session, discovery, immutable state"]
+    Lifecycle["Handshake, keepalive, disconnect, reconnect"]
     Wire["Framing and generated protobuf messages"]
-    TCP["TCP / Noise transport"]
+    TCP["TCP and Noise transport"]
     Simulator["Simulated ESPHome peer"]
 
-    Public --> Device --> Lifecycle --> Wire --> TCP
+    Typed --> Session
+    Compat --> Session
+    Session --> Lifecycle --> Wire --> TCP
     Simulator --> Wire
 ```
 
-1. **Transport** owns deadlines, bounded reads/writes, encryption, and redaction. Production configuration defaults to Noise.
-2. **Wire** owns ESPHome framing and generated protobuf types. Generated symbols are not the stable public API.
-3. **Lifecycle** owns hello/connect, authentication, device information, keepalive, disconnect, reconnect policy, and connection state.
-4. **Session** owns exactly one connection per device, entity discovery, subscriptions, command serialization, state fan-out, and cache snapshots.
-5. **Public API** owns typed, context-aware operations and explicit unsupported-capability results.
-6. **Simulator** is a server-side peer that uses the same framing and generated messages as the client. It is not a fake public client.
+1. **Transport** owns context-aware dialing, deadlines, bounded reads and writes, Noise, explicit insecure test transport, and secret-safe errors.
+2. **Wire** owns ESPHome framing and reproducibly generated protobuf types.
+3. **Lifecycle** owns hello, API version, device information, ping, disconnect, and one connection attempt.
+4. **Session** owns one active connection per device, discovery, subscriptions, state snapshots, command serialization, and observable reconnect state.
+5. **MGMT compatibility facade** exposes only the symbols needed by the pinned MGMT driver with matching behavior. It does not own MGMT pooling or convergence.
+6. **Typed public API** provides the preferred generic Go experience without requiring callers to traffic in generated messages.
+7. **Simulator** is a server-side peer using the same framing and wire definitions. It is not a fake client.
 
-Dependencies point downward. Examples may depend on the public API; the public API never depends on examples, MGMT, firmware configuration, or workbench tooling.
+Dependencies point downward. MGMT, examples, firmware, and workbench tooling never become core dependencies.
 
-## Core vocabulary
+## Two public surfaces, one implementation
 
-- Device identity and advertised API version
-- Connection and authentication state
-- Entity descriptors and entity keys
-- State events and subscriptions
-- Commands and service calls
-- Capabilities and explicit unsupported behavior
-- Logs and diagnostics with structured redaction
+The current MGMT adapter consumes generated protobuf messages and registry accessors from the reference client. The lowest-risk migration therefore needs a narrow source-compatibility surface at the module root and `pb` package. It includes only symbols listed in the compatibility manifest and is tested by compiling the pinned MGMT adapter with import-path changes.
 
-There are no `Conveyor`, `Belt`, `Station`, or `MotorSafetyPolicy` types in the core. An ESPHome H-bridge fan may happen to drive a conveyor motor, but the library exposes the entity and command semantics advertised by ESPHome.
+The handwritten typed API is the preferred long-term surface. Both facades call the same internal session; neither duplicates transport or lifecycle code.
+
+Generated `pb` symbols are public only as a versioned compatibility escape hatch. They follow the pinned upstream protocol and are not covered by the handwritten API's semantic-version stability promise. This exception supersedes the internal-only statement proposed in ADR 0003.
+
+## MGMT ownership boundary
+
+MGMT already owns valuable behavior in its branch: endpoint publication, per-endpoint pooling, persistent and polling modes, reconnect policy, outage tracking, desired-versus-observed comparison, MCL functions/resources, and cleanup. This library must not absorb or fork that logic.
+
+The initial client must provide the driver operations that MGMT expects:
+
+- context-bound secure dial and clean close;
+- entity discovery and lookup metadata;
+- binary-sensor, sensor, text-sensor, switch, and number states;
+- switch, number, and button commands;
+- bounded device-log subscription;
+- connection completion signaling;
+- no internal reconnect when MGMT owns reconnect.
+
+Fan support is also M1 because the conveyor uses ESPHome's generic H-bridge fan model, but existing MCL compatibility does not depend on it.
 
 ## Stable API rules
 
-- Every blocking operation accepts `context.Context`.
-- A `Client` or `Device` is safe for concurrent use unless documentation says otherwise.
-- Callbacks never run while internal protocol locks are held.
-- Slow subscribers have explicit bounded-buffer behavior; memory growth is never unbounded.
-- Reconnect is observable and does not silently replay unsafe commands.
-- Entity metadata and the latest state are immutable snapshots at the API boundary.
-- Unknown enum values and future messages do not crash the process.
-- Unsupported commands fail locally with a typed error when capability data makes that knowable.
+- Every blocking handwritten operation accepts `context.Context`.
+- A client/session is safe for concurrent use unless explicitly documented otherwise.
+- Callbacks never run on the network read loop or while internal locks are held.
+- Every queue is finite and has documented overflow behavior.
+- Cancellation closes the relevant network operation and background goroutines.
+- Reconnect is observable and never silently replays a non-idempotent command.
+- Metadata and states cross the API boundary as immutable snapshots.
+- Unknown fields, enum values, and safe-to-ignore messages do not crash the process.
+- Unsupported commands fail locally with typed, redacted errors when capability data makes that knowable.
+- The compatibility facade may preserve a reference signature, but it may strengthen validation, bounds, cancellation, and error safety when MGMT-observable semantics remain intact.
+
+## Dependency direction and budget
+
+The core target is the Go standard library plus only dependencies that are technically unavoidable and accepted by ADR. Protobuf runtime and one established Noise implementation are the expected candidates. mDNS, CLI frameworks, YAML parsers, telemetry SDKs, assertion libraries, and simulator frameworks are not core runtime dependencies.
+
+Name resolution is supplied by `net` or an injected dialer. Optional discovery, CLI, and integrations live in separate packages or programs and cannot make MGMT pay their dependency cost.
+
+See [dependency policy](dependency-policy.md) for the admission gate.
 
 ## Approachability is an architecture constraint
 
-The first successful workflow must require only a supported Go toolchain and the in-process simulator. It must not require ESPHome hardware, a private network, or a real credential. Public APIs and errors should make the safe path easy to discover without hiding important lifecycle behavior.
-
-Every public feature needs a small, runnable example and a copy/paste path in `CHEATSHEET.md`. Examples use stable public APIs, not internal packages. Commands, prerequisites, expected results, and common failure remedies follow `docs/documentation-style.md`.
+The first successful workflow requires only a supported Go toolchain and the in-process simulator. It does not require ESPHome hardware, a private network, or a credential. Every public feature needs a small runnable example and an entry in `CHEATSHEET.md`.
 
 ## Protocol evolution
 
-The source of truth is ESPHome's upstream `api.proto` at a pinned commit. A sync updates four things atomically: the vendored definition or digest, generated Go wire types, protocol inventory, and support matrix. Generated presence is recorded as `known`, not `implemented`.
+The wire source of truth is ESPHome's `api.proto` at a pinned commit. A sync updates the lock, source/digest, generated Go types, protocol inventory, and support matrix atomically. Reference clients never become protocol truth.
 
 Forward compatibility strategy:
 
 - negotiate and record API versions;
 - tolerate unknown protobuf fields;
-- safely ignore unknown message types only when the framing rules permit it;
-- preserve unknown enum numeric values in wire-level representations;
+- safely ignore unknown message types only where framing permits;
+- preserve unknown enum numeric values at the wire boundary;
 - gate handwritten behavior by capability and version;
-- test the oldest supported firmware and current ESPHome release line.
+- test the pinned MGMT baseline, oldest supported firmware, current stable ESPHome, and a development snapshot.
 
-## Package plan
-
-The package tree is a milestone decision, not an implementation commitment. The intended responsibilities are:
+## Planned package responsibilities
 
 ```text
-aioesphomeapi        stable public client and types
-internal/wire        generated protobuf and framing
+aioesphomeapi        MGMT-compatible facade plus preferred typed client
+pb                   reproducibly generated compatibility wire types
+internal/wire        framing, registry, protocol limits
 internal/session     lifecycle, routing, keepalive, reconnect
 simulator            public deterministic simulated-device API
 examples             generic and conveyor acceptance programs
 ```
 
-Adding packages requires an accepted ADR when it changes these boundaries.
+Package creation is an implementation decision. A boundary change, new runtime dependency, or compatibility break requires an ADR.

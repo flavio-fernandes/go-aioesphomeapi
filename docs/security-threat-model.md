@@ -27,6 +27,7 @@ The application, library, network, ESPHome firmware, simulated peer, MGMT adapte
 | Accidental real-device operation | simulator is default in examples; hardware targets explicit | workbench preflight and separate local config |
 | Unsafe actuator behavior | local firmware interlocks, comms timeout, max runtime, safe boot, physical e-stop | firmware and physical acceptance checklist |
 | Supply-chain compromise | minimal dependencies, pinned CI actions, generated-diff checks, provenance record | dependency review and release gate |
+| Dependency-driven MGMT breakage | core module budget, Go-version gate, real MGMT build, module-graph diff | cross-repository compatibility lane |
 
 ## Production transport policy
 
@@ -37,6 +38,10 @@ Legacy ESPHome password authentication was removed upstream in the 2026.1 releas
 ## Factory-scale design limits
 
 Configuration will expose finite defaults for maximum frame size, pending commands, subscriber queue depth, devices dialing concurrently, reconnect rate, and per-operation deadlines. Load tests must model hundreds or thousands of simulated devices without using real credentials or network identities.
+
+## Dependency boundary
+
+The core admits no convenience runtime dependency. Protobuf and one established Noise implementation are the only expected M1 candidates, and each needs the evidence in `docs/dependency-policy.md`. mDNS, CLI, YAML, telemetry, test, MGMT, simulator-framework, and workbench modules remain outside the core graph. Implementing Noise locally is not an acceptable dependency reduction.
 
 ## Physical safety boundary
 

@@ -10,4 +10,6 @@ Reference implementations are for behavioral research only:
 - `mycontroller-org/esphome_api` — Apache-2.0, historical Go client.
 - `Richard87/esphome-apiclient` — MIT, independent Go client.
 
+The MGMT compatibility baseline is GPL-licensed external application code. It is pinned and exercised only through cross-repository tests; no MGMT source or MCL file is copied into this GPL-3.0-only repository.
+
 Do not copy implementation code from a reference repository merely because its license is compatible. Prefer clean implementation from the upstream protocol specification and record any intentional derivation in `docs/provenance.md`.

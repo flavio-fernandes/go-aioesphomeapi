@@ -9,8 +9,8 @@ Current compatibility requires tracking the canonical wire definition. Generated
 
 ## Decision
 
-Use `esphome/esphome`'s `esphome/components/api/api.proto` at an immutable commit as protocol source. Record source and license hashes and generate Go wire types reproducibly. Keep generated types internal.
+Use `esphome/esphome`'s `esphome/components/api/api.proto` at an immutable commit as protocol source. Record source and license hashes and generate Go wire types reproducibly. Generated types are internal by default, with the narrow public `pb` compatibility exception proposed by ADR 0006.
 
 ## Consequences
 
-Upstream changes become visible quickly without automatically becoming public API. Generator tooling and a machine-readable lock format must be selected and reviewed before the first sync.
+Upstream changes become visible quickly without automatically becoming stable handwritten API. Generator tooling and a machine-readable lock format must be selected and reviewed before the first sync. Compatibility `pb` drift is separately reported to MGMT.

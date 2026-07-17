@@ -20,6 +20,13 @@ body:
       placeholder: Commit SHA or release; do not paste a private URL.
     validations:
       required: true
+  - type: input
+    id: mgmt
+    attributes:
+      label: MGMT revision, when applicable
+      placeholder: Commit SHA only; use "not applicable" for standalone findings.
+    validations:
+      required: true
   - type: textarea
     id: behavior
     attributes:
@@ -32,5 +39,12 @@ body:
     attributes:
       label: Simulator-first reproduction
       description: Provide or request a deterministic synthetic scenario.
+    validations:
+      required: true
+  - type: textarea
+    id: contract
+    attributes:
+      label: Contract classification
+      description: Say whether this affects pinned MCL behavior, the MGMT Go facade, broader reference-client parity, or ESPHome protocol support.
     validations:
       required: true

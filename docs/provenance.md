@@ -1,30 +1,32 @@
-# Protocol provenance policy
+# Protocol and compatibility provenance
 
-## Source of truth
+## Wire source of truth
 
-Protocol synchronization starts from `esphome/esphome`, specifically `esphome/components/api/api.proto`, at an immutable commit SHA. Release tags may help choose a commit but are not sufficient provenance by themselves.
+Protocol synchronization starts from `esphome/esphome`, specifically `esphome/components/api/api.proto`, at an immutable commit SHA. Release tags can guide selection but do not replace a commit pin.
 
-For each sync, record:
+Each sync records upstream repository and URL, commit and release, source and license SHA-256, compiler/plugin versions, generated diff, protocol inventory changes, support-matrix changes, and test results. The machine-readable lock will live at `protocol/upstream.lock.json` after its schema is accepted.
 
-- upstream repository and HTTPS URL;
-- immutable commit SHA and upstream release, if any;
-- source file SHA-256;
-- upstream license file and its SHA-256;
-- protobuf compiler and Go plugin versions;
-- generated-file diff summary;
-- protocol inventory and support-matrix changes;
-- tests executed and their results.
+## Compatibility research sources
 
-The future machine-readable record will live under `protocol/upstream.lock.json`. The first protocol sync issue defines and reviews its schema before fetching source.
+Two immutable snapshots inform the current design:
+
+- MGMT `feat/esphome` at `8eab220` defines external MCL and adapter behavior.
+- `Richard87/esphome-apiclient` `v1.1.0` at `982fb85860e7214e3384e68cb69bf94b16a6985b` defines the initial Go migration comparison.
+
+The local manifest records only public repository paths, symbols, revisions, and SHA-256 values. It does not vendor the GPL MGMT source or reference-client implementation.
 
 ## Clean implementation rule
 
-Use the official protocol definition and public behavior documentation to implement behavior. Reference clients may be used to identify test cases and interoperability questions. Do not transliterate or copy their implementation. If a small compatible fragment is intentionally derived, record the source, commit, original license, file, and rationale in this document and preserve all required notices.
+Implement wire behavior from the official protocol definition and public documentation. Use reference clients to identify interoperability questions, observable behavior, and test cases. Do not transliterate or copy their implementation. If any compatible fragment is intentionally derived, record its source, commit, license, file, rationale, and required notice before merge.
+
+Black-box and cross-repository tests may compile or execute a pinned external checkout. Test results are evidence; external source does not become this repository’s GPL-3.0-only content.
 
 ## Generated code
 
-Generated output must include its generator marker and source attribution. A clean generation command must reproduce committed files exactly. CI fails if regeneration changes the tree.
+Generated output includes generator markers and source attribution. Clean generation must reproduce committed files exactly. CI fails on generated drift.
+
+The `pb` package is permitted as the narrow MGMT compatibility exception described by ADR 0006. Generated presence means only `known` support.
 
 ## Current record
 
-No protocol definition, generated code, or third-party implementation source is committed in the bootstrap. Documentation links are references, not vendored material.
+No protocol definition, generated code, or third-party implementation is committed. The compatibility manifest and research documents contain facts and hashes only.

@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-17",
+  "mgmt": {
+    "repository": "https://github.com/flavio-fernandes/mgmt",
+    "revision": "8eab220",
+    "merge_base": "c2e6458a6c2947c11d01cd52fbe87a7185ff8732",
+    "branch": "feat/esphome",
+    "required_files": [
+      {
+        "path": "examples/lang/esphome0.mcl",
+        "sha256": "8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df"
+      },
+      {
+        "path": "examples/lang/esphome-blink.mcl",
+        "sha256": "c6e9df77eeaa7ee6e37ec0afdfc855ec63388e818cbd7320c04afb5fdbec4c77"
+      },
+      {
+        "path": "util/esphome/apiclient.go",
+        "sha256": "968b78aafb428622e05c98d1ae485e435d361f69381e7c82636080e1b195e0a3"
+      },
+      {
+        "path": "util/esphome/driver.go",
+        "sha256": "1e441fc5756b549bf14815882ee4a823ae51d38e9910f816c8ba9bc8a2f46080"
+      },
+      {
+        "path": "util/esphome/esphome.go",
+        "sha256": "0247b71a18b7ef369ab27c9edad10698eebdc19e0bb30af89be982bda5d9329f"
+      },
+      {
+        "path": "util/esphome/session.go",
+        "sha256": "37ddc59e4d73a94142a7d806248b9912a2afd06e35c966bdcfb0aaf564411e2b"
+      },
+      {
+        "path": "engine/resources/esphome.go",
+        "sha256": "0ece354122223442314a69fceccfd627fc06041ad215db506e90dc07c22b084a"
+      }
+    ],
+    "mcl_contract": {
+      "module": "net/esphome",
+      "functions": ["connected", "binary_sensor", "sensor", "text_sensor"],
+      "resources": ["esphome:endpoint", "esphome:switch", "esphome:number"],
+      "endpoint_fields": ["host", "port", "key", "password", "interval", "logs"],
+      "switch_fields": ["endpoint", "state", "id"],
+      "number_fields": ["endpoint", "value", "id", "stop", "safe"]
+    }
+  },
+  "reference_client": {
+    "repository": "https://github.com/Richard87/esphome-apiclient",
+    "tag": "v1.1.0",
+    "revision": "982fb85860e7214e3384e68cb69bf94b16a6985b",
+    "required_root_symbols": [
+      "DialWithContext",
+      "WithClientInfo",
+      "WithEncryptionKey",
+      "Client.Close",
+      "Client.Done",
+      "Client.Entities",
+      "Client.ListEntities",
+      "Client.PressButton",
+      "Client.SetNumber",
+      "Client.SetSwitch",
+      "Client.SubscribeLogs",
+      "Client.SubscribeStates"
+    ],
+    "required_registry_accessors": [
+      "BinarySensors",
+      "Sensors",
+      "TextSensors",
+      "Switches",
+      "Numbers",
+      "Buttons"
+    ],
+    "required_pb_messages": [
+      "BinarySensorStateResponse",
+      "SensorStateResponse",
+      "TextSensorStateResponse",
+      "SwitchStateResponse",
+      "NumberStateResponse",
+      "SubscribeLogsResponse"
+    ]
+  },
+  "migration_target": {
+    "mcl_source_changes": 0,
+    "go_changes": "import paths plus any separately reviewed safety adaptation",
+    "cross_repository_test_required": true
+  }
+}
