@@ -47,6 +47,22 @@ if [[ "${1:-}" == "--inside" ]]; then
 	grep -Fq "converged for 3 seconds, exiting!" "${evidence_dir}/mgmt.log"
 	grep -Fq "received fan command: state=false speed=35 direction=forward" "${evidence_dir}/simulator.log"
 	grep -Fq "received light command: state=true brightness=0.35 rgb=#0000ff" "${evidence_dir}/simulator.log"
+	for _ in $(seq 1 20); do
+		if [[ "$(grep -Fc "received fan command: state=false speed=35 direction=forward" "${evidence_dir}/simulator.log")" -ge 2 ]]; then
+			break
+		fi
+		sleep 0.05
+	done
+	if [[ "$(grep -Fc "received fan command: state=false speed=35 direction=forward" "${evidence_dir}/simulator.log")" -lt 2 ]]; then
+		echo "MGMT did not send the expected fan stop during cleanup" >&2
+		cat "${evidence_dir}/mgmt.log" >&2
+		cat "${evidence_dir}/simulator.log" >&2
+		exit 1
+	fi
+	if grep -Fq "could not stop the fan on cleanup" "${evidence_dir}/mgmt.log"; then
+		echo "MGMT reported a failed fan cleanup" >&2
+		exit 1
+	fi
 
 	echo "MGMT securely converged the unchanged conveyor MCL against the loopback simulator"
 	exit 0

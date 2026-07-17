@@ -20,22 +20,22 @@ The pinned protocol inventory contains 148 unique message IDs. Generated presenc
 
 | Behavior | Required by pinned MGMT | Library evidence | Target | Notes |
 |---|---|---|---|---|
-| Context-bound Noise dial | yes | simulated | M1 | Normal path fails closed without secure configuration. |
+| Context-bound Noise dial | yes | mgmt | M1 | Real MGMT process passed over Noise; normal path fails closed without secure configuration. |
 | Explicit insecure plaintext | compatibility review | simulated | M1 | Requires `WithInsecurePlaintext`; never selected implicitly. |
-| Entity list and registry metadata | yes | simulated | M1 | Current name plus legacy object ID. |
-| Initial state snapshot and live push | yes | simulated | M1 | Callback queue is bounded and off the network read loop. |
-| Binary sensor state | yes | typed | M1 | Simulated in the conveyor profile; MGMT evidence pending. |
-| Sensor state and missing/NaN | yes | typed | M1 | NaN mapping remains MGMT adapter behavior. |
+| Entity list and registry metadata | yes | mgmt | M1 | Conveyor entities were resolved by exact current name. |
+| Initial state snapshot and live push | yes | mgmt | M1 | Initial conveyor telemetry reached MCL; later push/fault evidence is still pending. |
+| Binary sensor state | yes | mgmt | M1 | Three conveyor binary sensors reached MCL. |
+| Sensor state and missing/NaN | yes | mgmt | M1 | RGB sensor state reached MCL; missing/NaN remains adapter-test evidence. |
 | Text sensor state | yes | typed | M1 | MGMT evidence pending. |
 | Switch state and command | yes | simulated | M1 | MGMT evidence pending. |
 | Number state and command | yes | simulated | M1 | MGMT outage safety remains external. |
 | Button discovery and command | yes in driver | simulated | M1 | Exposed even though current examples do not call it. |
-| Fan state and command | conveyor | simulated | M1 | Direction and integer speed level are tested. |
-| RGB Light state and command | conveyor | simulated | M1 | RGB values are normalized floats. |
-| Device logs | yes | simulated | M1 | Bounded callback delivery and redacted connection errors. |
+| Fan state and command | conveyor | mgmt | M1 | State, speed, direction, and graceful cleanup stop passed. |
+| RGB Light state and command | conveyor | mgmt | M1 | State, brightness, and blue RGB command passed. |
+| Device logs | yes | mgmt | M1 | Simulator info log reached the MGMT endpoint logger. |
 | Done signal and idempotent close | yes | simulated | M1 | Race tests cover clean termination. |
 | Library-owned reconnect | no | none | M2 | MGMT owns reconnect; client option stays disabled. |
-| MGMT persistent and polling modes | external contract | none | M1 | Tested cross-repository; implemented in MGMT. |
+| MGMT persistent and polling modes | external contract | mgmt / none | M1 | Persistent mode passed; polling runtime evidence remains pending. |
 | Unchanged `esphome0.mcl` | yes | none | M1 | Hash locked in manifest. |
 | Unchanged `esphome-blink.mcl` | yes | none | M1 | Hash locked in manifest. |
 
@@ -51,7 +51,8 @@ The candidate record is [`compatibility/mgmt-feat-esphome2.json`](../compatibili
 | MGMT build, targeted tests, race, and vet | pass | Adapter integration proof. |
 | Module graph | one module added, three removed; net `-2` | Dependency-budget proof. |
 | Conveyor firmware with ESPHome 2026.7.0 | configuration and compile pass | Firmware build proof, not hardware proof. |
-| MGMT-to-library simulator session | pending | Entity-family MGMT cells remain `no`. |
+| MGMT-to-library simulator session | pass for the unchanged conveyor MCL | Binary sensor, sensor, Fan, Light, Noise, discovery, initial state, and logs reach `mgmt`. |
+| Graceful conveyor cleanup | pass after MGMT follow-up `acddc3f1` | A second fan-stop command is observed; failed cleanup is forbidden. |
 | Physical device flash and actuation | not performed | Hardware cells remain `no`. |
 
 ## Protocol and transport
@@ -59,13 +60,13 @@ The candidate record is [`compatibility/mgmt-feat-esphome2.json`](../compatibili
 | Capability | Upstream | Public API | Simulator | MGMT | Hardware | Target |
 |---|---|---|---|---|---|---|
 | Plain framing with limits | known | typed | simulated | none | none | M1 |
-| Noise transport | known | typed | simulated | none | none | M1 |
-| Hello and API version | known | typed | simulated | none | none | M1 |
+| Noise transport | known | typed | simulated | mgmt | none | M1 |
+| Hello and API version | known | typed | simulated | mgmt | none | M1 |
 | Device information | known | none | none | none | none | M1 |
 | Ping, disconnect, close | known | typed | typed | none | none | M1 |
-| Entity discovery | known | typed | simulated | none | none | M1 |
-| State subscriptions | known | typed | simulated | none | none | M1 |
-| Bounded device logs | known | typed | simulated | none | none | M1 |
+| Entity discovery | known | typed | simulated | mgmt | none | M1 |
+| State subscriptions | known | typed | simulated | mgmt | none | M1 |
+| Bounded device logs | known | typed | simulated | mgmt | none | M1 |
 | Client-owned reconnect | known | none | none | n/a | none | M2 |
 | Home Assistant services/actions | known | none | none | none | none | M3 |
 | Bluetooth proxy | known | none | none | none | none | backlog |
@@ -76,14 +77,14 @@ The candidate record is [`compatibility/mgmt-feat-esphome2.json`](../compatibili
 
 | Family | MGMT M1 need | Protocol known | Typed | Simulated | MGMT | Hardware | Target |
 |---|---|---|---|---|---|---|---|
-| Binary sensor | state | yes | yes | yes | no | no | M1 |
-| Sensor | state | yes | yes | yes | no | no | M1 |
+| Binary sensor | state | yes | yes | yes | yes | no | M1 |
+| Sensor | state | yes | yes | yes | yes | no | M1 |
 | Text sensor | state | yes | yes | yes | no | no | M1 |
 | Switch | state/command | yes | yes | yes | no | no | M1 |
 | Number | state/command | yes | yes | yes | no | no | M1 |
 | Button | command seam | yes | yes | yes | no | no | M1 |
-| Fan | conveyor state/command | yes | yes | yes | no | no | M1 |
-| Light | conveyor color/state/command | yes | yes | yes | no | no | M1 |
+| Fan | conveyor state/command | yes | yes | yes | yes | no | M1 |
+| Light | conveyor color/state/command | yes | yes | yes | yes | no | M1 |
 | Select | no | yes | no | no | no | no | M2 |
 | Text | no | yes | no | no | no | no | M3 |
 | Climate | no | yes | no | no | no | no | M3 |

@@ -94,4 +94,6 @@ The append-only [`mgmt-feat-esphome2.json`](../compatibility/mgmt-feat-esphome2.
 
 Both existing MCL examples are byte-identical between the rebased baseline and replacement candidate. The candidate builds MGMT, passes the targeted race/resource/vet checks, type-checks all three MCL examples, and replaces three modules with one direct module for a net reduction of two modules. It also requires a Noise key at the MGMT endpoint, so the adapter cannot silently downgrade to plaintext.
 
-This is compile, contract, and integration-test evidence—not yet the `mgmt` evidence level. A complete MGMT process still needs to drive the simulator over a real Native API session. No physical device has been flashed or actuated.
+The append-only [`mgmt-feat-esphome2-runtime.json`](../compatibility/mgmt-feat-esphome2-runtime.json) follow-up records the next evidence level. A real MGMT process securely drove the loopback simulator with the unchanged conveyor MCL, observed initial telemetry and a device log, applied Fan and RGB Light commands, converged, and sent a second fan-stop command during graceful cleanup. The run exposed and fixed an endpoint-removal ordering defect in MGMT cleanup at `acddc3f1804dd3ae3e29f077996b7845e768ae29`.
+
+This qualifies only the conveyor-exercised cells for `mgmt` evidence. Polling, fault scenarios, and entity families not used by that MCL keep their prior evidence. No physical device has been flashed or actuated.
