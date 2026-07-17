@@ -63,6 +63,7 @@ type Device struct {
 	done        chan struct{}
 	closeOnce   sync.Once
 	mu          sync.Mutex
+	accepted    uint64
 	connections map[net.Conn]struct{}
 	listeners   map[net.Listener]struct{}
 	wg          sync.WaitGroup
@@ -164,6 +165,7 @@ func (d *Device) startConnection(connection net.Conn) bool {
 		return false
 	default:
 	}
+	d.accepted++
 	d.connections[connection] = struct{}{}
 	d.wg.Add(1)
 	go d.serve(connection)
@@ -181,6 +183,21 @@ func (d *Device) ClientOptions() []aioesphomeapi.Option {
 
 // Commands yields defensive copies of commands received by the device.
 func (d *Device) Commands() <-chan proto.Message { return d.commands }
+
+// DeviceStats is a point-in-time connection snapshot. It contains no network
+// addresses, device identifiers, or credential material.
+type DeviceStats struct {
+	AcceptedConnections uint64
+	ActiveConnections   int
+}
+
+// Stats reports deterministic connection counts for cleanup, polling, and
+// reconnect assertions.
+func (d *Device) Stats() DeviceStats {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	return DeviceStats{AcceptedConnections: d.accepted, ActiveConnections: len(d.connections)}
+}
 
 // Close terminates every active simulated connection.
 func (d *Device) Close() error {
