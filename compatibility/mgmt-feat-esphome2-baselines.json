@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-17",
+  "status": "baseline_runtime_verified",
+  "extends": "compatibility/mgmt-feat-esphome2-runtime.json",
+  "candidate": {
+    "repository": "https://github.com/flavio-fernandes/mgmt",
+    "branch": "feat/esphome2",
+    "revision": "a29ebe1e8d052e450bdd92536629114f15baa401",
+    "pull_request": "https://github.com/flavio-fernandes/mgmt/pull/1",
+    "subject": "esphome: verify real polling and reconnect",
+    "file_hashes": {
+      "util/esphome/session.go": "79ca568b9a8978076c591102ba9a5c08bd8f5e0c194de89f2b4a852342217fab",
+      "util/esphome/apiclient_integration_test.go": "2852023a3f818d4eedd23cc5ea9e7cf5a11b4b3dff7f9cec8ec01b3bdf6d1a25",
+      "go.mod": "e51f76f754326f78c4ad324eb51e8b7f460934a4077a9ec79638a4a28963333b"
+    }
+  },
+  "library": {
+    "repository": "https://github.com/flavio-fernandes/go-aioesphomeapi",
+    "revision": "ef8386820978611d313f976e68bd2aaf9009e8b8",
+    "module_version": "v0.0.0-20260717133043-ef8386820978",
+    "pull_request": "https://github.com/flavio-fernandes/go-aioesphomeapi/pull/29"
+  },
+  "mcl_contract": {
+    "source_changes": 0,
+    "files": [
+      {
+        "path": "examples/lang/esphome0.mcl",
+        "sha256": "8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df",
+        "runtime": "pass"
+      },
+      {
+        "path": "examples/lang/esphome-blink.mcl",
+        "sha256": "cc57833875290b60e7e7f1004b93d00fb17249ad2f31267ac20ff91c1052c7ad",
+        "runtime": "pass"
+      },
+      {
+        "path": "examples/lang/esphome-conveyer.mcl",
+        "sha256": "c746b6382afaba3daaa248860402fd788ed379e889bbfde65b402efde422fc8b",
+        "runtime": "pass"
+      }
+    ]
+  },
+  "acceptance": {
+    "baseline_runner": "tools/test-mgmt-baselines.sh",
+    "baseline_result": "pass",
+    "conveyor_runner": "tools/test-mgmt-conveyor.sh",
+    "conveyor_regression": "pass",
+    "isolation": "private Linux user, mount, and network namespaces",
+    "transport": "Noise with a public test-only key",
+    "real_driver_tests": [
+      "TestAPIClientSessionPollRealWire",
+      "TestAPIClientSessionReconnectAndOutageRealWire"
+    ],
+    "assertions": [
+      "both original MCL SHA-256 values match before execution",
+      "a real MGMT process converges esphome0.mcl and esphome-blink.mcl without source changes",
+      "esphome0 resolves legacy object IDs and corrects switch and number state",
+      "esphome-blink resolves current entity names, streams a device log, and corrects switch state",
+      "polling uses two encrypted connections and has zero active connections between cycles",
+      "a queued number command wakes polling and reaches the second encrypted cycle",
+      "MGMT reconnects after an encrypted persistent connection drops",
+      "MGMT records a positive completed outage",
+      "reconnect does not replay an unrequested command",
+      "ten consecutive race-enabled real-driver polling and reconnect runs pass",
+      "the unchanged conveyor MCL remains green"
+    ]
+  },
+  "defect_fixed": {
+    "summary": "a stale Configure wake could truncate the polling snapshot-settle window",
+    "owner": "MGMT session loop",
+    "resolution": "drain a queued wake before a connection cycle and restart only when the configuration generation changed",
+    "regression_test": "TestSessionQueuedWakeDistinguishesStaleConfiguration"
+  },
+  "limitations": [
+    "No physical device was flashed or actuated.",
+    "The baseline scenarios prove initial snapshots and corrective commands; a later pushed-state timeline remains pending.",
+    "Text-sensor runtime behavior is not exercised by these MCL files.",
+    "A simulator is not ESPHome firmware, so hardware evidence remains pending."
+  ]
+}

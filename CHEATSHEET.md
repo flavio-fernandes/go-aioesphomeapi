@@ -106,7 +106,27 @@ Expected output:
 MGMT securely converged the unchanged conveyor MCL against the loopback simulator
 ```
 
-### 8. Read the plan in a terminal
+### 8. Prove both original MGMT examples without hardware
+
+This maintainer check verifies the reviewed hashes, then runs `esphome0.mcl`
+and `esphome-blink.mcl` byte-for-byte through real MGMT processes and encrypted
+simulators. It uses private Linux user, mount, and network namespaces. The
+hardcoded documentation address in `esphome0.mcl` is reachable only through a
+TCP forwarder confined to that private network namespace.
+
+Use the same prerequisites as the conveyor acceptance command:
+
+```bash
+./tools/test-mgmt-baselines.sh ../mgmt /tmp/mgmt
+```
+
+Expected output:
+
+```text
+MGMT securely converged both unchanged baseline MCL examples against dedicated simulators
+```
+
+### 9. Read the plan in a terminal
 
 ```bash
 sed -n '1,240p' docs/roadmap.md
@@ -149,10 +169,10 @@ Adjust the explicit `git add` paths to match your change. Do not use `git add .`
 Until a release is tagged, pin an exact reviewed commit rather than a moving branch:
 
 ```bash
-go get github.com/flavio-fernandes/go-aioesphomeapi@238f06dc564ec3b4a16473ef5225447c4303166c
+go get github.com/flavio-fernandes/go-aioesphomeapi@ef8386820978611d313f976e68bd2aaf9009e8b8
 ```
 
-That commit is the current draft Milestone 1 candidate used by the MGMT replacement pull request. Review [library PR #29](https://github.com/flavio-fernandes/go-aioesphomeapi/pull/29) before adopting it; a tagged release command will replace this development pin after merge.
+That commit is the current draft Milestone 1 candidate used by the latest MGMT replacement tests. Review [library PR #29](https://github.com/flavio-fernandes/go-aioesphomeapi/pull/29) before adopting it; a tagged release command will replace this development pin after merge.
 
 To inspect the exact MGMT revision, unchanged MCL hashes, dependency reduction, and verification record:
 

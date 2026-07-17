@@ -27,18 +27,19 @@ The pinned protocol inventory contains 148 unique message IDs. Generated presenc
 | Binary sensor state | yes | mgmt | M1 | Three conveyor binary sensors reached MCL. |
 | Sensor state and missing/NaN | yes | mgmt | M1 | RGB sensor state reached MCL; missing/NaN remains adapter-test evidence. |
 | Text sensor state | yes | typed | M1 | MGMT evidence pending. |
-| Switch state and command | yes | simulated | M1 | MGMT evidence pending. |
-| Number state and command | yes | simulated | M1 | MGMT outage safety remains external. |
+| Switch state and command | yes | mgmt | M1 | Both unchanged baseline examples issued and observed corrective switch commands. |
+| Number state and command | yes | mgmt | M1 | Unchanged `esphome0.mcl` observed state and issued its safe desired number command. |
 | Button discovery and command | yes in driver | simulated | M1 | Exposed even though current examples do not call it. |
 | Fan state and command | conveyor | mgmt | M1 | State, speed, direction, and graceful cleanup stop passed. |
 | RGB Light state and command | conveyor | mgmt | M1 | State, brightness, and blue RGB command passed. |
 | Device logs | yes | mgmt | M1 | Simulator info log reached the MGMT endpoint logger. |
 | Done signal and idempotent close | yes | simulated | M1 | Race tests cover clean termination. |
 | Hostile peer and stalled operation | security | simulated | M1 | Named drop, malformed-protobuf, unknown-message, incomplete-discovery, and stalled-discovery tests fail closed over the real framing/session path. |
+| MGMT-owned reconnect and outage accounting | external contract | mgmt | M1 | Real encrypted driver test drops a persistent peer, reconnects through MGMT, records a positive outage, and observes no unrequested replay. |
 | Library-owned reconnect | no | none | M2 | MGMT owns reconnect; client option stays disabled. |
-| MGMT persistent and polling modes | external contract | mgmt / none | M1 | Persistent mode passed; polling runtime evidence remains pending. |
-| Unchanged `esphome0.mcl` | yes | none | M1 | Hash locked in manifest. |
-| Unchanged `esphome-blink.mcl` | yes | none | M1 | Hash locked in manifest. |
+| MGMT persistent and polling modes | external contract | mgmt / mgmt | M1 | Persistent MCL and conveyor runs pass; real-driver polling disconnects between cycles and wakes once for a queued command. |
+| Unchanged `esphome0.mcl` | yes | mgmt | M1 | Hash verified, real MGMT converged, and switch/number corrections reached the encrypted peer. |
+| Unchanged `esphome-blink.mcl` | yes | mgmt | M1 | Hash verified, real MGMT converged, and name-based switch/log behavior reached the encrypted peer. |
 
 ## Current MGMT migration proof
 
@@ -55,6 +56,8 @@ The candidate record is [`compatibility/mgmt-feat-esphome2.json`](../compatibili
 | MGMT-to-library simulator session | pass for the unchanged conveyor MCL | Binary sensor, sensor, Fan, Light, Noise, discovery, initial state, and logs reach `mgmt`. |
 | Graceful conveyor cleanup | pass after MGMT follow-up `acddc3f1` | A second fan-stop command is observed; failed cleanup is forbidden. |
 | Hostile-peer simulator and fuzz smoke | pass in library tests | Simulator evidence only; no MGMT or hardware claim. |
+| Both original MGMT MCL examples | pass byte-for-byte over Noise | Switch and number plus both immutable MCL rows reach `mgmt`. |
+| Real-driver polling and reconnect | pass, including 10 race-enabled repetitions | Poll cleanup, command wake, MGMT-owned reconnect, outage accounting, and no unrequested replay reach `mgmt`. |
 | Physical device flash and actuation | not performed | Hardware cells remain `no`. |
 
 ## Protocol and transport
@@ -82,8 +85,8 @@ The candidate record is [`compatibility/mgmt-feat-esphome2.json`](../compatibili
 | Binary sensor | state | yes | yes | yes | yes | no | M1 |
 | Sensor | state | yes | yes | yes | yes | no | M1 |
 | Text sensor | state | yes | yes | yes | no | no | M1 |
-| Switch | state/command | yes | yes | yes | no | no | M1 |
-| Number | state/command | yes | yes | yes | no | no | M1 |
+| Switch | state/command | yes | yes | yes | yes | no | M1 |
+| Number | state/command | yes | yes | yes | yes | no | M1 |
 | Button | command seam | yes | yes | yes | no | no | M1 |
 | Fan | conveyor state/command | yes | yes | yes | yes | no | M1 |
 | Light | conveyor color/state/command | yes | yes | yes | yes | no | M1 |
