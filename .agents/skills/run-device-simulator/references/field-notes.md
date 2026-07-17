@@ -21,7 +21,9 @@ acceptance scripts, or external-app examples.
 - Prefer the checked-in scripts over ad hoc command sequences:
   `tools/test-mgmt-conveyor.sh` for the conveyor MCL and
   `tools/test-mgmt-baselines.sh` for the two original MGMT examples.
-- These scripts intentionally use Linux user, mount, and network namespaces.
+- These scripts intentionally use Linux user and network namespaces. Their
+  synthetic `.local` names are answered by a multicast responder inside the
+  namespace; they do not edit or bind-mount `/etc/hosts`.
   Sandbox runs can fail with netlink or DNS permission errors even when the
   host is capable. Rerun with the proper execution permission rather than
   weakening the script.

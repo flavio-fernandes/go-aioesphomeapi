@@ -11,6 +11,7 @@ required=(
   docs/m1-implementation-plan.md
   compatibility/mgmt-feat-esphome.json compatibility/mgmt-feat-esphome2.json
   compatibility/mgmt-feat-esphome2-runtime.json compatibility/mgmt-feat-esphome2-baselines.json
+  compatibility/mgmt-feat-esphome-mdns.json
   protocol/upstream.lock.json protocol/inventory.json
   protocol/upstream/api.proto protocol/upstream/api_options.proto protocol/upstream/LICENSE
   pb/api.pb.go pb/api_options.pb.go tools/sync-protocol.sh tools/generate-protocol.sh
@@ -58,6 +59,12 @@ if ! grep -Fq 'a29ebe1e8d052e450bdd92536629114f15baa401' compatibility/mgmt-feat
   exit 1
 fi
 
+if ! grep -Fq 'c60c22ebf06e19dfbe6766136736d6f29e16bea7' compatibility/mgmt-feat-esphome-mdns.json ||
+  ! grep -Fq '55602f044300bcf516c620aae88bb45d494f21b5' compatibility/mgmt-feat-esphome-mdns.json; then
+  echo "mDNS compatibility manifest must pin the verified MGMT and library revisions" >&2
+  exit 1
+fi
+
 for record in \
   "9ddd6b66a016cd5ccb216052668d680cb83413e2d4eb3b1cff84a50b30492828 protocol/upstream/api.proto" \
   "c4ba32a9d34e8785442112aed5b202a1614a9d74d59a90c992cdb13902bd79f5 protocol/upstream/api_options.proto" \
@@ -76,6 +83,7 @@ if command -v python3 >/dev/null 2>&1; then
   python3 -m json.tool compatibility/mgmt-feat-esphome2.json >/dev/null
   python3 -m json.tool compatibility/mgmt-feat-esphome2-runtime.json >/dev/null
   python3 -m json.tool compatibility/mgmt-feat-esphome2-baselines.json >/dev/null
+  python3 -m json.tool compatibility/mgmt-feat-esphome-mdns.json >/dev/null
   python3 -m json.tool protocol/upstream.lock.json >/dev/null
   python3 -m json.tool protocol/inventory.json >/dev/null
 fi

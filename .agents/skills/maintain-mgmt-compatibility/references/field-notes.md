@@ -36,6 +36,9 @@ or PR descriptions.
   weaken the acceptance script.
 - No-hardware MGMT acceptance currently means the checked-in simulator scripts,
   not an ad hoc TCP server.
+- Do not satisfy an immutable `.local` MCL hostname by injecting `/etc/hosts`.
+  Start the checked-in multicast responder inside the private network namespace
+  so the acceptance run proves the library's real mDNS path.
 
 ## Evidence records
 
@@ -43,3 +46,5 @@ or PR descriptions.
   and limitations in append-only compatibility files.
 - Update `docs/support-matrix.md` only to the evidence level actually reached:
   `mgmt` for real MGMT over the simulator, not `hardware` or `production`.
+- When auditing replacement parity, list deliberate security differences such
+  as rejecting implicit plaintext separately from accidental regressions.

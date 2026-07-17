@@ -1,6 +1,6 @@
 # ADR 0009: Run immutable MGMT examples through generic encrypted scenarios
 
-- Status: accepted for M1 compatibility evidence
+- Status: accepted for M1 compatibility evidence; name-resolution setup superseded by ADR 0010
 - Date: 2026-07-17
 
 ## Context

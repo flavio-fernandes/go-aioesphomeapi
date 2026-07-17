@@ -18,6 +18,7 @@ The application, library, network, ESPHome firmware, simulated peer, MGMT adapte
 | Threat | Required control | Verification gate |
 |---|---|---|
 | Passive or active network interception | Noise enabled by default; plaintext needs `Insecure...` opt-in | integration test proves secure default and downgrade refusal |
+| Spoofed `.local` mDNS answer | Treat resolution as untrusted routing input; Noise still authenticates possession of the per-device key; recommend unique keys and expected-name checks | isolated mDNS acceptance plus wrong-key test |
 | Secret exposure | runtime-only secret values, redacting types/errors/logs, zero secret fixtures | log/error tests plus secret scan |
 | Malformed or hostile peer | frame/message limits, deadlines, bounded queues, panic-free parsing | fuzzing and adversarial simulator scenarios |
 | Reconnect storm | jittered bounded backoff, single dial owner per device, circuit state and metrics | deterministic reconnect test and load test |

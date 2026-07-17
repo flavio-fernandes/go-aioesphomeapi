@@ -25,6 +25,7 @@ This repository records the contract but does not copy MGMT's GPL source or MCL 
 ## Existing MGMT behavior we preserve
 
 - one shared session per logical endpoint across functions and resources;
+- built-in `.local` multicast DNS resolution without requiring host-file edits;
 - endpoint data published through MGMT's local bridge;
 - zero-valued functions before endpoint publication or first valid state;
 - persistent native push when `interval` is zero;
@@ -81,6 +82,10 @@ Keys remain runtime-only values and never appear in errors, logs, snapshots, com
 6. Assert one connection per endpoint, expected state events/commands/logs, polling behavior, reconnect/outage behavior, and clean shutdown.
 7. Fail if MCL files differ, the module graph exceeds budget, or generated support claims lack evidence.
 
+The `.local` lane must run with no matching `/etc/hosts` entry. A simulator
+host-file injection proves only TCP behavior and is not accepted as mDNS
+compatibility evidence.
+
 Later MGMT revisions get new manifest records; history is append-only so old compatibility remains reproducible.
 
 ## Current rebased replacement candidate
@@ -101,3 +106,21 @@ This qualifies only the conveyor-exercised cells for `mgmt` evidence. Polling, f
 The next append-only [`mgmt-feat-esphome2-baselines.json`](../compatibility/mgmt-feat-esphome2-baselines.json) record pins MGMT `a29ebe1e` and library `ef838682`. A real MGMT process converged both original MCL examples byte-for-byte over Noise. Real-driver tests additionally prove polling cleanup and command wakeup plus MGMT-owned reconnect and positive outage accounting. Those tests exposed and fixed a stale `Configure` wake race that could truncate polling's initial snapshot-settle window.
 
 MGMT PR #1 has since merged into active branch `feat/esphome`, while the original Richard87 implementation is preserved at `feat/esphome-richard87`. The append-only [`mgmt-feat-esphome-postmerge.json`](../compatibility/mgmt-feat-esphome-postmerge.json) record pins post-merge MGMT `c60c22eb`. It confirms both original MCL examples and the unchanged conveyor MCL still pass over Noise. It also records a post-merge cleanup race fix: conveyor fan cleanup now uses a one-shot command with the last known endpoint info instead of racing the shared endpoint bridge unpublish. Later pushed-state timelines, text-sensor runtime evidence, and hardware remain pending.
+
+## Preserved-branch parity audit
+
+The replacement preserves the valid encrypted MGMT behavior exercised by
+`feat/esphome-richard87`: endpoint publication, shared sessions, persistent and
+polling operation, reconnect/outage accounting, entity discovery and lookup,
+state callbacks, logs, switch/number/button commands, cleanup, and `.local`
+hostname resolution. The two original MCL files remain byte-identical.
+
+There is one deliberate exception: an empty Noise key no longer silently
+selects plaintext. That behavior is rejected by the security policy and is not
+restored as “parity.” Explicit insecure plaintext remains available to isolated
+library tests, but MGMT's normal endpoint requires a key.
+
+The append-only [`mgmt-feat-esphome-mdns.json`](../compatibility/mgmt-feat-esphome-mdns.json)
+records the regression test: real MGMT resolves both `esphome-blink.local` and
+`esphome-conveyer.local` over multicast DNS and converges the unchanged MCL
+files without an `/etc/hosts` mapping.

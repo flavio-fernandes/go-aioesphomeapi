@@ -27,9 +27,10 @@ The reference module's `go.mod` directly lists six modules:
 | `gopkg.in/yaml.v3` | CLI configuration |
 | `github.com/stretchr/testify` | tests |
 
-In the inspected MGMT comparison, adding the reference client changes the Go directive from 1.25.7 to 1.26.1 and adds the client, Noise, and DNS modules to `go.mod`; `go.sum` gains nine lines. Some other requirements already existed in MGMT. Our M1 target removes the client and DNS additions, reuses MGMT's existing protobuf runtime where versions permit, and adds only the approved Noise module.
+In the inspected MGMT comparison, adding the reference client changes the Go directive from 1.25.7 to 1.26.1 and adds the client, Noise, and DNS modules to `go.mod`; `go.sum` gains nine lines. Some other requirements already existed in MGMT. Our M1 target removes the client and DNS additions, reuses MGMT's existing protobuf runtime where versions permit, adds only the approved Noise module, and preserves `.local` resolution with a bounded standard-library implementation.
 
-This is a proposed target until a real `go mod tidy`, build, and test report proves the exact delta.
+The replacement and mDNS compatibility records now prove this target with real
+MGMT builds, module-graph comparison, and unchanged-MCL runtime tests.
 
 ## What MGMT actually consumes
 
@@ -72,4 +73,4 @@ M1 does not require cloning every feature of the reference client. It requires:
 
 ## Explicit non-goals for the first slice
 
-The bundled CLI, YAML loading, built-in mDNS implementation, Bluetooth proxy, and broad complex-entity coverage are not required by the existing MGMT branch. They can be evaluated later as optional packages or evidence-driven milestones. Their absence must be visible in the support matrix.
+The bundled CLI, YAML loading, mDNS service browsing, Bluetooth proxy, and broad complex-entity coverage are not required by the existing MGMT branch. Direct `.local` A-record resolution is required and implemented; broader discovery can be evaluated later as an optional package or evidence-driven milestone. Its limits must remain visible in the support matrix.

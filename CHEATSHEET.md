@@ -53,12 +53,13 @@ go vet ./...
 ### 4a. Run the short security fuzz check
 
 This optional contributor check feeds synthetic, malformed bytes into the
-bounded plaintext framer and protobuf decoder. It needs no network, key, or
-hardware and normally finishes in about ten seconds.
+bounded plaintext framer, protobuf decoder, and mDNS parser. It needs no
+network, key, or hardware and normally finishes in about fifteen seconds.
 
 ```bash
 go test ./internal/wire -run=^$ -fuzz=FuzzPlainFramerRead -fuzztime=5s
 go test ./internal/wire -run=^$ -fuzz=FuzzDecode -fuzztime=5s
+go test ./internal/mdns -run=^$ -fuzz=FuzzAnswerIP -fuzztime=5s
 ```
 
 Each command should end with `PASS`. A crash, panic, excessive allocation, or
@@ -96,7 +97,9 @@ sed -n '1,220p' docs/support-matrix.md
 This maintainer check runs the unchanged conveyor MCL against the encrypted
 simulator in an isolated Linux network namespace. It does not change
 `/etc/hosts`, open a host-network port, flash firmware, or control hardware.
-You need Linux user namespaces, `ip`, `mount`, `timeout`, a built MGMT candidate,
+The unchanged `esphome-conveyer.local` name is resolved through the library's
+built-in multicast DNS (mDNS) path inside that namespace.
+You need Linux user namespaces, `ip`, `timeout`, a built MGMT candidate,
 and both repositories next to each other.
 
 For a friendlier walkthrough with the MGMT build command, expected behavior,
@@ -116,9 +119,11 @@ MGMT securely converged the unchanged conveyor MCL against the loopback simulato
 
 This maintainer check verifies the reviewed hashes, then runs `esphome0.mcl`
 and `esphome-blink.mcl` byte-for-byte through real MGMT processes and encrypted
-simulators. It uses private Linux user, mount, and network namespaces. The
+simulators. It uses private Linux user and network namespaces. The
 hardcoded documentation address in `esphome0.mcl` is reachable only through a
 TCP forwarder confined to that private network namespace.
+`esphome-blink.local` is answered by a real mDNS responder; the script does not
+add it to `/etc/hosts`.
 
 Use the same prerequisites as the conveyor acceptance command:
 
@@ -178,7 +183,10 @@ Until a release is tagged, pin an exact reviewed commit rather than a moving bra
 go get github.com/flavio-fernandes/go-aioesphomeapi@ef8386820978611d313f976e68bd2aaf9009e8b8
 ```
 
-That commit is the current draft Milestone 1 candidate used by the latest MGMT replacement tests. Review [library PR #29](https://github.com/flavio-fernandes/go-aioesphomeapi/pull/29) before adopting it; a tagged release command will replace this development pin after merge.
+That commit is the last published Milestone 1 candidate used by the baseline
+MGMT replacement tests. Review [library PR #30](https://github.com/flavio-fernandes/go-aioesphomeapi/pull/30)
+for the current candidate, including `.local` mDNS parity; a tagged release
+command will replace this development pin after merge.
 
 To inspect the exact MGMT revision, unchanged MCL hashes, dependency reduction, and verification record:
 

@@ -17,7 +17,7 @@ The initial Go directive remains compatible with MGMT's default branch where pra
 
 The following do not belong in the core runtime graph:
 
-- mDNS or service-discovery libraries;
+- mDNS or service-discovery libraries (the narrow built-in `.local` resolver uses only `net`);
 - CLI frameworks;
 - YAML or configuration-file parsers;
 - logging or telemetry SDKs;

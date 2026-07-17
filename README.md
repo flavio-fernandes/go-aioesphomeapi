@@ -30,6 +30,7 @@ Documentation is part of the product. Runnable commands must be tested, safe by 
 ## Design promises
 
 - Existing MGMT `.mcl` behavior is a release-blocking compatibility contract.
+- ESPHome `.local` device names resolve through bounded built-in mDNS, so the unchanged MGMT blink and conveyor examples do not depend on host-file edits or a separately configured resolver.
 - Core types remain generic ESPHome concepts; MGMT and conveyor types stay outside the library.
 - Noise is required by the normal production path. Plaintext requires an unmistakable insecure opt-in.
 - One concurrency-safe connection per client has bounded queues and no silent command replay. The caller owns reconnect policy.
@@ -56,7 +57,7 @@ The conveyor demonstration is the first visible acceptance system, not the libra
 
 ## Repository status
 
-The repository is public and GPL-3.0-only licensed. The original immutable MGMT baseline is recorded in [`compatibility/mgmt-feat-esphome.json`](compatibility/mgmt-feat-esphome.json), the replacement candidate is recorded in [`compatibility/mgmt-feat-esphome2.json`](compatibility/mgmt-feat-esphome2.json), and append-only runtime proofs cover the [conveyor](compatibility/mgmt-feat-esphome2-runtime.json), [both original baseline examples plus polling/reconnect](compatibility/mgmt-feat-esphome2-baselines.json), and the [post-merge `feat/esphome` branch](compatibility/mgmt-feat-esphome-postmerge.json). The ESPHome 2026.7.0 wire surface is recorded in [`protocol/upstream.lock.json`](protocol/upstream.lock.json). Run the no-hardware quickstart in the [cheatsheet](CHEATSHEET.md).
+The repository is public and GPL-3.0-only licensed. The original immutable MGMT baseline is recorded in [`compatibility/mgmt-feat-esphome.json`](compatibility/mgmt-feat-esphome.json), the replacement candidate is recorded in [`compatibility/mgmt-feat-esphome2.json`](compatibility/mgmt-feat-esphome2.json), and append-only runtime proofs cover the [conveyor](compatibility/mgmt-feat-esphome2-runtime.json), [both original baseline examples plus polling/reconnect](compatibility/mgmt-feat-esphome2-baselines.json), the [post-merge `feat/esphome` branch](compatibility/mgmt-feat-esphome-postmerge.json), and [real `.local` mDNS parity](compatibility/mgmt-feat-esphome-mdns.json). The ESPHome 2026.7.0 wire surface is recorded in [`protocol/upstream.lock.json`](protocol/upstream.lock.json). Run the no-hardware quickstart in the [cheatsheet](CHEATSHEET.md).
 
 ## License
 

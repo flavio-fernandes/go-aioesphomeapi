@@ -16,11 +16,10 @@ Run these commands on Linux from the `go-aioesphomeapi` repository root.
 
 Required tools:
 
-- the Go version requested by the MGMT checkout; the current `feat/esphome2`
+- the Go version requested by the MGMT checkout; the current `feat/esphome`
   branch uses Go 1.26.1
 - `git`
 - `ip`
-- `mount`
 - `sha256sum`
 - `timeout`
 - `unshare`
@@ -69,7 +68,9 @@ sed -n '1,220p' ../mgmt-esphome2/examples/lang/esphome-conveyer.mcl
 
 The important thing to notice is that the demo runs MGMT's MCL file as-is. The
 test wrapper provides a private simulated network around it instead of asking
-you to edit `/etc/hosts` or change the example for your machine.
+you to edit `/etc/hosts` or change the example for your machine. A small mDNS
+responder inside that private network answers `esphome-conveyer.local`, so this
+walkthrough also tests the same name-resolution path used by an ESPHome device.
 
 ## 3. Run the conveyor demo
 
@@ -87,6 +88,7 @@ That one line means the wrapper verified all of these checks:
 
 - the conveyor MCL hash matches the reviewed compatibility contract;
 - the simulator listened only inside a private namespace on loopback;
+- MGMT resolved `esphome-conveyer.local` through multicast DNS, not `/etc/hosts`;
 - MGMT connected over the encrypted Native API path;
 - MGMT observed conveyor telemetry and a simulator device log;
 - MGMT sent the expected Fan command for the motor;
@@ -117,7 +119,7 @@ If the script says the MGMT binary is not executable, rebuild it with the exact
 `go build` command above and verify `/tmp/mgmt-esphome2-sim-demo --version`.
 
 If the script says the MCL hash differs, your MGMT checkout does not match the
-reviewed demo branch. Switch back to the `feat/esphome2` branch or inspect the
+reviewed demo branch. Switch back to the `feat/esphome` branch or inspect the
 MCL change before trusting the result.
 
 If `unshare` fails, your Linux environment may not allow unprivileged user or

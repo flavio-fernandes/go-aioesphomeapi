@@ -23,6 +23,12 @@ Implement wire behavior from the official protocol definition and public documen
 
 Black-box and cross-repository tests may compile or execute a pinned external checkout. Test results are evidence; external source does not become this repository’s GPL-3.0-only content.
 
+For `.local` compatibility, the reference snapshot was inspected only to
+confirm the observable behavior: names ending in `.local` are resolved with an
+IPv4 multicast DNS A query before TCP dial. The implementation in
+`internal/mdns` was written independently from DNS wire-format rules and Go's
+standard networking interfaces; no reference-client source was copied.
+
 ## Generated code
 
 Generated output includes generator markers and source attribution. Clean generation must reproduce committed files exactly. CI fails on generated drift.

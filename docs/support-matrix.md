@@ -22,6 +22,7 @@ The pinned protocol inventory contains 148 unique message IDs. Generated presenc
 |---|---|---|---|---|
 | Context-bound Noise dial | yes | mgmt | M1 | Real MGMT process passed over Noise; normal path fails closed without secure configuration. |
 | Explicit insecure plaintext | compatibility review | simulated | M1 | Requires `WithInsecurePlaintext`; never selected implicitly. |
+| `.local` mDNS resolution | yes | mgmt | M1 | Both unchanged hostname-based MCL demos pass through a real multicast responder with no `/etc/hosts` mapping and no added module. |
 | Entity list and registry metadata | yes | mgmt | M1 | Conveyor entities were resolved by exact current name. |
 | Initial state snapshot and live push | yes | mgmt | M1 | Initial conveyor telemetry reached MCL; later push/fault evidence is still pending. |
 | Binary sensor state | yes | mgmt | M1 | Three conveyor binary sensors reached MCL. |
@@ -59,6 +60,7 @@ The candidate record is [`compatibility/mgmt-feat-esphome2.json`](../compatibili
 | Both original MGMT MCL examples | pass byte-for-byte over Noise | Switch and number plus both immutable MCL rows reach `mgmt`. |
 | Real-driver polling and reconnect | pass, including 10 race-enabled repetitions | Poll cleanup, command wake, MGMT-owned reconnect, outage accounting, and no unrequested replay reach `mgmt`. |
 | Post-merge active MGMT branch | pass on `feat/esphome` at `c60c22eb` | Both original MCL examples and the unchanged conveyor MCL remain green after PR #1 merged and `feat/esphome2` was retired. |
+| Post-merge `.local` parity | pass with library `55602f04` | Real MGMT resolves blink and conveyor names from multicast answers; no `/etc/hosts` entry or new module is used. |
 | Physical device flash and actuation | not performed | Hardware cells remain `no`. |
 
 ## Protocol and transport
@@ -67,6 +69,7 @@ The candidate record is [`compatibility/mgmt-feat-esphome2.json`](../compatibili
 |---|---|---|---|---|---|---|
 | Plain framing with limits | known | typed | simulated | none | none | M1 |
 | Noise transport | known | typed | simulated | mgmt | none | M1 |
+| `.local` A-record resolution | known | typed | simulated | mgmt | none | M1 |
 | Hello and API version | known | typed | simulated | mgmt | none | M1 |
 | Device information | known | none | none | none | none | M1 |
 | Ping, disconnect, close | known | typed | typed | none | none | M1 |
@@ -102,7 +105,7 @@ The candidate record is [`compatibility/mgmt-feat-esphome2.json`](../compatibili
 
 ## Reference-client parity
 
-`v1.1.0` is a comparison baseline, not evidence for this library. M1 covers only its MGMT-consumed subset. CLI, YAML configuration, mDNS implementation, Bluetooth proxy, services, and broad complex-entity commands are explicitly unsupported here until separately scheduled and evidenced.
+`v1.1.0` is a comparison baseline, not evidence for this library. M1 covers only its MGMT-consumed subset. Direct `.local` A-record resolution is supported; CLI, YAML configuration, mDNS service browsing, Bluetooth proxy, services, and broad complex-entity commands are explicitly unsupported here until separately scheduled and evidenced.
 
 ## Compatibility dimensions
 

@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-17",
+  "status": "runtime_verified_pin_pending",
+  "extends": "compatibility/mgmt-feat-esphome-postmerge.json",
+  "regression": {
+    "summary": "the initial simulator acceptance masked missing built-in .local resolution with private hosts-file entries",
+    "reference_behavior": "feat/esphome-richard87 resolves .local names through built-in multicast DNS",
+    "resolution": "the library default dial path now performs bounded dependency-free mDNS resolution"
+  },
+  "mgmt": {
+    "repository": "https://github.com/flavio-fernandes/mgmt",
+    "branch": "feat/esphome",
+    "revision": "c60c22ebf06e19dfbe6766136736d6f29e16bea7",
+    "module_pin_update": "pending publication of the verified library commit"
+  },
+  "library": {
+    "repository": "https://github.com/flavio-fernandes/go-aioesphomeapi",
+    "branch": "agent/implement-conveyor-client-main",
+    "revision": "55602f044300bcf516c620aae88bb45d494f21b5",
+    "runtime_module_delta": 0,
+    "runtime_transitive_delta": 0
+  },
+  "mcl_contract": {
+    "source_changes": 0,
+    "files": [
+      {
+        "path": "examples/lang/esphome0.mcl",
+        "sha256": "8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df",
+        "runtime": "pass"
+      },
+      {
+        "path": "examples/lang/esphome-blink.mcl",
+        "sha256": "cc57833875290b60e7e7f1004b93d00fb17249ad2f31267ac20ff91c1052c7ad",
+        "runtime": "pass",
+        "resolution": "multicast DNS without a hosts-file mapping"
+      },
+      {
+        "path": "examples/lang/esphome-conveyer.mcl",
+        "sha256": "c746b6382afaba3daaa248860402fd788ed379e889bbfde65b402efde422fc8b",
+        "runtime": "pass",
+        "resolution": "multicast DNS without a hosts-file mapping"
+      }
+    ]
+  },
+  "acceptance": {
+    "consumer_selection": "temporary Go workspace using the exact local library revision",
+    "baseline_runner": "tools/test-mgmt-baselines.sh",
+    "baseline_result": "pass",
+    "conveyor_runner": "tools/test-mgmt-conveyor.sh",
+    "conveyor_result": "pass",
+    "isolation": "private Linux user and network namespaces",
+    "transport": "mDNS resolution followed by Noise with a public test-only key",
+    "hosts_file_injection": false,
+    "checks": [
+      "repository policy validation",
+      "go vet ./...",
+      "go test -race ./...",
+      "shell syntax and diff whitespace checks"
+    ]
+  },
+  "parity": {
+    "valid_encrypted_mgmt_behavior": "preserved",
+    "deliberate_exception": "implicit plaintext on an empty key remains rejected by security policy"
+  },
+  "limitations": [
+    "The verified library commit was not yet published or pinned by MGMT when this append-only record was created.",
+    "No physical device was flashed or actuated.",
+    "A simulator mDNS responder is not hardware evidence."
+  ]
+}

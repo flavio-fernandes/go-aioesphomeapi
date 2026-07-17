@@ -80,9 +80,9 @@ Fan support is also M1 because the conveyor uses ESPHome's generic H-bridge fan 
 
 ## Dependency direction and budget
 
-The core target is the Go standard library plus only dependencies that are technically unavoidable and accepted by ADR. Protobuf runtime and one established Noise implementation are the expected candidates. mDNS, CLI frameworks, YAML parsers, telemetry SDKs, assertion libraries, and simulator frameworks are not core runtime dependencies.
+The core target is the Go standard library plus only dependencies that are technically unavoidable and accepted by ADR. Protobuf runtime and one established Noise implementation are the expected candidates. General mDNS discovery, CLI frameworks, YAML parsers, telemetry SDKs, assertion libraries, and simulator frameworks are not core runtime dependencies. The default dial path includes only a narrow, standard-library `.local` A-record resolver because MGMT's immutable examples and normal ESPHome hostnames depend on it. It does not browse services or add a module.
 
-Name resolution is supplied by `net` or an injected dialer. Optional discovery, CLI, and integrations live in separate packages or programs and cannot make MGMT pay their dependency cost.
+Normal DNS is supplied by `net`; `.local` names use the bounded internal mDNS resolver; tests and specialized applications may inject a dialer. Optional service discovery, CLI, and integrations live in separate packages or programs and cannot make MGMT pay their dependency cost.
 
 See [dependency policy](dependency-policy.md) for the admission gate.
 
