@@ -80,6 +80,9 @@ connected securely to conveyor-simulator; discovered 13 entities
 simulated conveyor speed=35 and status color=#00ff00
 ```
 
+To build it as a standalone executable, or to create a tiny external Go module
+that imports this library without MGMT, use the [standalone simulator demo](docs/standalone-simulator-demo.md).
+
 ### 6. See what is actually supported
 
 ```bash
