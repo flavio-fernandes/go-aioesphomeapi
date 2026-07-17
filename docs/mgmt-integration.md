@@ -4,7 +4,12 @@ MGMT is the first customer and the release-blocking external test. The baseline 
 
 ## Non-negotiable outcome
 
-The existing `esphome0.mcl` and `esphome-blink.mcl` examples run without source changes. A proposed MCL change is not called an incompatibility fix until the flaw is documented, covered by a failing test, and accepted in MGMT review.
+The original `esphome0.mcl` and `esphome-blink.mcl` examples established the
+baseline contract. A proposed MCL change is not called an incompatibility fix
+until the flaw is documented, covered by review evidence, and accepted in MGMT
+review. MGMT issue #2 accepted a comment-only blink correction and the spelling
+fix from `esphome-conveyer.mcl` to `esphome-conveyor.mcl`; ADR 0012 records the
+new hashes and migration impact.
 
 The Go migration target is import-path-only changes in `util/esphome/apiclient.go`. If a stronger safety contract requires another adapter change, the pull request lists every changed line and why valid MCL behavior is unaffected.
 

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 readonly expected_esphome0_sha="8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df"
-readonly expected_blink_sha="cc57833875290b60e7e7f1004b93d00fb17249ad2f31267ac20ff91c1052c7ad"
+readonly expected_blink_sha="359cedc5b3fd1e6793a0705fc4d7c7f844f5d3dc825a372fdf0c6769ef30c187"
 
 if [[ "${1:-}" == "--inside" ]]; then
 	shift
@@ -67,7 +67,7 @@ if [[ "${1:-}" == "--inside" ]]; then
 	grep -Fq "converged for 3 seconds, exiting!" "${evidence_dir}/blink-mgmt.log"
 	grep -Fq "received switch command: key=212 state=false" "${evidence_dir}/blink-simulator.log"
 
-	echo "MGMT securely converged both unchanged baseline MCL examples against dedicated simulators"
+echo "MGMT securely converged both reviewed baseline MCL examples against dedicated simulators"
 	exit 0
 fi
 

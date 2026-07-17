@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-readonly expected_mcl_sha="c746b6382afaba3daaa248860402fd788ed379e889bbfde65b402efde422fc8b"
+readonly expected_mcl_sha="38bb730a2897eeed1f8ed72e0299387ae2465e8b9b11b31c831f274e158868d6"
 
 if [[ "${1:-}" == "--inside" ]]; then
 	shift
@@ -13,7 +13,7 @@ if [[ "${1:-}" == "--inside" ]]; then
 	ip link set lo up
 	ip link set lo multicast on
 	ip route add 224.0.0.0/4 dev lo
-	"${simulator_binary}" --listen 127.0.0.1:6053 --mdns-host esphome-conveyer.local >"${evidence_dir}/simulator.log" 2>&1 &
+	"${simulator_binary}" --listen 127.0.0.1:6053 --mdns-host esphome-conveyor.local >"${evidence_dir}/simulator.log" 2>&1 &
 	simulator_pid=$!
 	cleanup() {
 		kill "${simulator_pid}" 2>/dev/null || true
@@ -37,7 +37,7 @@ if [[ "${1:-}" == "--inside" ]]; then
 		cd "${mgmt_root}"
 		timeout --signal=TERM --kill-after=5s 30s "${mgmt_binary}" run \
 			--tmp-prefix --converger-timeout=3 --converged-exit \
-			lang examples/lang/esphome-conveyer.mcl
+			lang examples/lang/esphome-conveyor.mcl
 	) >"${evidence_dir}/mgmt.log" 2>&1
 
 	grep -Fq "print[conveyor telemetry]: Msg: entry=false exit=false run=false rgb=(0, 0, 0) status=blue" "${evidence_dir}/mgmt.log"
@@ -64,7 +64,7 @@ if [[ "${1:-}" == "--inside" ]]; then
 		exit 1
 	fi
 
-	echo "MGMT securely converged the unchanged conveyor MCL against the loopback simulator"
+echo "MGMT securely converged the reviewed conveyor MCL against the loopback simulator"
 	exit 0
 fi
 
@@ -76,7 +76,7 @@ fi
 readonly repo_root="$(git rev-parse --show-toplevel)"
 readonly mgmt_root="$(cd "$1" && pwd)"
 readonly mgmt_binary="$(cd "$(dirname "$2")" && pwd)/$(basename "$2")"
-readonly mcl_path="${mgmt_root}/examples/lang/esphome-conveyer.mcl"
+readonly mcl_path="${mgmt_root}/examples/lang/esphome-conveyor.mcl"
 
 for command in go ip sha256sum timeout unshare; do
 	if ! command -v "${command}" >/dev/null 2>&1; then
