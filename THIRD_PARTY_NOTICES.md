@@ -17,3 +17,11 @@ Reference implementations are for behavioral research only:
 The MGMT compatibility baseline is GPL-licensed external application code. It is pinned and exercised only through cross-repository tests; no MGMT source or MCL file is copied into this GPL-3.0-only repository.
 
 Do not copy implementation code from a reference repository merely because its license is compatible. Prefer clean implementation from the upstream protocol specification and record any intentional derivation in `docs/provenance.md`.
+
+## Runtime modules
+
+- `github.com/flynn/noise` v1.1.0 implements the Noise protocol primitives and is BSD-3-Clause licensed.
+- `golang.org/x/crypto` v0.48.0 is the reviewed transitive cryptography implementation and is BSD-3-Clause licensed.
+- `google.golang.org/protobuf` v1.36.11 is the official Go protobuf runtime and is BSD-3-Clause licensed.
+
+Exact module checksums are recorded in `go.sum`; the accepted dependency decision and replacement constraints are in ADR 0007. These modules are dependencies, not source copied into this repository.

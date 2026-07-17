@@ -33,8 +33,8 @@ flowchart TB
 
 1. **Transport** owns context-aware dialing, deadlines, bounded reads and writes, Noise, explicit insecure test transport, and secret-safe errors.
 2. **Wire** owns ESPHome framing and reproducibly generated protobuf types.
-3. **Lifecycle** owns hello, API version, device information, ping, disconnect, and one connection attempt.
-4. **Session** owns one active connection per device, discovery, subscriptions, state snapshots, command serialization, and observable reconnect state.
+3. **Lifecycle** owns hello, API version, ping, disconnect, and one connection attempt. Device information is planned.
+4. **Client** owns one active connection, discovery, subscriptions, state snapshots, and serialized frame writes. Reconnect state belongs to its caller.
 5. **MGMT compatibility facade** exposes only the symbols needed by the pinned MGMT driver with matching behavior. It does not own MGMT pooling or convergence.
 6. **Typed public API** provides the preferred generic Go experience without requiring callers to traffic in generated messages.
 7. **Simulator** is a server-side peer using the same framing and wire definitions. It is not a fake client.

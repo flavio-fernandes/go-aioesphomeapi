@@ -9,7 +9,7 @@ The M1 core targets at most two direct runtime modules beyond the Go standard li
 1. the official Go protobuf runtime needed for ESPHome messages;
 2. one established, security-reviewed Noise implementation.
 
-This is a ceiling, not a quota. The Noise choice remains unapproved until its Gate 0 ADR records maintenance, adoption, license, vulnerability, API, and transitive-dependency evidence. Writing cryptographic primitives locally is prohibited.
+This is a ceiling, not a quota. ADR 0007 accepts the initial Noise choice for M1 and records its pinned version, license, transitive override, and review gates. Writing cryptographic primitives locally is prohibited.
 
 The initial Go directive remains compatible with MGMT's default branch where practical. A dependency may not force a Go-version increase without an explicit cross-repository decision and passing MGMT build evidence.
 

@@ -1,9 +1,9 @@
 # go-aioesphomeapi cheatsheet
 
-Short, safe, copy/paste commands for cloning, checking, contributing to, and—once the first usable release exists—installing and using this library.
+Short, safe, copy/paste commands for cloning, checking, building, and using this library.
 
 > [!IMPORTANT]
-> **Current phase: protocol generated; client implementation underway.** There is no usable Go client to install yet. Commands under **Works today** are verified repository commands. Milestone 1 will make the pinned MGMT examples run through this module before broader features are claimed.
+> **Current phase: usable development branch; no tagged release yet.** The simulator workflow below is safe and verified. Do not use `go get ...@latest` until the first release is published.
 
 ## Works today
 
@@ -40,7 +40,32 @@ Expected final line:
 repository policy validation passed
 ```
 
-### 4. See what is actually supported
+### 4. Build and test
+
+Install Go 1.25.10 or a later compatible Go 1.25 patch, then run:
+
+```bash
+go version
+go test -race ./...
+go vet ./...
+```
+
+### 5. Run the safe first example
+
+This uses a real Noise handshake over an in-process connection. It opens no port, needs no hardware, and contains only a public test key.
+
+```bash
+go run ./cmd/conveyor-sim
+```
+
+Expected output:
+
+```text
+connected securely to conveyor-simulator; discovered 12 entities
+simulated conveyor speed=35 and status color=#00ff00
+```
+
+### 6. See what is actually supported
 
 ```bash
 sed -n '1,220p' docs/support-matrix.md
@@ -48,7 +73,7 @@ sed -n '1,220p' docs/support-matrix.md
 
 `none` and `untracked` are honest current results, not setup failures.
 
-### 5. Read the plan in a terminal
+### 7. Read the plan in a terminal
 
 ```bash
 sed -n '1,240p' docs/roadmap.md
@@ -86,18 +111,17 @@ gh pr create --draft --fill
 
 Adjust the explicit `git add` paths to match your change. Do not use `git add .` when unrelated files are present.
 
-## Install, build, and use: command contract
+## Use from another Go module
 
-These operations are **not available today**. Do not invent package paths or copy commands from another ESPHome client.
+Until a release is tagged, pin an exact reviewed commit rather than a moving branch:
 
-Milestone 1 must update this file with verified, copy/paste commands for all four workflows:
+```bash
+go get github.com/flavio-fernandes/go-aioesphomeapi@COMMIT_SHA
+```
 
-1. Install a tagged module version with `go get`.
-2. Build and test from a clean clone with the supported Go version.
-3. Run a first client example against the in-process simulator—no hardware or secret required.
-4. Run the same example against an explicitly selected ESPHome device using a runtime-provided Noise key.
+Replace `COMMIT_SHA` with the reviewed commit from the pull request. A release command will replace this placeholder after tagging.
 
-Each command must be exercised in CI or a documented clean environment before it appears in a runnable code block here. The simulator will always be the beginner default; real hardware will always require an explicit target.
+Real-device access is deliberately not a beginner copy/paste command. Applications must provide the target and base64 Noise key at runtime, keep both out of source and shell history, and call `WithEncryptionKey`. Plaintext requires `WithInsecurePlaintext()` and is for isolated tests only.
 
 ## Safe command rules
 
