@@ -136,3 +136,19 @@ Both original MCL examples and the unchanged conveyor MCL pass from that
 committed `go.mod` with `GOWORK=off`. MGMT receives the improved synchronous
 connection errors automatically; exposing asynchronous `CloseReason` through
 the MGMT adapter remains future work.
+
+## First sanitized hardware evidence
+
+The append-only [`mgmt-feat-esphome-hardware-blink.json`](../compatibility/mgmt-feat-esphome-hardware-blink.json)
+records the first real-device run. MGMT `d6259199` used its committed library
+pin and the byte-identical `esphome-blink.mcl` to connect to ESPHome 2026.7.0.
+The real device resolved through `.local`, completed Noise and hello, published
+the expected switch and binary-sensor entities, streamed states and logs, and
+accepted at least eight corrective switch commands during a bounded run.
+
+The run did not flash firmware or write raw logs to a file or repository.
+Network identifiers, the Noise key, local paths, and firmware build metadata
+are deliberately absent from the record. This raises only the exercised blink
+path to `hardware`;
+conveyor, Fan, Light, Number, Button, reconnect, and scale claims remain at
+their existing evidence levels.

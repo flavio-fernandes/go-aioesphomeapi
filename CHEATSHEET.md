@@ -137,6 +137,13 @@ Expected output:
 MGMT securely converged both unchanged baseline MCL examples against dedicated simulators
 ```
 
+### 8a. Run an explicitly authorized hardware blink demo
+
+After the simulator passes, maintainers with a pre-provisioned blink device can
+follow the [hardware blink walkthrough](docs/mgmt-hardware-blink.md). It keeps
+the MCL unchanged, does not flash firmware, and explains how to avoid retaining
+private identifiers from ESPHome's verbose device logs.
+
 ### 9. Read the plan in a terminal
 
 ```bash
@@ -180,13 +187,14 @@ Adjust the explicit `git add` paths to match your change. Do not use `git add .`
 Until a release is tagged, pin an exact reviewed commit rather than a moving branch:
 
 ```bash
-go get github.com/flavio-fernandes/go-aioesphomeapi@ef8386820978611d313f976e68bd2aaf9009e8b8
+go get github.com/flavio-fernandes/go-aioesphomeapi@73b5d58e5dd39d6dce0df024c3a792f668824b3b
 ```
 
-That commit is the last published Milestone 1 candidate used by the baseline
-MGMT replacement tests. Review [library PR #30](https://github.com/flavio-fernandes/go-aioesphomeapi/pull/30)
-for the current candidate, including `.local` mDNS parity; a tagged release
-command will replace this development pin after merge.
+That commit is the exact candidate pinned by MGMT `feat/esphome` and exercised
+by the ESPHome 2026.7.0 hardware blink run. Review
+[library PR #30](https://github.com/flavio-fernandes/go-aioesphomeapi/pull/30)
+for the current candidate; a tagged release command will replace this
+development pin after merge.
 
 To inspect the exact MGMT revision, unchanged MCL hashes, dependency reduction, and verification record:
 

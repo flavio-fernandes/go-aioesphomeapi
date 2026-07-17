@@ -20,28 +20,28 @@ The pinned protocol inventory contains 148 unique message IDs. Generated presenc
 
 | Behavior | Required by pinned MGMT | Library evidence | Target | Notes |
 |---|---|---|---|---|
-| Context-bound Noise dial | yes | mgmt | M1 | Real MGMT process passed over Noise; normal path fails closed without secure configuration. |
+| Context-bound Noise dial | yes | hardware | M1 | MGMT completed Noise against ESPHome 2026.7.0 hardware; normal path fails closed without secure configuration. |
 | Explicit insecure plaintext | compatibility review | simulated | M1 | Requires `WithInsecurePlaintext`; never selected implicitly. |
-| `.local` mDNS resolution | yes | mgmt | M1 | Both unchanged hostname-based MCL demos pass through a real multicast responder with no `/etc/hosts` mapping and no added module. |
+| `.local` mDNS resolution | yes | hardware | M1 | The unchanged blink MCL resolved a real device; simulator coverage also proves no `/etc/hosts` mapping or added module is needed. |
 | Diagnostic error chains and close reason | operational | simulated | M1 | Dial retains `*net.OpError`; mDNS, Noise, and hello are distinct; asynchronous read/decode/context/peer/queue termination is observable. |
-| Entity list and registry metadata | yes | mgmt | M1 | Conveyor entities were resolved by exact current name. |
-| Initial state snapshot and live push | yes | mgmt | M1 | Initial conveyor telemetry reached MCL; later push/fault evidence is still pending. |
-| Binary sensor state | yes | mgmt | M1 | Three conveyor binary sensors reached MCL. |
+| Entity list and registry metadata | yes | hardware | M1 | A real blink switch and binary sensor were resolved by exact current name. |
+| Initial state snapshot and live push | yes | hardware | M1 | Real blink state repeatedly reached MCL; broader push/fault evidence is still pending. |
+| Binary sensor state | yes | hardware | M1 | Real blink state and three simulated conveyor binary sensors reached MCL. |
 | Sensor state and missing/NaN | yes | mgmt | M1 | RGB sensor state reached MCL; missing/NaN remains adapter-test evidence. |
 | Text sensor state | yes | typed | M1 | MGMT evidence pending. |
-| Switch state and command | yes | mgmt | M1 | Both unchanged baseline examples issued and observed corrective switch commands. |
+| Switch state and command | yes | hardware | M1 | The unchanged blink MCL issued at least eight corrective commands accepted by real firmware. |
 | Number state and command | yes | mgmt | M1 | Unchanged `esphome0.mcl` observed state and issued its safe desired number command. |
 | Button discovery and command | yes in driver | simulated | M1 | Exposed even though current examples do not call it. |
 | Fan state and command | conveyor | mgmt | M1 | State, speed, direction, and graceful cleanup stop passed. |
 | RGB Light state and command | conveyor | mgmt | M1 | State, brightness, and blue RGB command passed. |
-| Device logs | yes | mgmt | M1 | Simulator info log reached the MGMT endpoint logger. |
+| Device logs | yes | hardware | M1 | ESPHome 2026.7.0 logs reached the MGMT endpoint logger; only sanitized evidence was committed. |
 | Done signal and idempotent close | yes | simulated | M1 | Race tests cover clean termination. |
 | Hostile peer and stalled operation | security | simulated | M1 | Named drop, malformed-protobuf, unknown-message, incomplete-discovery, and stalled-discovery tests fail closed over the real framing/session path. |
 | MGMT-owned reconnect and outage accounting | external contract | mgmt | M1 | Real encrypted driver test drops a persistent peer, reconnects through MGMT, records a positive outage, and observes no unrequested replay. |
 | Library-owned reconnect | no | none | M2 | MGMT owns reconnect; client option stays disabled. |
 | MGMT persistent and polling modes | external contract | mgmt / mgmt | M1 | Persistent MCL and conveyor runs pass; real-driver polling disconnects between cycles and wakes once for a queued command. |
 | Unchanged `esphome0.mcl` | yes | mgmt | M1 | Hash verified, real MGMT converged, and switch/number corrections reached the encrypted peer. |
-| Unchanged `esphome-blink.mcl` | yes | mgmt | M1 | Hash verified, real MGMT converged, and name-based switch/log behavior reached the encrypted peer. |
+| Unchanged `esphome-blink.mcl` | yes | hardware | M1 | Hash verified; real MGMT converged repeatedly against an encrypted ESPHome 2026.7.0 device. |
 
 ## Current MGMT migration proof
 
@@ -63,21 +63,22 @@ The candidate record is [`compatibility/mgmt-feat-esphome2.json`](../compatibili
 | Post-merge active MGMT branch | pass on `feat/esphome` at `c60c22eb` | Both original MCL examples and the unchanged conveyor MCL remain green after PR #1 merged and `feat/esphome2` was retired. |
 | Post-merge `.local` parity | pass with library `55602f04` | Real MGMT resolves blink and conveyor names from multicast answers; no `/etc/hosts` entry or new module is used. |
 | Final mDNS and diagnostics pin | MGMT `d6259199` pins library `73b5d58e` | All unchanged MCL demos pass from the committed module version; synchronous connection failures retain causes and attempted targets. |
-| Physical device flash and actuation | not performed | Hardware cells remain `no`. |
+| Physical ESPHome blink device | pass on ESPHome 2026.7.0 with MGMT `d6259199` | Noise, `.local`, hello, discovery, binary-state push, switch command, and logs reach `hardware`. |
+| Firmware flash and physical conveyor actuation | not performed | Conveyor, Fan, Light, and firmware-provisioning hardware cells remain `no`. |
 
 ## Protocol and transport
 
 | Capability | Upstream | Public API | Simulator | MGMT | Hardware | Target |
 |---|---|---|---|---|---|---|
 | Plain framing with limits | known | typed | simulated | none | none | M1 |
-| Noise transport | known | typed | simulated | mgmt | none | M1 |
-| `.local` A-record resolution | known | typed | simulated | mgmt | none | M1 |
-| Hello and API version | known | typed | simulated | mgmt | none | M1 |
+| Noise transport | known | typed | simulated | mgmt | hardware | M1 |
+| `.local` A-record resolution | known | typed | simulated | mgmt | hardware | M1 |
+| Hello and API version | known | typed | simulated | mgmt | hardware | M1 |
 | Device information | known | none | none | none | none | M1 |
 | Ping, disconnect, close | known | typed | typed | none | none | M1 |
-| Entity discovery | known | typed | simulated | mgmt | none | M1 |
-| State subscriptions | known | typed | simulated | mgmt | none | M1 |
-| Bounded device logs | known | typed | simulated | mgmt | none | M1 |
+| Entity discovery | known | typed | simulated | mgmt | hardware | M1 |
+| State subscriptions | known | typed | simulated | mgmt | hardware | M1 |
+| Bounded device logs | known | typed | simulated | mgmt | hardware | M1 |
 | Client-owned reconnect | known | none | none | n/a | none | M2 |
 | Home Assistant services/actions | known | none | none | none | none | M3 |
 | Bluetooth proxy | known | none | none | none | none | backlog |
@@ -88,10 +89,10 @@ The candidate record is [`compatibility/mgmt-feat-esphome2.json`](../compatibili
 
 | Family | MGMT M1 need | Protocol known | Typed | Simulated | MGMT | Hardware | Target |
 |---|---|---|---|---|---|---|---|
-| Binary sensor | state | yes | yes | yes | yes | no | M1 |
+| Binary sensor | state | yes | yes | yes | yes | yes | M1 |
 | Sensor | state | yes | yes | yes | yes | no | M1 |
 | Text sensor | state | yes | yes | yes | no | no | M1 |
-| Switch | state/command | yes | yes | yes | yes | no | M1 |
+| Switch | state/command | yes | yes | yes | yes | yes | M1 |
 | Number | state/command | yes | yes | yes | yes | no | M1 |
 | Button | command seam | yes | yes | yes | no | no | M1 |
 | Fan | conveyor state/command | yes | yes | yes | yes | no | M1 |

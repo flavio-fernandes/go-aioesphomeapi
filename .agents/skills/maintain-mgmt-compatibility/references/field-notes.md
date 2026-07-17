@@ -56,3 +56,8 @@ or PR descriptions.
   acceptance scripts, and only then write an append-only compatibility record.
   A temporary workspace is useful during development but is not evidence that
   the committed consumer pin selects the intended code.
+- ESPHome `config` and `debug` logs can disclose network addresses, SSIDs,
+  MAC/BSSID values, local paths, and firmware timestamps even when the client
+  never logs a key. Observe hardware output live, retain no raw transcript, and
+  write only a sanitized profile plus exact software revisions, immutable MCL
+  hash, bounded behaviors, and limitations into append-only evidence.
