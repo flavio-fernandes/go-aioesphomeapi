@@ -17,7 +17,16 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var defaultTestKey = []byte("public-simulator-test-key-000001")
+// DefaultTestEncryptionKey is public test data shared with the conveyor MCL
+// example. It must never be reused by a real device.
+const DefaultTestEncryptionKey = "kJ7hc0lJ0Zw9N3DcJzXn1kJ7hc0lJ0Zw9N3DcJzXn1k="
+
+var (
+	defaultTestKey, _ = base64.StdEncoding.DecodeString(DefaultTestEncryptionKey)
+	// ErrNonLoopbackOnly is returned before accepting a simulator listener
+	// that could expose the public test key outside the local host.
+	ErrNonLoopbackOnly = errors.New("simulator listener must use a loopback TCP address")
+)
 
 // Scenario is the complete initial state advertised by a simulated device.
 type Scenario struct {
@@ -54,6 +63,7 @@ type Device struct {
 	closeOnce   sync.Once
 	mu          sync.Mutex
 	connections map[net.Conn]struct{}
+	listeners   map[net.Listener]struct{}
 	wg          sync.WaitGroup
 }
 
@@ -69,7 +79,14 @@ func New(scenario Scenario, options ...Option) *Device {
 			option(&cfg)
 		}
 	}
-	return &Device{scenario: scenario, config: cfg, commands: make(chan proto.Message, 64), done: make(chan struct{}), connections: make(map[net.Conn]struct{})}
+	return &Device{
+		scenario:    scenario,
+		config:      cfg,
+		commands:    make(chan proto.Message, 64),
+		done:        make(chan struct{}),
+		connections: make(map[net.Conn]struct{}),
+		listeners:   make(map[net.Listener]struct{}),
+	}
 }
 
 // DialContext is passed to aioesphomeapi.WithDialContext.
@@ -80,11 +97,11 @@ func (d *Device) DialContext(ctx context.Context, _, _ string) (net.Conn, error)
 	default:
 	}
 	client, server := net.Pipe()
-	d.mu.Lock()
-	d.connections[server] = struct{}{}
-	d.mu.Unlock()
-	d.wg.Add(1)
-	go d.serve(server)
+	if !d.startConnection(server) {
+		_ = client.Close()
+		_ = server.Close()
+		return nil, errors.New("simulator closed")
+	}
 	go func() {
 		select {
 		case <-ctx.Done():
@@ -94,6 +111,62 @@ func (d *Device) DialContext(ctx context.Context, _, _ string) (net.Conn, error)
 		}
 	}()
 	return client, nil
+}
+
+// Serve accepts encrypted Native API sessions from a caller-owned TCP
+// listener. It rejects wildcard and non-loopback addresses so the test-only
+// key cannot accidentally expose the simulator to a network. Close stops the
+// listener and all accepted sessions.
+func (d *Device) Serve(listener net.Listener) error {
+	address, ok := listener.Addr().(*net.TCPAddr)
+	if !ok || address.IP == nil || !address.IP.IsLoopback() {
+		return ErrNonLoopbackOnly
+	}
+	d.mu.Lock()
+	select {
+	case <-d.done:
+		d.mu.Unlock()
+		return errors.New("simulator closed")
+	default:
+	}
+	d.listeners[listener] = struct{}{}
+	d.mu.Unlock()
+	defer func() {
+		_ = listener.Close()
+		d.mu.Lock()
+		delete(d.listeners, listener)
+		d.mu.Unlock()
+	}()
+
+	for {
+		connection, err := listener.Accept()
+		if err != nil {
+			select {
+			case <-d.done:
+				return nil
+			default:
+				return errors.New("simulator accept failed")
+			}
+		}
+		if !d.startConnection(connection) {
+			_ = connection.Close()
+			return nil
+		}
+	}
+}
+
+func (d *Device) startConnection(connection net.Conn) bool {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	select {
+	case <-d.done:
+		return false
+	default:
+	}
+	d.connections[connection] = struct{}{}
+	d.wg.Add(1)
+	go d.serve(connection)
+	return true
 }
 
 // ClientOptions returns all options required to connect to this Device.
@@ -113,6 +186,9 @@ func (d *Device) Close() error {
 	d.closeOnce.Do(func() {
 		close(d.done)
 		d.mu.Lock()
+		for listener := range d.listeners {
+			_ = listener.Close()
+		}
 		for connection := range d.connections {
 			_ = connection.Close()
 		}

@@ -61,7 +61,7 @@ go run ./cmd/conveyor-sim
 Expected output:
 
 ```text
-connected securely to conveyor-simulator; discovered 12 entities
+connected securely to conveyor-simulator; discovered 13 entities
 simulated conveyor speed=35 and status color=#00ff00
 ```
 
@@ -73,7 +73,25 @@ sed -n '1,220p' docs/support-matrix.md
 
 `none` and `untracked` are honest current results, not setup failures.
 
-### 7. Read the plan in a terminal
+### 7. Prove the real MGMT integration without hardware
+
+This maintainer check runs the unchanged conveyor MCL against the encrypted
+simulator in an isolated Linux network namespace. It does not change
+`/etc/hosts`, open a host-network port, flash firmware, or control hardware.
+You need Linux user namespaces, `ip`, `mount`, `timeout`, a built MGMT candidate,
+and both repositories next to each other.
+
+```bash
+./tools/test-mgmt-conveyor.sh ../mgmt /tmp/mgmt
+```
+
+Expected output:
+
+```text
+MGMT securely converged the unchanged conveyor MCL against the loopback simulator
+```
+
+### 8. Read the plan in a terminal
 
 ```bash
 sed -n '1,240p' docs/roadmap.md

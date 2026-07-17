@@ -30,8 +30,8 @@ func TestSecureConveyorRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("list: %v", err)
 	}
-	if len(descriptors) != 12 {
-		t.Fatalf("got %d descriptors, want 12", len(descriptors))
+	if len(descriptors) != 13 {
+		t.Fatalf("got %d descriptors, want 13", len(descriptors))
 	}
 	if got := client.Entities().Fans(); len(got) != 1 || got[0].ObjectID != "conveyor_motor" {
 		t.Fatalf("unexpected fans: %#v", got)
