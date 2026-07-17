@@ -48,3 +48,6 @@ or PR descriptions.
   `mgmt` for real MGMT over the simulator, not `hardware` or `production`.
 - When auditing replacement parity, list deliberate security differences such
   as rejecting implicit plaintext separately from accidental regressions.
+- A connection error must preserve its cause for `errors.Is`/`errors.As`, name
+  the stage and attempted target, and never contain a Noise key. After `Done`,
+  use `CloseReason` to distinguish a failure from intentional shutdown.

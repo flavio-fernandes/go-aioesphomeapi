@@ -23,6 +23,7 @@ The pinned protocol inventory contains 148 unique message IDs. Generated presenc
 | Context-bound Noise dial | yes | mgmt | M1 | Real MGMT process passed over Noise; normal path fails closed without secure configuration. |
 | Explicit insecure plaintext | compatibility review | simulated | M1 | Requires `WithInsecurePlaintext`; never selected implicitly. |
 | `.local` mDNS resolution | yes | mgmt | M1 | Both unchanged hostname-based MCL demos pass through a real multicast responder with no `/etc/hosts` mapping and no added module. |
+| Diagnostic error chains and close reason | operational | simulated | M1 | Dial retains `*net.OpError`; mDNS, Noise, and hello are distinct; asynchronous read/decode/context/peer/queue termination is observable. |
 | Entity list and registry metadata | yes | mgmt | M1 | Conveyor entities were resolved by exact current name. |
 | Initial state snapshot and live push | yes | mgmt | M1 | Initial conveyor telemetry reached MCL; later push/fault evidence is still pending. |
 | Binary sensor state | yes | mgmt | M1 | Three conveyor binary sensors reached MCL. |

@@ -19,14 +19,24 @@ var (
 	ErrEntityNotFound     = errors.New("entity not found")
 	ErrEntityTypeMismatch = errors.New("entity type mismatch")
 	ErrClientClosed       = errors.New("ESPHome client closed")
-	ErrNameResolution     = errors.New("ESPHome name resolution failed")
-	ErrHello              = errors.New("ESPHome hello failed")
-	ErrPeerDisconnected   = errors.New("ESPHome peer requested disconnect")
-	ErrEventQueueFull     = errors.New("ESPHome callback queue is full")
 	ErrTransportPolicy    = wire.ErrTransportPolicy
-	ErrNoiseHandshake     = wire.ErrNoiseHandshake
-	ErrNoiseName          = wire.ErrNoiseName
-	ErrNoiseKey           = wire.ErrNoiseKey
+)
+
+var (
+	// ErrNameResolution identifies a failed built-in .local mDNS lookup.
+	ErrNameResolution = errors.New("ESPHome name resolution failed")
+	// ErrHello identifies any failed stage of the Native API hello exchange.
+	ErrHello = errors.New("ESPHome hello failed")
+	// ErrPeerDisconnected means the device requested an orderly disconnect.
+	ErrPeerDisconnected = errors.New("ESPHome peer requested disconnect")
+	// ErrEventQueueFull means a slow consumer exhausted the bounded callback queue.
+	ErrEventQueueFull = errors.New("ESPHome callback queue is full")
+	// ErrNoiseHandshake identifies a failed encrypted transport handshake.
+	ErrNoiseHandshake = wire.ErrNoiseHandshake
+	// ErrNoiseName identifies a configured peer-name mismatch.
+	ErrNoiseName = wire.ErrNoiseName
+	// ErrNoiseKey identifies invalid Noise key configuration.
+	ErrNoiseKey = wire.ErrNoiseKey
 )
 
 type callback func(proto.Message)

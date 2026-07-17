@@ -3,7 +3,7 @@
 An independent, Go-native client for the [ESPHome Native API](https://developers.esphome.io/architecture/api/protocol_details/), built first to be the safest and smallest library MGMT can use for native ESPHome integration.
 
 > [!IMPORTANT]
-> The first usable client slice is implemented on this development branch: secure Noise transport, explicit test-only plaintext, MGMT's current entity surface, Fan and RGB Light commands, and deterministic simulators. A real MGMT process now passes encrypted acceptance for both original unchanged MCL examples and the unchanged conveyor MCL. Real-driver tests also cover MGMT-owned polling, reconnect, and outage accounting without hardware. It is not a tagged release yet. The [support matrix](docs/support-matrix.md) is the authoritative record of evidence and limitations.
+> The first usable client slice is implemented on this development branch: secure Noise transport, explicit test-only plaintext, MGMT's current entity surface, Fan and RGB Light commands, deterministic simulators, and actionable connection errors. A real MGMT process now passes encrypted acceptance for both original unchanged MCL examples and the unchanged conveyor MCL. Real-driver tests also cover MGMT-owned polling, reconnect, and outage accounting without hardware. It is not a tagged release yet. The [support matrix](docs/support-matrix.md) is the authoritative record of evidence and limitations.
 
 ## The realigned goal
 
@@ -34,6 +34,7 @@ Documentation is part of the product. Runnable commands must be tested, safe by 
 - Core types remain generic ESPHome concepts; MGMT and conveyor types stay outside the library.
 - Noise is required by the normal production path. Plaintext requires an unmistakable insecure opt-in.
 - One concurrency-safe connection per client has bounded queues and no silent command replay. The caller owns reconnect policy.
+- Synchronous failures preserve their underlying causes, and `CloseReason()` explains why an established connection ended without exposing keys.
 - A deterministic simulated device exercises the real framing and session path without hardware.
 - The standard library is preferred. Every runtime dependency needs an ADR and evidence; convenience dependencies do not enter the core.
 - Generated protobuf compatibility and the stable handwritten API are clearly separated.

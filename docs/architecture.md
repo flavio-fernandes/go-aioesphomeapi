@@ -72,6 +72,8 @@ Fan support is also M1 because the conveyor uses ESPHome's generic H-bridge fan 
 - Callbacks never run on the network read loop or while internal locks are held.
 - Every queue is finite and has documented overflow behavior.
 - Cancellation closes the relevant network operation and background goroutines.
+- Synchronous connection failures wrap their original causes so `errors.Is` and `errors.As` remain useful; stage and target are included, but credentials are not.
+- Once `Done` closes, `CloseReason` reports asynchronous network, protocol, context, peer, or queue termination; intentional close has no failure reason.
 - Reconnect is observable and never silently replays a non-idempotent command.
 - Metadata and states cross the API boundary as immutable snapshots.
 - Unknown fields, enum values, and safe-to-ignore messages do not crash the process.

@@ -215,6 +215,16 @@ bash ./tools/validate-repo.sh
 
 **A command here fails from a clean clone:** open a documentation issue. A broken cheatsheet command is a product bug.
 
+**A device connection fails:** the returned error names the attempted target and
+the failed stage. Standard `errors.Is` and `errors.As` still reach causes such
+as `*net.OpError`, `ErrNameResolution`, `ErrNoiseHandshake`, and `ErrHello`.
+Never paste a production error into an issue until you have removed private
+hostnames and addresses.
+
+**An established connection closes:** wait for `client.Done()`, then inspect
+`client.CloseReason()`. A deliberate `client.Close()` leaves the reason nil;
+network, protocol, peer-disconnect, context, and queue failures record a cause.
+
 **A fuzz command cannot start:** confirm `go version` reports Go 1.25.10 or a
 later compatible Go 1.25 patch and that the repository dependencies have been
 downloaded by `go test ./...`.

@@ -49,7 +49,7 @@ The compatibility facade initially mirrors the subset recorded in the manifest:
 - client `ListEntities`, `Entities`, `SubscribeStates`, and `SubscribeLogs`;
 - registry accessors for binary sensor, sensor, text sensor, switch, number, and button;
 - client `SetSwitch`, `SetNumber`, and `PressButton`;
-- client `Done` and `Close`;
+- client `Done`, `Close`, and diagnostic `CloseReason`;
 - generated state and log messages needed by the existing driver.
 
 Internally, the implementation may be entirely different. It must improve cancellation, limits, secret redaction, callback isolation, and malformed-peer handling without altering valid MGMT results.
@@ -70,7 +70,11 @@ The library never imports MGMT. MGMT may vendor or require this GPL-3.0-only mod
 
 The baseline allows plaintext when `key` is empty. This project's normal production API fails closed without Noise. MGMT must therefore make plaintext an explicit insecure endpoint choice before production acceptance. This is an intentional hardening candidate, not a silent MCL change; it needs a dedicated MGMT review and simulator test.
 
-Keys remain runtime-only values and never appear in errors, logs, snapshots, compatibility fixtures, or command examples. Hostnames and entity names are treated as operational metadata and redacted by default observability hooks.
+Keys remain runtime-only values and never appear in errors, logs, snapshots,
+compatibility fixtures, or command examples. Connection errors name the
+attempted host and port so operators can distinguish resolution, TCP, Noise,
+and hello failures. Applications must treat those targets as operational
+metadata and redact them before sharing diagnostics outside the deployment.
 
 ## Cross-repository test lane
 
