@@ -7,7 +7,7 @@ An independent, Go-native client for the [ESPHome Native API](https://developers
 
 ## The realigned goal
 
-MGMT's experimental [`feat/esphome`](https://github.com/purpleidea/mgmt/compare/master...flavio-fernandes:mgmt:feat/esphome) branch uses [`Richard87/esphome-apiclient`](https://github.com/Richard87/esphome-apiclient). The draft [`feat/esphome2` replacement](https://github.com/flavio-fernandes/mgmt/pull/1) now uses this library, preserves both existing `.mcl` examples byte for byte, and adds Fan, RGB Light, and conveyor-demo support. This project provides that behavior behind a deliberately small compatibility facade, then improves it with secure defaults, bounded concurrency, deterministic device simulation, current protocol tracking, and a conservative dependency budget.
+MGMT's original experimental [`feat/esphome-richard87`](https://github.com/flavio-fernandes/mgmt/tree/feat/esphome-richard87) branch preserved the [`Richard87/esphome-apiclient`](https://github.com/Richard87/esphome-apiclient) implementation. The active [`feat/esphome`](https://github.com/flavio-fernandes/mgmt/tree/feat/esphome) branch now uses this library, preserves both existing `.mcl` examples byte for byte, and adds Fan, RGB Light, and conveyor-demo support. This project provides that behavior behind a deliberately small compatibility facade, then improves it with secure defaults, bounded concurrency, deterministic device simulation, current protocol tracking, and a conservative dependency budget.
 
 Success means MGMT can replace the client dependency without changing the behavior of its existing `.mcl` examples. The intended migration changes Go import paths and only the smallest reviewed adapter details; it does not rename MCL functions, resources, parameters, or semantics.
 
@@ -56,7 +56,7 @@ The conveyor demonstration is the first visible acceptance system, not the libra
 
 ## Repository status
 
-The repository is public and GPL-3.0-only licensed. The original immutable MGMT baseline is recorded in [`compatibility/mgmt-feat-esphome.json`](compatibility/mgmt-feat-esphome.json), the replacement candidate is recorded in [`compatibility/mgmt-feat-esphome2.json`](compatibility/mgmt-feat-esphome2.json), and append-only runtime proofs cover the [conveyor](compatibility/mgmt-feat-esphome2-runtime.json) and [both original baseline examples plus polling/reconnect](compatibility/mgmt-feat-esphome2-baselines.json). The ESPHome 2026.7.0 wire surface is recorded in [`protocol/upstream.lock.json`](protocol/upstream.lock.json). Run the no-hardware quickstart in the [cheatsheet](CHEATSHEET.md).
+The repository is public and GPL-3.0-only licensed. The original immutable MGMT baseline is recorded in [`compatibility/mgmt-feat-esphome.json`](compatibility/mgmt-feat-esphome.json), the replacement candidate is recorded in [`compatibility/mgmt-feat-esphome2.json`](compatibility/mgmt-feat-esphome2.json), and append-only runtime proofs cover the [conveyor](compatibility/mgmt-feat-esphome2-runtime.json), [both original baseline examples plus polling/reconnect](compatibility/mgmt-feat-esphome2-baselines.json), and the [post-merge `feat/esphome` branch](compatibility/mgmt-feat-esphome-postmerge.json). The ESPHome 2026.7.0 wire surface is recorded in [`protocol/upstream.lock.json`](protocol/upstream.lock.json). Run the no-hardware quickstart in the [cheatsheet](CHEATSHEET.md).
 
 ## License
 

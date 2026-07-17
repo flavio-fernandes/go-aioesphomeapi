@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-17",
+  "status": "postmerge_runtime_verified",
+  "extends": "compatibility/mgmt-feat-esphome2-baselines.json",
+  "mgmt": {
+    "repository": "https://github.com/flavio-fernandes/mgmt",
+    "active_branch": "feat/esphome",
+    "replacement_pull_request": "https://github.com/flavio-fernandes/mgmt/pull/1",
+    "merged_revision": "8c1af2302ff10200e8ac7e36b3b500d53f09e236",
+    "verified_revision": "c60c22ebf06e19dfbe6766136736d6f29e16bea7",
+    "preserved_richard87_branch": {
+      "branch": "feat/esphome-richard87",
+      "revision": "5bf41f505bc601e6d2c4da8ecb3050b7c01ff34a"
+    },
+    "obsolete_branch": {
+      "branch": "feat/esphome2",
+      "remote_deleted": true
+    }
+  },
+  "library": {
+    "repository": "https://github.com/flavio-fernandes/go-aioesphomeapi",
+    "branch": "agent/implement-conveyor-client-main",
+    "base": "main",
+    "revision_before_this_record": "cf2c5a2",
+    "replacement_for_closed_pull_request": "https://github.com/flavio-fernandes/go-aioesphomeapi/pull/29"
+  },
+  "mcl_contract": {
+    "source_changes": 0,
+    "files": [
+      {
+        "path": "examples/lang/esphome0.mcl",
+        "sha256": "8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df",
+        "runtime": "pass"
+      },
+      {
+        "path": "examples/lang/esphome-blink.mcl",
+        "sha256": "cc57833875290b60e7e7f1004b93d00fb17249ad2f31267ac20ff91c1052c7ad",
+        "runtime": "pass"
+      },
+      {
+        "path": "examples/lang/esphome-conveyer.mcl",
+        "sha256": "c746b6382afaba3daaa248860402fd788ed379e889bbfde65b402efde422fc8b",
+        "runtime": "pass"
+      }
+    ]
+  },
+  "acceptance": {
+    "mgmt_binary_version": "feat-esphome-nohw",
+    "baseline_runner": "tools/test-mgmt-baselines.sh",
+    "baseline_result": "pass",
+    "conveyor_runner": "tools/test-mgmt-conveyor.sh",
+    "conveyor_result": "pass",
+    "isolation": "private Linux user, mount, and network namespaces",
+    "transport": "Noise with a public test-only key",
+    "targeted_mgmt_checks": [
+      "go test -race ./util/esphome",
+      "go test -race ./engine/resources -run 'TestEsphome|TestParseEsphome'",
+      "go vet ./util/esphome ./engine/resources"
+    ],
+    "library_checks": [
+      "./tools/validate-repo.sh",
+      "go vet ./...",
+      "go test -race ./...",
+      "go test ./internal/wire -run=^$ -fuzz=FuzzPlainFramerRead -fuzztime=5s",
+      "go test ./internal/wire -run=^$ -fuzz=FuzzDecode -fuzztime=5s",
+      "go run ./cmd/conveyor-sim"
+    ]
+  },
+  "postmerge_defect_fixed": {
+    "summary": "after PR #1 merged, conveyor cleanup could race endpoint unpublish and fail to send the shutdown fan stop",
+    "symptom": "could not stop the fan on cleanup: endpoint `esphome-conveyer` is not configured",
+    "owner": "MGMT ESPHome session cleanup",
+    "resolution": "cleanup now uses one-shot commands with the last known endpoint info, independent of the shared bridge session",
+    "regression_test": "TestSessionOneShotCleanupCommandUsesExplicitInfo"
+  },
+  "limitations": [
+    "No physical device was flashed or actuated.",
+    "A simulator is not ESPHome firmware, so hardware evidence remains pending.",
+    "The replacement library pull request was recreated after the protocol PR was squash-merged into main."
+  ]
+}

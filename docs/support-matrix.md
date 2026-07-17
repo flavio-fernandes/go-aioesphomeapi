@@ -58,6 +58,7 @@ The candidate record is [`compatibility/mgmt-feat-esphome2.json`](../compatibili
 | Hostile-peer simulator and fuzz smoke | pass in library tests | Simulator evidence only; no MGMT or hardware claim. |
 | Both original MGMT MCL examples | pass byte-for-byte over Noise | Switch and number plus both immutable MCL rows reach `mgmt`. |
 | Real-driver polling and reconnect | pass, including 10 race-enabled repetitions | Poll cleanup, command wake, MGMT-owned reconnect, outage accounting, and no unrequested replay reach `mgmt`. |
+| Post-merge active MGMT branch | pass on `feat/esphome` at `c60c22eb` | Both original MCL examples and the unchanged conveyor MCL remain green after PR #1 merged and `feat/esphome2` was retired. |
 | Physical device flash and actuation | not performed | Hardware cells remain `no`. |
 
 ## Protocol and transport
