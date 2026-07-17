@@ -27,7 +27,7 @@ if ! grep -Fq '[cheatsheet](CHEATSHEET.md)' README.md; then
   exit 1
 fi
 
-if ! grep -Fq '**Current phase: protocol generated; client implementation underway.**' CHEATSHEET.md; then
+if ! grep -Fq '**Current phase: usable development branch; no tagged release yet.**' CHEATSHEET.md; then
   echo "CHEATSHEET.md must state the current implementation phase" >&2
   exit 1
 fi

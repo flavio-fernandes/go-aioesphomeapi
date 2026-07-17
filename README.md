@@ -3,7 +3,7 @@
 An independent, Go-native client for the [ESPHome Native API](https://developers.esphome.io/architecture/api/protocol_details/), built first to be the safest and smallest library MGMT can use for native ESPHome integration.
 
 > [!IMPORTANT]
-> The ESPHome 2026.7.0 protocol is now pinned and generated, but there is not yet a usable client. The [support matrix](docs/support-matrix.md) is the authoritative record of implemented and verified behavior.
+> The first usable client slice is implemented on this development branch: secure Noise transport, explicit test-only plaintext, MGMT's current entity surface, Fan and RGB Light commands, and an in-process conveyor simulator. It is not a tagged release yet. The [support matrix](docs/support-matrix.md) is the authoritative record of evidence and limitations.
 
 ## The realigned goal
 
@@ -11,7 +11,7 @@ MGMT's experimental [`feat/esphome`](https://github.com/purpleidea/mgmt/compare/
 
 Success means MGMT can replace the client dependency without changing the behavior of its existing `.mcl` examples. The intended migration changes Go import paths and only the smallest reviewed adapter details; it does not rename MCL functions, resources, parameters, or semantics.
 
-This is still a greenfield implementation. The reference client is a behavioral baseline, not a code base. The official ESPHome protocol definition remains wire truth.
+This remains an independent greenfield implementation. The reference client is a behavioral baseline, not a code base. The official ESPHome protocol definition remains wire truth.
 
 ## Start here
 
@@ -30,7 +30,7 @@ Documentation is part of the product. Runnable commands must be tested, safe by 
 - Existing MGMT `.mcl` behavior is a release-blocking compatibility contract.
 - Core types remain generic ESPHome concepts; MGMT and conveyor types stay outside the library.
 - Noise is required by the normal production path. Plaintext requires an unmistakable insecure opt-in.
-- One concurrency-safe session per device has bounded queues, observable reconnects, and no silent command replay.
+- One concurrency-safe connection per client has bounded queues and no silent command replay. The caller owns reconnect policy.
 - A deterministic simulated device exercises the real framing and session path without hardware.
 - The standard library is preferred. Every runtime dependency needs an ADR and evidence; convenience dependencies do not enter the core.
 - Generated protobuf compatibility and the stable handwritten API are clearly separated.
@@ -54,7 +54,7 @@ The conveyor demonstration is the first visible acceptance system, not the libra
 
 ## Repository status
 
-The repository is public and GPL-3.0-only licensed. The immutable MGMT baseline is recorded in [`compatibility/mgmt-feat-esphome.json`](compatibility/mgmt-feat-esphome.json), and the ESPHome 2026.7.0 wire surface is recorded in [`protocol/upstream.lock.json`](protocol/upstream.lock.json). Client implementation is the next controlled slice.
+The repository is public and GPL-3.0-only licensed. The immutable MGMT baseline is recorded in [`compatibility/mgmt-feat-esphome.json`](compatibility/mgmt-feat-esphome.json), and the ESPHome 2026.7.0 wire surface is recorded in [`protocol/upstream.lock.json`](protocol/upstream.lock.json). Run the no-hardware quickstart in the [cheatsheet](CHEATSHEET.md).
 
 ## License
 
