@@ -3,7 +3,7 @@
 An independent, Go-native client for the [ESPHome Native API](https://developers.esphome.io/architecture/api/protocol_details/), built first to be the safest and smallest library MGMT can use for native ESPHome integration.
 
 > [!IMPORTANT]
-> The first usable client slice is implemented on this development branch: secure Noise transport, explicit test-only plaintext, MGMT's current entity surface, Fan and RGB Light commands, and an in-process conveyor simulator. It is not a tagged release yet. The [support matrix](docs/support-matrix.md) is the authoritative record of evidence and limitations.
+> The first usable client slice is implemented on this development branch: secure Noise transport, explicit test-only plaintext, MGMT's current entity surface, Fan and RGB Light commands, and an in-process conveyor simulator. A real MGMT process now passes the encrypted, unchanged-conveyor-MCL acceptance check without hardware. It is not a tagged release yet. The [support matrix](docs/support-matrix.md) is the authoritative record of evidence and limitations.
 
 ## The realigned goal
 
@@ -54,7 +54,7 @@ The conveyor demonstration is the first visible acceptance system, not the libra
 
 ## Repository status
 
-The repository is public and GPL-3.0-only licensed. The original immutable MGMT baseline is recorded in [`compatibility/mgmt-feat-esphome.json`](compatibility/mgmt-feat-esphome.json), the current replacement candidate is recorded separately in [`compatibility/mgmt-feat-esphome2.json`](compatibility/mgmt-feat-esphome2.json), and the ESPHome 2026.7.0 wire surface is recorded in [`protocol/upstream.lock.json`](protocol/upstream.lock.json). Run the no-hardware quickstart in the [cheatsheet](CHEATSHEET.md).
+The repository is public and GPL-3.0-only licensed. The original immutable MGMT baseline is recorded in [`compatibility/mgmt-feat-esphome.json`](compatibility/mgmt-feat-esphome.json), the replacement candidate is recorded in [`compatibility/mgmt-feat-esphome2.json`](compatibility/mgmt-feat-esphome2.json), its append-only runtime proof is in [`compatibility/mgmt-feat-esphome2-runtime.json`](compatibility/mgmt-feat-esphome2-runtime.json), and the ESPHome 2026.7.0 wire surface is recorded in [`protocol/upstream.lock.json`](protocol/upstream.lock.json). Run the no-hardware quickstart in the [cheatsheet](CHEATSHEET.md).
 
 ## License
 
