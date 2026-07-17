@@ -82,3 +82,16 @@ Keys remain runtime-only values and never appear in errors, logs, snapshots, com
 7. Fail if MCL files differ, the module graph exceeds budget, or generated support claims lack evidence.
 
 Later MGMT revisions get new manifest records; history is append-only so old compatibility remains reproducible.
+
+## Current rebased replacement candidate
+
+The append-only [`mgmt-feat-esphome2.json`](../compatibility/mgmt-feat-esphome2.json) record captures the current proof:
+
+- upstream `purpleidea/mgmt:master` at `0bd1c2f4aa7c2d107de0dbe413ed8c9e5a36fd99`;
+- rebased reference-client baseline `feat/esphome` at `5bf41f505bc601e6d2c4da8ecb3050b7c01ff34a`;
+- three-commit replacement `feat/esphome2` at `398a8e9296fc79513756964304f16fdf7c1a1da0` in [MGMT PR #1](https://github.com/flavio-fernandes/mgmt/pull/1);
+- this library at `238f06dc564ec3b4a16473ef5225447c4303166c` in [library PR #29](https://github.com/flavio-fernandes/go-aioesphomeapi/pull/29).
+
+Both existing MCL examples are byte-identical between the rebased baseline and replacement candidate. The candidate builds MGMT, passes the targeted race/resource/vet checks, type-checks all three MCL examples, and replaces three modules with one direct module for a net reduction of two modules. It also requires a Noise key at the MGMT endpoint, so the adapter cannot silently downgrade to plaintext.
+
+This is compile, contract, and integration-test evidence—not yet the `mgmt` evidence level. A complete MGMT process still needs to drive the simulator over a real Native API session. No physical device has been flashed or actuated.

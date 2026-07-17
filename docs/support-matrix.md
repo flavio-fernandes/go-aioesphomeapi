@@ -39,6 +39,21 @@ The pinned protocol inventory contains 148 unique message IDs. Generated presenc
 | Unchanged `esphome0.mcl` | yes | none | M1 | Hash locked in manifest. |
 | Unchanged `esphome-blink.mcl` | yes | none | M1 | Hash locked in manifest. |
 
+## Current MGMT migration proof
+
+The candidate record is [`compatibility/mgmt-feat-esphome2.json`](../compatibility/mgmt-feat-esphome2.json). Evidence is intentionally split so a successful build is not mistaken for external runtime behavior.
+
+| Check | Result | Evidence level impact |
+|---|---|---|
+| Rebased MGMT baseline | `5bf41f505bc601e6d2c4da8ecb3050b7c01ff34a` on upstream `0bd1c2f4aa7c2d107de0dbe413ed8c9e5a36fd99` | Reproducible baseline only. |
+| Replacement candidate | `398a8e9296fc79513756964304f16fdf7c1a1da0` using library `238f06dc564ec3b4a16473ef5225447c4303166c` | Candidate pin only. |
+| Existing MCL sources | Both SHA-256 values unchanged; both pass `mgmt check` | Contract and type-check proof. |
+| MGMT build, targeted tests, race, and vet | pass | Adapter integration proof. |
+| Module graph | one module added, three removed; net `-2` | Dependency-budget proof. |
+| Conveyor firmware with ESPHome 2026.7.0 | configuration and compile pass | Firmware build proof, not hardware proof. |
+| MGMT-to-library simulator session | pending | Entity-family MGMT cells remain `no`. |
+| Physical device flash and actuation | not performed | Hardware cells remain `no`. |
+
 ## Protocol and transport
 
 | Capability | Upstream | Public API | Simulator | MGMT | Hardware | Target |
