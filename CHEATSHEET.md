@@ -116,10 +116,16 @@ Adjust the explicit `git add` paths to match your change. Do not use `git add .`
 Until a release is tagged, pin an exact reviewed commit rather than a moving branch:
 
 ```bash
-go get github.com/flavio-fernandes/go-aioesphomeapi@COMMIT_SHA
+go get github.com/flavio-fernandes/go-aioesphomeapi@238f06dc564ec3b4a16473ef5225447c4303166c
 ```
 
-Replace `COMMIT_SHA` with the reviewed commit from the pull request. A release command will replace this placeholder after tagging.
+That commit is the current draft Milestone 1 candidate used by the MGMT replacement pull request. Review [library PR #29](https://github.com/flavio-fernandes/go-aioesphomeapi/pull/29) before adopting it; a tagged release command will replace this development pin after merge.
+
+To inspect the exact MGMT revision, unchanged MCL hashes, dependency reduction, and verification record:
+
+```bash
+python3 -m json.tool compatibility/mgmt-feat-esphome2.json
+```
 
 Real-device access is deliberately not a beginner copy/paste command. Applications must provide the target and base64 Noise key at runtime, keep both out of source and shell history, and call `WithEncryptionKey`. Plaintext requires `WithInsecurePlaintext()` and is for isolated tests only.
 

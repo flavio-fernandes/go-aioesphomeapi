@@ -13,6 +13,8 @@ Two immutable snapshots inform the current design:
 - MGMT `feat/esphome` at `8eab220` defines external MCL and adapter behavior.
 - `Richard87/esphome-apiclient` `v1.1.0` at `982fb85860e7214e3384e68cb69bf94b16a6985b` defines the initial Go migration comparison.
 
+The original snapshot remains immutable. A second append-only record, `compatibility/mgmt-feat-esphome2.json`, captures the rebased MGMT baseline, the replacement branch, this library's exact candidate revision, preserved MCL hashes, dependency delta, and verification results. A later run creates another record instead of rewriting either historical record.
+
 The local manifest records only public repository paths, symbols, revisions, and SHA-256 values. It does not vendor the GPL MGMT source or reference-client implementation.
 
 ## Clean implementation rule
