@@ -128,3 +128,11 @@ The append-only [`mgmt-feat-esphome-mdns.json`](../compatibility/mgmt-feat-espho
 records the regression test: real MGMT resolves both `esphome-blink.local` and
 `esphome-conveyer.local` over multicast DNS and converges the unchanged MCL
 files without an `/etc/hosts` mapping.
+
+The follow-up [`mgmt-feat-esphome-diagnostics.json`](../compatibility/mgmt-feat-esphome-diagnostics.json)
+closes the pending pin: MGMT `feat/esphome` now selects the exact published
+library revision that provides built-in mDNS and preserved connection causes.
+Both original MCL examples and the unchanged conveyor MCL pass from that
+committed `go.mod` with `GOWORK=off`. MGMT receives the improved synchronous
+connection errors automatically; exposing asynchronous `CloseReason` through
+the MGMT adapter remains future work.

@@ -51,3 +51,8 @@ or PR descriptions.
 - A connection error must preserve its cause for `errors.Is`/`errors.As`, name
   the stage and attempted target, and never contain a Noise key. After `Done`,
   use `CloseReason` to distinguish a failure from intentional shutdown.
+- Publish the library commit before final cross-repository proof, pin its exact
+  pseudo-version in MGMT, build with `GOWORK=off`, run the immutable MCL
+  acceptance scripts, and only then write an append-only compatibility record.
+  A temporary workspace is useful during development but is not evidence that
+  the committed consumer pin selects the intended code.

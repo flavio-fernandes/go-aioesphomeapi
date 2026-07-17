@@ -62,6 +62,7 @@ The candidate record is [`compatibility/mgmt-feat-esphome2.json`](../compatibili
 | Real-driver polling and reconnect | pass, including 10 race-enabled repetitions | Poll cleanup, command wake, MGMT-owned reconnect, outage accounting, and no unrequested replay reach `mgmt`. |
 | Post-merge active MGMT branch | pass on `feat/esphome` at `c60c22eb` | Both original MCL examples and the unchanged conveyor MCL remain green after PR #1 merged and `feat/esphome2` was retired. |
 | Post-merge `.local` parity | pass with library `55602f04` | Real MGMT resolves blink and conveyor names from multicast answers; no `/etc/hosts` entry or new module is used. |
+| Final mDNS and diagnostics pin | MGMT `d6259199` pins library `73b5d58e` | All unchanged MCL demos pass from the committed module version; synchronous connection failures retain causes and attempted targets. |
 | Physical device flash and actuation | not performed | Hardware cells remain `no`. |
 
 ## Protocol and transport
