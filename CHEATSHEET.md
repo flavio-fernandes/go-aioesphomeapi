@@ -3,7 +3,7 @@
 Short, safe, copy/paste commands for cloning, checking, contributing to, and—once the first usable release exists—installing and using this library.
 
 > [!IMPORTANT]
-> **Current phase: compatibility architecture only.** There is no usable Go client to install or build yet. Commands under **Works today** are verified repository commands. Milestone 1 will make the pinned MGMT examples run through this module before broader features are claimed.
+> **Current phase: protocol generated; client implementation underway.** There is no usable Go client to install yet. Commands under **Works today** are verified repository commands. Milestone 1 will make the pinned MGMT examples run through this module before broader features are claimed.
 
 ## Works today
 
