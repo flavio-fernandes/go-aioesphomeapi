@@ -16,6 +16,7 @@ This remains an independent greenfield implementation. The reference client is a
 ## Start here
 
 - Copy/paste repository commands: [cheatsheet](CHEATSHEET.md)
+- Friendly no-hardware MGMT walkthrough: [MGMT simulator demo](docs/mgmt-simulator-demo.md)
 - Exact MGMT behavior we must preserve: [MGMT compatibility contract](docs/mgmt-integration.md)
 - What is implemented and evidenced: [support matrix](docs/support-matrix.md)
 - Why dependencies face a high bar: [dependency policy](docs/dependency-policy.md)
