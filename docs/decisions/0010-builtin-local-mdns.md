@@ -5,7 +5,7 @@
 
 ## Context
 
-MGMT's immutable `esphome-blink.mcl` and conveyor example use ESPHome's normal
+MGMT's reviewed `esphome-blink.mcl` and conveyor example use ESPHome's normal
 `.local` hostnames. The Richard87 client resolves those names with built-in
 multicast DNS (mDNS). Delegating only to the operating-system resolver is a
 regression on hosts where mDNS is not configured, and the first acceptance

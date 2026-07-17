@@ -97,7 +97,7 @@ sed -n '1,220p' docs/support-matrix.md
 This maintainer check runs the unchanged conveyor MCL against the encrypted
 simulator in an isolated Linux network namespace. It does not change
 `/etc/hosts`, open a host-network port, flash firmware, or control hardware.
-The unchanged `esphome-conveyer.local` name is resolved through the library's
+The reviewed `esphome-conveyor.local` name is resolved through the library's
 built-in multicast DNS (mDNS) path inside that namespace.
 You need Linux user namespaces, `ip`, `timeout`, a built MGMT candidate,
 and both repositories next to each other.
@@ -112,7 +112,7 @@ and troubleshooting, see [the MGMT simulator demo](docs/mgmt-simulator-demo.md).
 Expected output:
 
 ```text
-MGMT securely converged the unchanged conveyor MCL against the loopback simulator
+MGMT securely converged the reviewed conveyor MCL against the loopback simulator
 ```
 
 ### 8. Prove both original MGMT examples without hardware
@@ -134,7 +134,7 @@ Use the same prerequisites as the conveyor acceptance command:
 Expected output:
 
 ```text
-MGMT securely converged both unchanged baseline MCL examples against dedicated simulators
+MGMT securely converged both reviewed baseline MCL examples against dedicated simulators
 ```
 
 ### 8a. Run an explicitly authorized hardware blink demo

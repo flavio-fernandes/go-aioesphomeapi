@@ -41,7 +41,7 @@ The pinned protocol inventory contains 148 unique message IDs. Generated presenc
 | Library-owned reconnect | no | none | M2 | MGMT owns reconnect; client option stays disabled. |
 | MGMT persistent and polling modes | external contract | mgmt / mgmt | M1 | Persistent MCL and conveyor runs pass; real-driver polling disconnects between cycles and wakes once for a queued command. |
 | Unchanged `esphome0.mcl` | yes | mgmt | M1 | Hash verified, real MGMT converged, and switch/number corrections reached the encrypted peer. |
-| Unchanged `esphome-blink.mcl` | yes | hardware | M1 | Hash verified; real MGMT converged repeatedly against an encrypted ESPHome 2026.7.0 device. |
+| Reviewed `esphome-blink.mcl` | yes | hardware | M1 | A review-accepted comment-only correction changed its hash without changing behavior; real MGMT converged repeatedly against encrypted ESPHome 2026.7.0 hardware. |
 
 ## Current MGMT migration proof
 

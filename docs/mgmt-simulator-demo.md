@@ -2,7 +2,7 @@
 
 This guide runs MGMT against a simulated ESPHome conveyor device from this
 repository. It uses the real Native API wire path, Noise encryption, the real
-MGMT binary, and the `esphome-conveyer.mcl` example. It does not use hardware,
+MGMT binary, and the `esphome-conveyor.mcl` example. It does not use hardware,
 flash firmware, open a host-network service, or require a real ESPHome key.
 
 The result is a small end-to-end demo: MGMT discovers a conveyor simulator,
@@ -63,13 +63,13 @@ esphome2-sim-demo
 This is optional, but useful before the demo:
 
 ```bash
-sed -n '1,220p' ../mgmt-esphome2/examples/lang/esphome-conveyer.mcl
+sed -n '1,220p' ../mgmt-esphome2/examples/lang/esphome-conveyor.mcl
 ```
 
 The important thing to notice is that the demo runs MGMT's MCL file as-is. The
 test wrapper provides a private simulated network around it instead of asking
 you to edit `/etc/hosts` or change the example for your machine. A small mDNS
-responder inside that private network answers `esphome-conveyer.local`, so this
+responder inside that private network answers `esphome-conveyor.local`, so this
 walkthrough also tests the same name-resolution path used by an ESPHome device.
 
 ## 3. Run the conveyor demo
@@ -88,7 +88,7 @@ That one line means the wrapper verified all of these checks:
 
 - the conveyor MCL hash matches the reviewed compatibility contract;
 - the simulator listened only inside a private namespace on loopback;
-- MGMT resolved `esphome-conveyer.local` through multicast DNS, not `/etc/hosts`;
+- MGMT resolved `esphome-conveyor.local` through multicast DNS, not `/etc/hosts`;
 - MGMT connected over the encrypted Native API path;
 - MGMT observed conveyor telemetry and a simulator device log;
 - MGMT sent the expected Fan command for the motor;

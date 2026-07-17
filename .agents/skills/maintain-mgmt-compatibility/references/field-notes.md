@@ -61,3 +61,7 @@ or PR descriptions.
   never logs a key. Observe hardware output live, retain no raw transcript, and
   write only a sanitized profile plus exact software revisions, immutable MCL
   hash, bounded behaviors, and limitations into append-only evidence.
+- An immutable MCL fixture changes only after a specific reviewed defect is
+  accepted. Record the old and new paths/hashes in an ADR, update current
+  acceptance scripts atomically, leave historical compatibility manifests
+  untouched, and state any firmware rename or reflash consequence.
