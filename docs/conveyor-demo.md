@@ -21,7 +21,7 @@ The first firmware should advertise generic entities similar to:
 
 | Purpose | ESPHome-facing family | Direction |
 |---|---|---|
-| Motor direction and speed | fan with H-bridge behavior | command and state |
+| Motor direction and speed | fan with H-bridge behavior; temporary template number only if the MGMT adapter needs staging | command and state |
 | Entry presence | binary sensor | state |
 | Exit presence | binary sensor | state |
 | Optional optical telemetry | sensor | state |
@@ -29,6 +29,8 @@ The first firmware should advertise generic entities similar to:
 | Explicit reset, if safe | button | command |
 
 Names are illustrative. Acceptance binds by stable identifiers recorded in a synthetic demo manifest, not by hard-coded friendly names in the library.
+
+The two existing MGMT MCL examples remain unchanged compatibility fixtures. The conveyor is a new example and may add a generic fan resource; it does not redefine the older switch/number contract.
 
 ## Local firmware invariants
 

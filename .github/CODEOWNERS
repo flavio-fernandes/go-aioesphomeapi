@@ -2,5 +2,7 @@
 
 /SECURITY.md @flavio-fernandes
 /docs/security-threat-model.md @flavio-fernandes
+/docs/dependency-policy.md @flavio-fernandes
 /docs/provenance.md @flavio-fernandes
+/compatibility/ @flavio-fernandes
 /protocol/ @flavio-fernandes

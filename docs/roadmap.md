@@ -1,98 +1,99 @@
 # Controlled roadmap
 
-Milestones are gated. Starting a later milestone does not waive an incomplete earlier exit criterion. Dates are intentionally omitted until maintainers assign capacity and review owners.
+Milestones are gated. Dates are intentionally absent until maintainers assign capacity and review owners. The pinned MGMT MCL contract stays green at every milestone.
 
-## Gate 0 — public contract before implementation
+## Gate 0 — freeze compatibility and cost before code
 
-**Goal:** remove architectural and legal ambiguity.
+**Goal:** remove ambiguity about what replaces the current client and what MGMT must not lose.
 
-Tasks:
+- accept ADR 0006 and the immutable MGMT/reference baselines;
+- approve the root compatibility facade, generated `pb` exception, and typed API boundary;
+- turn the compatibility manifest into a clean cross-repository checkout/compile design;
+- classify every current MGMT MCL behavior as preserve, intentionally strengthen, or defect requiring MGMT review;
+- pin upstream `api.proto`, generation inputs, and protocol inventory schema;
+- accept simulator API, virtual time, fault vocabulary, and fidelity limits;
+- accept finite frame, queue, request, deadline, log, dial, and reconnect budgets;
+- approve the protobuf runtime and one Noise implementation under the dependency gate;
+- prove the proposed module graph and Go directive against MGMT;
+- keep newcomer, privacy, provenance, and GitHub governance controls current.
 
-- approve scope, layer boundaries, naming disclaimer, and MGMT licensing boundary;
-- choose protobuf generation toolchain and pin every version;
-- design `protocol/upstream.lock.json` and first clean protocol sync;
-- inventory all current upstream messages and entity families;
-- accept stable public API conventions for contexts, errors, subscriptions, and capabilities;
-- accept simulator API, deterministic clock/randomness, and fault vocabulary;
-- accept the copy/paste install, build, simulator-first use, and troubleshooting command contract;
-- establish privacy, security, dependency, release, and branch-protection policy;
-- create a minimal MGMT adapter design in the MGMT repository, not here.
+Exit: accepted contracts and ADRs, machine-readable baseline, zero unresolved license or dependency questions, and no undocumented MCL behavior change.
 
-Exit criteria: accepted ADRs, reviewed threat model, reproducible protocol sync design, approved approachable-documentation contract, zero unresolved license questions, and GitHub controls active.
+## Milestone 1 — replace the client without breaking MGMT
 
-## Milestone 1 — secure vertical slice and conveyor acceptance demo
+**Goal:** MGMT's existing branch runs both MCL examples through this module, then the conveyor adds the first new showcase behavior.
 
-**Goal:** a fun end-to-end demonstration built on production-shaped foundations.
+Library slice:
 
-Library tasks:
+- bounded plaintext framing and Noise transport; secure configuration is the normal path;
+- hello, API version, device info, ping, disconnect, and context-bound connection lifetime;
+- entity discovery for binary sensor, sensor, text sensor, switch, number, button, and fan;
+- state subscription for binary sensor, sensor, text sensor, switch, number, and fan;
+- switch, number, button, and fan commands;
+- bounded redacted log subscription;
+- the exact MGMT-required root and `pb` compatibility symbols;
+- deterministic simulated device covering valid, malformed, delayed, dropped, and disconnect paths;
+- race, fuzz-smoke, goroutine, allocation, and dependency-delta checks.
 
-- secure transport, framing, handshake, device info, keepalive, and controlled disconnect;
-- one concurrency-safe device session with bounded subscriptions;
-- discovery/state/command support for binary sensor, sensor, switch, and fan;
-- deterministic simulator with scenario timeline, assertions, and network faults;
-- typed errors, redacted logs, metrics hooks, race tests, fuzz smoke tests, and reconnect tests;
-- Go example that works unchanged against simulator or explicitly selected hardware.
+Cross-repository acceptance:
 
-MGMT/demo tasks:
+- check out MGMT at the pinned baseline and replace only module/import references;
+- compile its driver and run its existing session tests;
+- run `esphome0.mcl` and `esphome-blink.mcl` unchanged against simulator scenarios;
+- prove shared one-connection behavior, persistent and polling modes, name/object-ID lookup, logs, reconnect/outage behavior, command completion, and cleanup;
+- run a new conveyor MCL example using the same public contract;
+- optionally run explicitly authorized hardware only after simulator acceptance.
 
-- MGMT resource/provider maps generic ESPHome entities into desired state;
-- ESPHome firmware locally owns safe boot, communications timeout, maximum run time, invalid sensor-state stop, and motor output;
-- conveyor profile uses an H-bridge fan entity for DRV8833 direction/speed and two binary-sensor paths for position sensing;
-- interactive demo shows normal routing, sensor-driven transitions, disconnect recovery, and a safe-stop fault;
-- a human-readable dashboard explains which behavior is MGMT, library, ESPHome, and physical hardware.
+Exit: zero MCL source diff, mechanically bounded Go adapter diff, clean MGMT tests, secure simulator demo from a clean clone, no race findings, approved dependency report, and evidence-linked support matrix.
 
-Exit criteria: simulator demo and cheatsheet first-use commands work from a clean clone in CI; hardware demo passes a signed checklist without repository secrets; no race findings; secure-by-default connection verified; support matrix has evidence links.
+Implementation follows the ordered [M1 implementation sequence](m1-implementation-plan.md). It is a dependency graph and stop-condition guide, not permission to bypass Gate 0.
 
-## Milestone 2 — reusable entity foundation
+## Milestone 2 — typed API and useful parity beyond MGMT
 
-**Goal:** prove the design generalizes beyond the conveyor.
+**Goal:** be attractive as a standalone Go library without destabilizing MGMT.
 
-- add number, button, light, select, and text-sensor families;
-- capability-aware command validation and immutable state cache;
-- simulator scenario library for generic devices, not demo-specific fixtures;
-- reconnect and subscription semantics documented as public contract;
-- compatibility CI for supported Go and ESPHome versions;
-- MGMT integration examples for read-only telemetry and generic desired state.
+- complete the preferred immutable typed state/command API;
+- add light and select plus other low-risk reference-client core features selected by demand;
+- publish explicit reference-client API parity and migration tables;
+- add generic non-conveyor simulator examples;
+- automate oldest/current/development ESPHome compatibility reports;
+- decide whether optional discovery or CLI modules justify their own dependency budgets.
 
-Exit criteria: a non-conveyor example uses every M2 entity family; simulator load tests meet accepted budgets.
+Exit: a non-MGMT program uses only the typed API; MGMT compatibility remains unchanged; optional packages do not alter the core module graph.
 
 ## Milestone 3 — complex entities and services
 
-**Goal:** expand without destabilizing the session core.
+**Goal:** expand one reviewed surface at a time.
 
-- add text, climate, cover, lock, and selected service/action support;
-- implement device-log streaming with redaction and backpressure;
-- create conformance suites for optional fields, unknown enums, and version gates;
-- document application authorization responsibilities for sensitive commands.
+- text, climate, cover, lock, services/actions, and other selected entities;
+- version/capability gates and unknown-value conformance;
+- authorization guidance for security-sensitive commands;
+- bounded streaming surfaces with explicit backpressure.
 
-Exit criteria: compatibility report covers current stable ESPHome and the oldest supported line; sensitive entities have negative authorization examples.
+Exit: current and oldest-supported ESPHome evidence, simulator negative paths, and no unreviewed dependency growth.
 
 ## Milestone 4 — factory-scale operations
 
-**Goal:** validate many-device behavior for MGMT deployments.
+**Goal:** prove bounded behavior for MGMT-shaped fleets.
 
-- fleet connection scheduler with jitter and concurrency caps outside single-device sessions;
-- load and soak harness for hundreds, then thousands, of simulated devices;
-- OpenTelemetry-compatible hooks without a mandatory telemetry dependency;
-- CPU, memory, goroutine, reconnect, and event-latency budgets;
-- network partition, rolling firmware update, key rotation, and thundering-herd scenarios.
+- fleet dial scheduling outside individual sessions;
+- hundreds, then thousands, of deterministic simulated devices;
+- dependency-free observability hooks;
+- CPU, memory, goroutine, reconnect, event-latency, and recovery budgets;
+- partition, rolling firmware update, key rotation, and thundering-herd scenarios.
 
-Exit criteria: published reproducible benchmark report and no unbounded resource path.
+Exit: reproducible benchmark report and no unbounded resource path.
 
-## Milestone 5 — ecosystem breadth
+## Milestone 5 — evidence-driven ecosystem breadth
 
-**Goal:** prioritize additional upstream surfaces from real demand.
+Candidate epics include Bluetooth proxy, camera, media, voice assistant, serial proxy, Z-Wave proxy, update, discovery, and CLI tooling. Each needs a consumer, threat-model amendment, resource and dependency budget, simulator plan, and support-matrix evidence. Reference-client or protocol presence alone does not schedule implementation.
 
-Candidate epics include Bluetooth proxy, camera, media, voice assistant, serial proxy, Z-Wave proxy, and update entities. Each requires a threat-model amendment, resource budget, simulator design, and support-matrix evidence. Protocol presence alone does not schedule implementation.
+## Milestone 6 — first evidence-backed release
 
-## Milestone 6 — public release
+- audit all public history for secrets, privacy, license, and provenance;
+- enforce default-branch protections and supported security features;
+- publish a semantic release with immutable workflow inputs and provenance;
+- publish MGMT and reference-client migration notes, compatibility, and limitations;
+- document upstream sync, deprecation, and security-response cadence.
 
-**Goal:** publish an honest, maintainable GPL-3.0-only project.
-
-- run the public-release skill and close every finding;
-- enable private vulnerability reporting, rulesets, secret scanning where available, dependency review, and signed release provenance;
-- publish compatibility and limitations with the first semantic version;
-- document deprecation and upstream-sync cadence;
-- change visibility only after a maintainer reviews the complete repository history.
-
-Exit criteria: reproducible release, clean history/privacy audit, SPDX/license audit, security response path tested, and no support claim beyond the evidence matrix.
+Exit: reproducible GPL-3.0-only release, tested reporting path, clean audit, and no claim beyond recorded evidence.

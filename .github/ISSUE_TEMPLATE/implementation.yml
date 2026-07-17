@@ -41,6 +41,20 @@ body:
       description: Include malformed-peer, cancellation, reconnect, privacy, and physical safety considerations where applicable.
     validations:
       required: true
+  - type: textarea
+    id: mgmt
+    attributes:
+      label: MGMT compatibility impact
+      description: State the pinned adapter diff, MCL diff, and cross-repository evidence. Write "none" when the surface is unrelated.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependency and Go-version impact
+      description: State direct, transitive, tool-only, MGMT module, and Go directive deltas. Write "none" when unchanged.
+    validations:
+      required: true
   - type: checkboxes
     id: boundaries
     attributes:
@@ -53,4 +67,6 @@ body:
         - label: Third-party and generated material will follow the provenance policy.
           required: true
         - label: User-facing behavior will include friendly, tested, simulator-first commands in the cheatsheet.
+          required: true
+        - label: Existing pinned MCL behavior remains unchanged unless MGMT accepted a tested defect fix.
           required: true

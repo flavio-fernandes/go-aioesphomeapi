@@ -11,6 +11,8 @@ Closes #
 - [ ] Support matrix updated, or this change makes no compatibility claim
 - [ ] `CHEATSHEET.md` updated, or no user-facing command/prerequisite changed
 - [ ] Runnable documentation commands were tested from their stated starting point
+- [ ] Pinned MGMT MCL files remain unchanged, or a linked MGMT defect decision explains the change
+- [ ] `go.mod` is unchanged, or the dependency-policy delta is included below
 
 ## Required review
 
@@ -18,6 +20,9 @@ Closes #
 - Protocol/provenance impact:
 - Public API compatibility impact:
 - MGMT integration impact:
+- MGMT adapter diff / MCL diff:
+- Runtime and transitive dependency delta:
+- Go directive impact:
 - Simulator and hardware evidence:
 
 ## Safety and privacy

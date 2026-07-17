@@ -3,13 +3,13 @@
 Short, safe, copy/paste commands for cloning, checking, contributing to, and—once the first usable release exists—installing and using this library.
 
 > [!IMPORTANT]
-> **Current phase: architecture only.** There is no usable Go client to install or build yet. Commands under **Works today** are verified repository commands. The install/build/use command contract is listed separately and will become runnable with Milestone 1.
+> **Current phase: compatibility architecture only.** There is no usable Go client to install or build yet. Commands under **Works today** are verified repository commands. Milestone 1 will make the pinned MGMT examples run through this module before broader features are claimed.
 
 ## Works today
 
 ### 1. Clone with GitHub CLI
 
-Use this while the repository is private. You need Git, [GitHub CLI](https://cli.github.com/), and repository access.
+You need Git and [GitHub CLI](https://cli.github.com/). The repository is public, so authentication is optional for cloning but required to open pull requests.
 
 ```bash
 gh auth status
@@ -108,7 +108,7 @@ Each command must be exercised in CI or a documented clean environment before it
 
 ## Quick troubleshooting
 
-**GitHub says the repository was not found:** confirm that the collaborator invitation was accepted and `gh auth status` shows the intended account.
+**GitHub CLI authentication fails:** cloning still works with the plain `git clone` command above. Run `gh auth login` only when you need authenticated contribution commands.
 
 **The validator is not executable:** run it explicitly with Bash:
 
