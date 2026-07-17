@@ -96,6 +96,9 @@ simulator in an isolated Linux network namespace. It does not change
 You need Linux user namespaces, `ip`, `mount`, `timeout`, a built MGMT candidate,
 and both repositories next to each other.
 
+For a friendlier walkthrough with the MGMT build command, expected behavior,
+and troubleshooting, see [the MGMT simulator demo](docs/mgmt-simulator-demo.md).
+
 ```bash
 ./tools/test-mgmt-conveyor.sh ../mgmt /tmp/mgmt
 ```
