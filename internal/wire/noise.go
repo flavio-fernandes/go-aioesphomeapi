@@ -33,7 +33,7 @@ func handshakeState(initiator bool, psk []byte) (*noise.HandshakeState, error) {
 		PresharedKeyPlacement: 0,
 	})
 	if err != nil {
-		return nil, ErrNoiseHandshake
+		return nil, fmt.Errorf("%w: initialize state: %w", ErrNoiseHandshake, err)
 	}
 	return state, nil
 }
@@ -48,7 +48,7 @@ func NewNoiseClientFramer(conn net.Conn, psk []byte, expectedName string, timeou
 	}
 	if timeout > 0 {
 		if err := conn.SetDeadline(time.Now().Add(timeout)); err != nil {
-			return nil, ErrNoiseHandshake
+			return nil, fmt.Errorf("%w: set client deadline: %w", ErrNoiseHandshake, err)
 		}
 		defer conn.SetDeadline(time.Time{})
 	}
@@ -57,34 +57,43 @@ func NewNoiseClientFramer(conn net.Conn, psk []byte, expectedName string, timeou
 		return nil, err
 	}
 	if err := writeFull(conn, []byte{1, 0, 0}); err != nil {
-		return nil, ErrNoiseHandshake
+		return nil, fmt.Errorf("%w: write client preamble: %w", ErrNoiseHandshake, err)
 	}
 	first, _, _, err := state.WriteMessage(nil, nil)
 	if err != nil {
-		return nil, ErrNoiseHandshake
+		return nil, fmt.Errorf("%w: create client handshake message: %w", ErrNoiseHandshake, err)
 	}
 	if err := writeNoisePacket(conn, append([]byte{0}, first...)); err != nil {
-		return nil, ErrNoiseHandshake
+		return nil, fmt.Errorf("%w: write client handshake message: %w", ErrNoiseHandshake, err)
 	}
 	serverHello, err := readNoisePacket(conn)
-	if err != nil || len(serverHello) < 2 || serverHello[0] != 1 {
-		return nil, ErrNoiseHandshake
+	if err != nil {
+		return nil, fmt.Errorf("%w: read server name: %w", ErrNoiseHandshake, err)
+	}
+	if len(serverHello) < 2 || serverHello[0] != 1 {
+		return nil, fmt.Errorf("%w: invalid server-name packet", ErrNoiseHandshake)
 	}
 	nameEnd := bytes.IndexByte(serverHello[1:], 0)
 	if nameEnd < 0 {
-		return nil, ErrNoiseHandshake
+		return nil, fmt.Errorf("%w: unterminated server name", ErrNoiseHandshake)
 	}
 	serverName := string(serverHello[1 : nameEnd+1])
 	if expectedName != "" && serverName != expectedName {
 		return nil, ErrNoiseName
 	}
 	response, err := readNoisePacket(conn)
-	if err != nil || len(response) < 2 || response[0] != 0 {
-		return nil, ErrNoiseHandshake
+	if err != nil {
+		return nil, fmt.Errorf("%w: read server handshake message: %w", ErrNoiseHandshake, err)
+	}
+	if len(response) < 2 || response[0] != 0 {
+		return nil, fmt.Errorf("%w: invalid server handshake packet", ErrNoiseHandshake)
 	}
 	_, encrypt, decrypt, err := state.ReadMessage(nil, response[1:])
-	if err != nil || encrypt == nil || decrypt == nil {
-		return nil, ErrNoiseHandshake
+	if err != nil {
+		return nil, fmt.Errorf("%w: authenticate server handshake: %w", ErrNoiseHandshake, err)
+	}
+	if encrypt == nil || decrypt == nil {
+		return nil, fmt.Errorf("%w: incomplete client cipher state", ErrNoiseHandshake)
 	}
 	return &noiseFramer{conn: conn, encrypt: encrypt, decrypt: decrypt, maxFrame: maxFrame}, nil
 }
@@ -100,38 +109,47 @@ func NewNoiseServerFramer(conn net.Conn, psk []byte, serverName string, timeout 
 	}
 	if timeout > 0 {
 		if err := conn.SetDeadline(time.Now().Add(timeout)); err != nil {
-			return nil, ErrNoiseHandshake
+			return nil, fmt.Errorf("%w: set server deadline: %w", ErrNoiseHandshake, err)
 		}
 		defer conn.SetDeadline(time.Time{})
 	}
 	var prefix [3]byte
-	if _, err := io.ReadFull(conn, prefix[:]); err != nil || prefix != [3]byte{1, 0, 0} {
-		return nil, ErrNoiseHandshake
+	if _, err := io.ReadFull(conn, prefix[:]); err != nil {
+		return nil, fmt.Errorf("%w: read client preamble: %w", ErrNoiseHandshake, err)
+	}
+	if prefix != [3]byte{1, 0, 0} {
+		return nil, fmt.Errorf("%w: invalid client preamble", ErrNoiseHandshake)
 	}
 	state, err := handshakeState(false, psk)
 	if err != nil {
 		return nil, err
 	}
 	request, err := readNoisePacket(conn)
-	if err != nil || len(request) < 2 || request[0] != 0 {
-		return nil, ErrNoiseHandshake
+	if err != nil {
+		return nil, fmt.Errorf("%w: read client handshake message: %w", ErrNoiseHandshake, err)
+	}
+	if len(request) < 2 || request[0] != 0 {
+		return nil, fmt.Errorf("%w: invalid client handshake packet", ErrNoiseHandshake)
 	}
 	if _, _, _, err := state.ReadMessage(nil, request[1:]); err != nil {
-		return nil, ErrNoiseHandshake
+		return nil, fmt.Errorf("%w: authenticate client handshake: %w", ErrNoiseHandshake, err)
 	}
 	hello := make([]byte, 0, len(serverName)+3)
 	hello = append(hello, 1)
 	hello = append(hello, serverName...)
 	hello = append(hello, 0, 0)
 	if err := writeNoisePacket(conn, hello); err != nil {
-		return nil, ErrNoiseHandshake
+		return nil, fmt.Errorf("%w: write server name: %w", ErrNoiseHandshake, err)
 	}
 	response, decrypt, encrypt, err := state.WriteMessage(nil, nil)
-	if err != nil || encrypt == nil || decrypt == nil {
-		return nil, ErrNoiseHandshake
+	if err != nil {
+		return nil, fmt.Errorf("%w: create server handshake message: %w", ErrNoiseHandshake, err)
+	}
+	if encrypt == nil || decrypt == nil {
+		return nil, fmt.Errorf("%w: incomplete server cipher state", ErrNoiseHandshake)
 	}
 	if err := writeNoisePacket(conn, append([]byte{0}, response...)); err != nil {
-		return nil, ErrNoiseHandshake
+		return nil, fmt.Errorf("%w: write server handshake message: %w", ErrNoiseHandshake, err)
 	}
 	return &noiseFramer{conn: conn, encrypt: encrypt, decrypt: decrypt, maxFrame: maxFrame}, nil
 }
@@ -149,7 +167,7 @@ func (f *noiseFramer) WriteFrame(messageType uint32, payload []byte) error {
 	defer f.writeMu.Unlock()
 	ciphertext, err := f.encrypt.Encrypt(nil, nil, plain)
 	if err != nil {
-		return ErrClosed
+		return fmt.Errorf("%w: encrypt frame: %w", ErrClosed, err)
 	}
 	if len(ciphertext) > maxNoisePacketSize {
 		return ErrFrameTooLarge
@@ -207,7 +225,7 @@ func readNoisePacket(reader io.Reader) ([]byte, error) {
 	}
 	payload := make([]byte, length)
 	if _, err := io.ReadFull(reader, payload); err != nil {
-		return nil, ErrMalformedFrame
+		return nil, fmt.Errorf("%w: Noise payload: %w", ErrMalformedFrame, err)
 	}
 	return payload, nil
 }

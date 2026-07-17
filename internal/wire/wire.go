@@ -97,7 +97,7 @@ func Decode(id uint32, payload []byte) (proto.Message, error) {
 		return nil, err
 	}
 	if err := proto.Unmarshal(payload, message); err != nil {
-		return nil, fmt.Errorf("%w: protobuf payload", ErrMalformedFrame)
+		return nil, fmt.Errorf("%w: protobuf payload: %w", ErrMalformedFrame, err)
 	}
 	return message, nil
 }

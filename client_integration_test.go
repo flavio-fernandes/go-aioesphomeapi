@@ -114,7 +114,17 @@ func TestPlaintextRequiresExplicitOptIn(t *testing.T) {
 	_ = client.Close()
 }
 
-func TestWrongNoiseKeyIsRedacted(t *testing.T) {
+func TestInjectedDialerBypassesMDNS(t *testing.T) {
+	device := simulator.New(simulator.BasicIOScenario())
+	t.Cleanup(func() { _ = device.Close() })
+	client, err := api.DialWithContext(context.Background(), "not-in-dns.local:6053", time.Second, device.ClientOptions()...)
+	if err != nil {
+		t.Fatalf("injected dialer was not used directly: %v", err)
+	}
+	_ = client.Close()
+}
+
+func TestWrongNoiseKeyNamesTargetWithoutLeakingKey(t *testing.T) {
 	device := simulator.New(simulator.ConveyorScenario())
 	t.Cleanup(func() { _ = device.Close() })
 	options := []api.Option{api.WithDialContext(device.DialContext), api.WithEncryptionKey("d3Jvbmctc2ltdWxhdG9yLXRlc3Qta2V5LTAwMDAwMDE=")}
@@ -122,8 +132,8 @@ func TestWrongNoiseKeyIsRedacted(t *testing.T) {
 	if err == nil {
 		t.Fatal("wrong key unexpectedly succeeded")
 	}
-	if got := err.Error(); got == "" || contains(got, "private-device-name") || contains(got, "d3Jvbm") {
-		t.Fatalf("error leaks connection material: %q", got)
+	if got := err.Error(); got == "" || !contains(got, "private-device-name.local:6053") || contains(got, "d3Jvbm") {
+		t.Fatalf("error omits target or leaks key material: %q", got)
 	}
 }
 

@@ -2,6 +2,7 @@ package aioesphomeapi
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"strings"
 	"time"
@@ -66,16 +67,22 @@ func WithCallbackQueueSize(size int) Option {
 
 func defaultDialer(timeout time.Duration) DialContextFunc {
 	dialer := &net.Dialer{Timeout: timeout}
+	return defaultDialerWith(timeout, mdns.Lookup, dialer.DialContext)
+}
+
+type mdnsLookupFunc func(context.Context, string, time.Duration) (net.IP, error)
+
+func defaultDialerWith(timeout time.Duration, lookup mdnsLookupFunc, dial DialContextFunc) DialContextFunc {
 	return func(ctx context.Context, network, address string) (net.Conn, error) {
 		host, port, err := net.SplitHostPort(address)
 		if err == nil && isMDNSHost(host) {
-			ip, lookupErr := mdns.Lookup(ctx, host, timeout)
+			ip, lookupErr := lookup(ctx, host, timeout)
 			if lookupErr != nil {
-				return nil, lookupErr
+				return nil, fmt.Errorf("%w for %q: %w", ErrNameResolution, host, lookupErr)
 			}
 			address = net.JoinHostPort(ip.String(), port)
 		}
-		return dialer.DialContext(ctx, network, address)
+		return dial(ctx, network, address)
 	}
 }
 

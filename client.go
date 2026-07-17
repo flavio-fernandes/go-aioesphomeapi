@@ -19,7 +19,14 @@ var (
 	ErrEntityNotFound     = errors.New("entity not found")
 	ErrEntityTypeMismatch = errors.New("entity type mismatch")
 	ErrClientClosed       = errors.New("ESPHome client closed")
+	ErrNameResolution     = errors.New("ESPHome name resolution failed")
+	ErrHello              = errors.New("ESPHome hello failed")
+	ErrPeerDisconnected   = errors.New("ESPHome peer requested disconnect")
+	ErrEventQueueFull     = errors.New("ESPHome callback queue is full")
 	ErrTransportPolicy    = wire.ErrTransportPolicy
+	ErrNoiseHandshake     = wire.ErrNoiseHandshake
+	ErrNoiseName          = wire.ErrNoiseName
+	ErrNoiseKey           = wire.ErrNoiseKey
 )
 
 type callback func(proto.Message)
@@ -38,6 +45,8 @@ type Client struct {
 	connected          atomic.Bool
 	name, serverInfo   string
 	apiMajor, apiMinor uint32
+	closeReasonMu      sync.RWMutex
+	closeReason        error
 
 	handlerMu   sync.RWMutex
 	nextHandler uint64
@@ -76,14 +85,24 @@ func DialWithContext(ctx context.Context, address string, timeout time.Duration,
 
 	conn, err := cfg.dialContext(ctx, "tcp", address)
 	if err != nil {
-		return nil, errors.New("ESPHome connection failed")
+		return nil, fmt.Errorf("dial ESPHome target %q: %w", address, err)
 	}
 	var framer wire.Framer
 	if cfg.encryptionKey != "" {
 		key, decodeErr := base64.StdEncoding.DecodeString(cfg.encryptionKey)
-		if decodeErr != nil || len(key) != 32 {
+		if decodeErr != nil {
+			for i := range key {
+				key[i] = 0
+			}
 			conn.Close()
-			return nil, wire.ErrNoiseKey
+			return nil, fmt.Errorf("configure Noise for ESPHome target %q: %w: %w", address, ErrNoiseKey, decodeErr)
+		}
+		if len(key) != 32 {
+			for i := range key {
+				key[i] = 0
+			}
+			conn.Close()
+			return nil, fmt.Errorf("configure Noise for ESPHome target %q: %w", address, ErrNoiseKey)
 		}
 		framer, err = wire.NewNoiseClientFramer(conn, key, cfg.expectedName, timeout, cfg.maxFrameSize)
 		for i := range key {
@@ -94,12 +113,12 @@ func DialWithContext(ctx context.Context, address string, timeout time.Duration,
 	}
 	if err != nil {
 		conn.Close()
-		return nil, err
+		return nil, fmt.Errorf("establish Noise session with ESPHome target %q: %w", address, err)
 	}
 	c := &Client{framer: framer, entities: newEntityRegistry(), done: make(chan struct{}), handlers: make(map[uint32]map[uint64]callback), events: make(chan proto.Message, cfg.callbackQueueSize)}
 	if err := c.hello(cfg.clientInfo); err != nil {
 		c.Close()
-		return nil, err
+		return nil, fmt.Errorf("complete hello with ESPHome target %q: %w", address, err)
 	}
 	c.connected.Store(true)
 	go c.dispatchLoop()
@@ -109,55 +128,70 @@ func DialWithContext(ctx context.Context, address string, timeout time.Duration,
 
 func (c *Client) hello(clientInfo string) error {
 	if err := c.send(&pb.HelloRequest{ClientInfo: clientInfo, ApiVersionMajor: 1, ApiVersionMinor: 10}); err != nil {
-		return errors.New("ESPHome hello failed")
+		return fmt.Errorf("%w: send request: %w", ErrHello, err)
 	}
 	id, payload, err := c.framer.ReadFrame()
-	if err != nil || id != 2 {
-		return errors.New("ESPHome hello failed")
+	if err != nil {
+		return fmt.Errorf("%w: read response: %w", ErrHello, err)
+	}
+	if id != 2 {
+		return fmt.Errorf("%w: unexpected response message ID %d", ErrHello, id)
 	}
 	message, err := wire.Decode(id, payload)
 	if err != nil {
-		return errors.New("ESPHome hello failed")
+		return fmt.Errorf("%w: decode response: %w", ErrHello, err)
 	}
 	response, ok := message.(*pb.HelloResponse)
-	if !ok || response.ApiVersionMajor != 1 {
-		return fmt.Errorf("unsupported ESPHome API major version")
+	if !ok {
+		return fmt.Errorf("%w: unexpected response type %T", ErrHello, message)
+	}
+	if response.ApiVersionMajor != 1 {
+		return fmt.Errorf("%w: unsupported API major version %d", ErrHello, response.ApiVersionMajor)
 	}
 	c.apiMajor, c.apiMinor, c.serverInfo, c.name = response.ApiVersionMajor, response.ApiVersionMinor, response.ServerInfo, response.Name
 	return nil
 }
 
 func (c *Client) readLoop(ctx context.Context) {
-	defer c.shutdown()
 	go func() {
 		select {
 		case <-ctx.Done():
-			c.framer.Close()
+			c.shutdown(fmt.Errorf("ESPHome connection context ended: %w", context.Cause(ctx)))
 		case <-c.done:
 		}
 	}()
 	for {
 		id, payload, err := c.framer.ReadFrame()
 		if err != nil {
+			c.shutdown(fmt.Errorf("read ESPHome frame: %w", err))
 			return
 		}
 		message, err := wire.Decode(id, payload)
 		if err != nil {
+			c.shutdown(fmt.Errorf("decode ESPHome message ID %d: %w", id, err))
 			return
 		}
 		if _, ok := message.(*pb.PingRequest); ok {
-			if c.send(&pb.PingResponse{}) != nil {
+			if err := c.send(&pb.PingResponse{}); err != nil {
+				c.shutdown(fmt.Errorf("answer ESPHome ping: %w", err))
 				return
 			}
 			continue
 		}
 		if _, ok := message.(*pb.DisconnectRequest); ok {
-			_ = c.send(&pb.DisconnectResponse{})
+			if err := c.send(&pb.DisconnectResponse{}); err != nil {
+				c.shutdown(fmt.Errorf("answer ESPHome disconnect: %w", err))
+				return
+			}
+			c.shutdown(ErrPeerDisconnected)
 			return
 		}
 		select {
 		case c.events <- message:
+		case <-c.done:
+			return
 		default:
+			c.shutdown(ErrEventQueueFull)
 			return
 		}
 	}
@@ -212,16 +246,21 @@ func (c *Client) send(message proto.Message) error {
 	if c.framer == nil {
 		return ErrClientClosed
 	}
+	select {
+	case <-c.done:
+		return ErrClientClosed
+	default:
+	}
 	id, err := wire.MessageID(message)
 	if err != nil {
-		return err
+		return fmt.Errorf("identify ESPHome message: %w", err)
 	}
 	payload, err := proto.Marshal(message)
 	if err != nil {
-		return err
+		return fmt.Errorf("encode ESPHome message %T: %w", message, err)
 	}
 	if err := c.framer.WriteFrame(id, payload); err != nil {
-		return ErrClientClosed
+		return fmt.Errorf("write ESPHome message %T: %w", message, err)
 	}
 	return nil
 }
@@ -238,16 +277,31 @@ func (c *Client) on(id uint32, fn callback) func() {
 	return func() { c.handlerMu.Lock(); delete(c.handlers[id], token); c.handlerMu.Unlock() }
 }
 
-func (c *Client) shutdown() {
-	c.closeOnce.Do(func() { c.connected.Store(false); _ = c.framer.Close(); close(c.done) })
+func (c *Client) shutdown(reason error) {
+	c.closeOnce.Do(func() {
+		c.closeReasonMu.Lock()
+		c.closeReason = reason
+		c.closeReasonMu.Unlock()
+		c.connected.Store(false)
+		_ = c.framer.Close()
+		close(c.done)
+	})
 }
-func (c *Client) Close() error                 { c.shutdown(); return nil }
+func (c *Client) Close() error                 { c.shutdown(nil); return nil }
 func (c *Client) Done() <-chan struct{}        { return c.done }
 func (c *Client) Connected() bool              { return c.connected.Load() }
 func (c *Client) Name() string                 { return c.name }
 func (c *Client) ServerInfo() string           { return c.serverInfo }
 func (c *Client) APIVersion() (uint32, uint32) { return c.apiMajor, c.apiMinor }
 func (c *Client) Entities() *EntityRegistry    { return c.entities }
+
+// CloseReason reports why an established connection ended. It returns nil
+// while the client is open and after an intentional Close call.
+func (c *Client) CloseReason() error {
+	c.closeReasonMu.RLock()
+	defer c.closeReasonMu.RUnlock()
+	return c.closeReason
+}
 
 // ListEntities refreshes the entity registry and returns the raw descriptors.
 func (c *Client) ListEntities() ([]proto.Message, error) {

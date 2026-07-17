@@ -38,18 +38,21 @@ func (f *plainFramer) ReadFrame() (uint32, []byte, error) {
 	}
 	size, err := binary.ReadUvarint(f.reader)
 	if err != nil {
-		return 0, nil, fmt.Errorf("%w: payload length", ErrMalformedFrame)
+		return 0, nil, fmt.Errorf("%w: payload length: %w", ErrMalformedFrame, err)
 	}
 	if size > f.maxFrame {
 		return 0, nil, ErrFrameTooLarge
 	}
 	messageType, err := binary.ReadUvarint(f.reader)
-	if err != nil || messageType > uint64(^uint32(0)) {
+	if err != nil {
+		return 0, nil, fmt.Errorf("%w: message type: %w", ErrMalformedFrame, err)
+	}
+	if messageType > uint64(^uint32(0)) {
 		return 0, nil, fmt.Errorf("%w: message type", ErrMalformedFrame)
 	}
 	payload := make([]byte, int(size))
 	if _, err := io.ReadFull(f.reader, payload); err != nil {
-		return 0, nil, fmt.Errorf("%w: truncated payload", ErrMalformedFrame)
+		return 0, nil, fmt.Errorf("%w: truncated payload: %w", ErrMalformedFrame, err)
 	}
 	return uint32(messageType), payload, nil
 }
