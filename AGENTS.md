@@ -25,5 +25,6 @@ Run `./tools/validate-repo.sh`. Once Go packages exist, also run the repository'
 
 - `$sync-esphome-protocol` for upstream protocol changes.
 - `$run-device-simulator` for simulator scenarios and faults.
+- `$maintain-mgmt-compatibility` for MGMT branch, PR, module-pin, MCL, and cross-repository evidence work.
 - `$operate-esp-workbench` for firmware, flash, serial, and camera work.
 - `$prepare-public-release` before changing repository visibility or publishing a release.
