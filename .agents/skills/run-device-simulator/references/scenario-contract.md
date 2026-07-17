@@ -13,3 +13,7 @@ Every future scenario declares:
 - support-matrix row and evidence level it exercises.
 
 Scenarios must be runnable in-process and parallel without fixed external ports. Real time is allowed only at the outer test deadline. Assertions must fail with sanitized protocol context and must not print keys or network identities.
+
+The implemented M1 fault vocabulary is recorded in
+`docs/decisions/0008-named-simulator-faults.md`. Use the smallest existing
+trigger/action pair before proposing a new simulator fidelity seam.

@@ -34,6 +34,7 @@ type Scenario struct {
 	Entities []proto.Message
 	States   []proto.Message
 	Logs     []*pb.SubscribeLogsResponse
+	Faults   []Fault
 }
 
 type config struct {
@@ -223,6 +224,9 @@ func (d *Device) serve(connection net.Conn) {
 	if send(framer, &pb.HelloResponse{ApiVersionMajor: 1, ApiVersionMinor: 10, ServerInfo: "go-aioesphomeapi simulator", Name: d.scenario.Name}) != nil {
 		return
 	}
+	if d.triggerFault(framer, FaultAfterHello) {
+		return
+	}
 
 	states := make(map[uint32]proto.Message)
 	for _, state := range d.scenario.States {
@@ -246,6 +250,9 @@ func (d *Device) serve(connection net.Conn) {
 					return
 				}
 			}
+			if d.triggerFault(framer, FaultBeforeEntitiesDone) {
+				return
+			}
 			if send(framer, &pb.ListEntitiesDoneResponse{}) != nil {
 				return
 			}
@@ -254,6 +261,9 @@ func (d *Device) serve(connection net.Conn) {
 				if send(framer, proto.Clone(state)) != nil {
 					return
 				}
+			}
+			if d.triggerFault(framer, FaultAfterInitialStates) {
+				return
 			}
 		case *pb.SubscribeLogsRequest:
 			for _, entry := range d.scenario.Logs {
