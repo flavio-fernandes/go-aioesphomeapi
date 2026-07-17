@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "upstream": {
+    "repository": "https://github.com/esphome/esphome",
+    "release": "2026.7.0",
+    "commit": "920a8b761b680d9864da2ef4b44b4af95c99dba8",
+    "files": [
+      {
+        "path": "esphome/components/api/api.proto",
+        "destination": "protocol/upstream/api.proto",
+        "sha256": "9ddd6b66a016cd5ccb216052668d680cb83413e2d4eb3b1cff84a50b30492828"
+      },
+      {
+        "path": "esphome/components/api/api_options.proto",
+        "destination": "protocol/upstream/api_options.proto",
+        "sha256": "c4ba32a9d34e8785442112aed5b202a1614a9d74d59a90c992cdb13902bd79f5"
+      },
+      {
+        "path": "LICENSE",
+        "destination": "protocol/upstream/LICENSE",
+        "sha256": "1f312390122725ee382f85af00e3df84f2490cd8fa61b9ea172bc6591cc0ac63"
+      }
+    ]
+  },
+  "generator": {
+    "go": {
+      "version": "1.25.7",
+      "linux_amd64_archive_sha256": "12e6d6a191091ae27dc31f6efc630e3a3b8ba409baf3573d955b196fdf086005"
+    },
+    "protoc": {
+      "version": "31.1",
+      "linux_x86_64_archive_sha256": "96553041f1a91ea0efee963cb16f462f5985b4d65365f3907414c360044d8065"
+    },
+    "protoc_gen_go": {
+      "module": "google.golang.org/protobuf",
+      "version": "1.36.11",
+      "module_sum": "h1:fV6ZwhNocDyBLK0dj+fg8ektcVegBBuEolpbTQyBNVE=",
+      "module_go_mod_sum": "h1:HTf+CrKn2C3g5S8VImy6tdcUvCska2kB7j23XfzDpco="
+    }
+  }
+}

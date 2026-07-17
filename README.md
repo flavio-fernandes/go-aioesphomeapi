@@ -3,7 +3,7 @@
 An independent, Go-native client for the [ESPHome Native API](https://developers.esphome.io/architecture/api/protocol_details/), built first to be the safest and smallest library MGMT can use for native ESPHome integration.
 
 > [!IMPORTANT]
-> This repository contains architecture and compatibility specifications, not a usable client yet. The [support matrix](docs/support-matrix.md) is the authoritative record of implemented and verified behavior.
+> The ESPHome 2026.7.0 protocol is now pinned and generated, but there is not yet a usable client. The [support matrix](docs/support-matrix.md) is the authoritative record of implemented and verified behavior.
 
 ## The realigned goal
 
@@ -54,7 +54,7 @@ The conveyor demonstration is the first visible acceptance system, not the libra
 
 ## Repository status
 
-The repository is public and GPL-3.0-only licensed. Gate 0 is being realigned around the immutable MGMT compatibility baseline recorded in [`compatibility/mgmt-feat-esphome.json`](compatibility/mgmt-feat-esphome.json). Implementation starts only after those contracts and the dependency decisions are accepted.
+The repository is public and GPL-3.0-only licensed. The immutable MGMT baseline is recorded in [`compatibility/mgmt-feat-esphome.json`](compatibility/mgmt-feat-esphome.json), and the ESPHome 2026.7.0 wire surface is recorded in [`protocol/upstream.lock.json`](protocol/upstream.lock.json). Client implementation is the next controlled slice.
 
 ## License
 

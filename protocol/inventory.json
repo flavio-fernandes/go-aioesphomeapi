@@ -1,0 +1,873 @@
+[
+  {
+    "id": 1,
+    "name": "HelloRequest",
+    "direction": "SOURCE_CLIENT"
+  },
+  {
+    "id": 2,
+    "name": "HelloResponse",
+    "direction": "SOURCE_SERVER"
+  },
+  {
+    "id": 3,
+    "name": "AuthenticationRequest",
+    "direction": "SOURCE_CLIENT"
+  },
+  {
+    "id": 4,
+    "name": "AuthenticationResponse",
+    "direction": "SOURCE_SERVER"
+  },
+  {
+    "id": 5,
+    "name": "DisconnectRequest",
+    "direction": "SOURCE_BOTH"
+  },
+  {
+    "id": 6,
+    "name": "DisconnectResponse",
+    "direction": "SOURCE_BOTH"
+  },
+  {
+    "id": 7,
+    "name": "PingRequest",
+    "direction": "SOURCE_BOTH"
+  },
+  {
+    "id": 8,
+    "name": "PingResponse",
+    "direction": "SOURCE_BOTH"
+  },
+  {
+    "id": 9,
+    "name": "DeviceInfoRequest",
+    "direction": "SOURCE_CLIENT"
+  },
+  {
+    "id": 10,
+    "name": "DeviceInfoResponse",
+    "direction": "SOURCE_SERVER"
+  },
+  {
+    "id": 11,
+    "name": "ListEntitiesRequest",
+    "direction": "SOURCE_CLIENT"
+  },
+  {
+    "id": 12,
+    "name": "ListEntitiesBinarySensorResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BINARY_SENSOR"
+  },
+  {
+    "id": 13,
+    "name": "ListEntitiesCoverResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_COVER"
+  },
+  {
+    "id": 14,
+    "name": "ListEntitiesFanResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_FAN"
+  },
+  {
+    "id": 15,
+    "name": "ListEntitiesLightResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_LIGHT"
+  },
+  {
+    "id": 16,
+    "name": "ListEntitiesSensorResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_SENSOR"
+  },
+  {
+    "id": 17,
+    "name": "ListEntitiesSwitchResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_SWITCH"
+  },
+  {
+    "id": 18,
+    "name": "ListEntitiesTextSensorResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_TEXT_SENSOR"
+  },
+  {
+    "id": 19,
+    "name": "ListEntitiesDoneResponse",
+    "direction": "SOURCE_SERVER"
+  },
+  {
+    "id": 20,
+    "name": "SubscribeStatesRequest",
+    "direction": "SOURCE_CLIENT"
+  },
+  {
+    "id": 21,
+    "name": "BinarySensorStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BINARY_SENSOR"
+  },
+  {
+    "id": 22,
+    "name": "CoverStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_COVER"
+  },
+  {
+    "id": 23,
+    "name": "FanStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_FAN"
+  },
+  {
+    "id": 24,
+    "name": "LightStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_LIGHT"
+  },
+  {
+    "id": 25,
+    "name": "SensorStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_SENSOR"
+  },
+  {
+    "id": 26,
+    "name": "SwitchStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_SWITCH"
+  },
+  {
+    "id": 27,
+    "name": "TextSensorStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_TEXT_SENSOR"
+  },
+  {
+    "id": 28,
+    "name": "SubscribeLogsRequest",
+    "direction": "SOURCE_CLIENT"
+  },
+  {
+    "id": 29,
+    "name": "SubscribeLogsResponse",
+    "direction": "SOURCE_SERVER"
+  },
+  {
+    "id": 30,
+    "name": "CoverCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_COVER"
+  },
+  {
+    "id": 31,
+    "name": "FanCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_FAN"
+  },
+  {
+    "id": 32,
+    "name": "LightCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_LIGHT"
+  },
+  {
+    "id": 33,
+    "name": "SwitchCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_SWITCH"
+  },
+  {
+    "id": 34,
+    "name": "SubscribeHomeassistantServicesRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_API_HOMEASSISTANT_SERVICES"
+  },
+  {
+    "id": 35,
+    "name": "HomeassistantActionRequest",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_API_HOMEASSISTANT_SERVICES"
+  },
+  {
+    "id": 36,
+    "name": "GetTimeRequest",
+    "direction": "SOURCE_SERVER"
+  },
+  {
+    "id": 37,
+    "name": "GetTimeResponse",
+    "direction": "SOURCE_CLIENT"
+  },
+  {
+    "id": 38,
+    "name": "SubscribeHomeAssistantStatesRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_API_HOMEASSISTANT_STATES"
+  },
+  {
+    "id": 39,
+    "name": "SubscribeHomeAssistantStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_API_HOMEASSISTANT_STATES"
+  },
+  {
+    "id": 40,
+    "name": "HomeAssistantStateResponse",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_API_HOMEASSISTANT_STATES"
+  },
+  {
+    "id": 41,
+    "name": "ListEntitiesServicesResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_API_USER_DEFINED_ACTIONS"
+  },
+  {
+    "id": 42,
+    "name": "ExecuteServiceRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_API_USER_DEFINED_ACTIONS"
+  },
+  {
+    "id": 43,
+    "name": "ListEntitiesCameraResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_CAMERA"
+  },
+  {
+    "id": 44,
+    "name": "CameraImageResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_CAMERA"
+  },
+  {
+    "id": 45,
+    "name": "CameraImageRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_CAMERA"
+  },
+  {
+    "id": 46,
+    "name": "ListEntitiesClimateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_CLIMATE"
+  },
+  {
+    "id": 47,
+    "name": "ClimateStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_CLIMATE"
+  },
+  {
+    "id": 48,
+    "name": "ClimateCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_CLIMATE"
+  },
+  {
+    "id": 49,
+    "name": "ListEntitiesNumberResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_NUMBER"
+  },
+  {
+    "id": 50,
+    "name": "NumberStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_NUMBER"
+  },
+  {
+    "id": 51,
+    "name": "NumberCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_NUMBER"
+  },
+  {
+    "id": 52,
+    "name": "ListEntitiesSelectResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_SELECT"
+  },
+  {
+    "id": 53,
+    "name": "SelectStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_SELECT"
+  },
+  {
+    "id": 54,
+    "name": "SelectCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_SELECT"
+  },
+  {
+    "id": 55,
+    "name": "ListEntitiesSirenResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_SIREN"
+  },
+  {
+    "id": 56,
+    "name": "SirenStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_SIREN"
+  },
+  {
+    "id": 57,
+    "name": "SirenCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_SIREN"
+  },
+  {
+    "id": 58,
+    "name": "ListEntitiesLockResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_LOCK"
+  },
+  {
+    "id": 59,
+    "name": "LockStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_LOCK"
+  },
+  {
+    "id": 60,
+    "name": "LockCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_LOCK"
+  },
+  {
+    "id": 61,
+    "name": "ListEntitiesButtonResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BUTTON"
+  },
+  {
+    "id": 62,
+    "name": "ButtonCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_BUTTON"
+  },
+  {
+    "id": 63,
+    "name": "ListEntitiesMediaPlayerResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_MEDIA_PLAYER"
+  },
+  {
+    "id": 64,
+    "name": "MediaPlayerStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_MEDIA_PLAYER"
+  },
+  {
+    "id": 65,
+    "name": "MediaPlayerCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_MEDIA_PLAYER"
+  },
+  {
+    "id": 66,
+    "name": "SubscribeBluetoothLEAdvertisementsRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 67,
+    "name": "BluetoothLEAdvertisementResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 68,
+    "name": "BluetoothDeviceRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 69,
+    "name": "BluetoothDeviceConnectionResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 70,
+    "name": "BluetoothGATTGetServicesRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 71,
+    "name": "BluetoothGATTGetServicesResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 72,
+    "name": "BluetoothGATTGetServicesDoneResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 73,
+    "name": "BluetoothGATTReadRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 74,
+    "name": "BluetoothGATTReadResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 75,
+    "name": "BluetoothGATTWriteRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 76,
+    "name": "BluetoothGATTReadDescriptorRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 77,
+    "name": "BluetoothGATTWriteDescriptorRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 78,
+    "name": "BluetoothGATTNotifyRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 79,
+    "name": "BluetoothGATTNotifyDataResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 80,
+    "name": "SubscribeBluetoothConnectionsFreeRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 81,
+    "name": "BluetoothConnectionsFreeResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 82,
+    "name": "BluetoothGATTErrorResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 83,
+    "name": "BluetoothGATTWriteResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 84,
+    "name": "BluetoothGATTNotifyResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 85,
+    "name": "BluetoothDevicePairingResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 86,
+    "name": "BluetoothDeviceUnpairingResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 87,
+    "name": "UnsubscribeBluetoothLEAdvertisementsRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 88,
+    "name": "BluetoothDeviceClearCacheResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 89,
+    "name": "SubscribeVoiceAssistantRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_VOICE_ASSISTANT"
+  },
+  {
+    "id": 90,
+    "name": "VoiceAssistantRequest",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_VOICE_ASSISTANT"
+  },
+  {
+    "id": 91,
+    "name": "VoiceAssistantResponse",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_VOICE_ASSISTANT"
+  },
+  {
+    "id": 92,
+    "name": "VoiceAssistantEventResponse",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_VOICE_ASSISTANT"
+  },
+  {
+    "id": 93,
+    "name": "BluetoothLERawAdvertisementsResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 94,
+    "name": "ListEntitiesAlarmControlPanelResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_ALARM_CONTROL_PANEL"
+  },
+  {
+    "id": 95,
+    "name": "AlarmControlPanelStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_ALARM_CONTROL_PANEL"
+  },
+  {
+    "id": 96,
+    "name": "AlarmControlPanelCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_ALARM_CONTROL_PANEL"
+  },
+  {
+    "id": 97,
+    "name": "ListEntitiesTextResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_TEXT"
+  },
+  {
+    "id": 98,
+    "name": "TextStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_TEXT"
+  },
+  {
+    "id": 99,
+    "name": "TextCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_TEXT"
+  },
+  {
+    "id": 100,
+    "name": "ListEntitiesDateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_DATETIME_DATE"
+  },
+  {
+    "id": 101,
+    "name": "DateStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_DATETIME_DATE"
+  },
+  {
+    "id": 102,
+    "name": "DateCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_DATETIME_DATE"
+  },
+  {
+    "id": 103,
+    "name": "ListEntitiesTimeResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_DATETIME_TIME"
+  },
+  {
+    "id": 104,
+    "name": "TimeStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_DATETIME_TIME"
+  },
+  {
+    "id": 105,
+    "name": "TimeCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_DATETIME_TIME"
+  },
+  {
+    "id": 106,
+    "name": "VoiceAssistantAudio",
+    "direction": "SOURCE_BOTH",
+    "ifdef": "USE_VOICE_ASSISTANT"
+  },
+  {
+    "id": 107,
+    "name": "ListEntitiesEventResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_EVENT"
+  },
+  {
+    "id": 108,
+    "name": "EventResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_EVENT"
+  },
+  {
+    "id": 109,
+    "name": "ListEntitiesValveResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_VALVE"
+  },
+  {
+    "id": 110,
+    "name": "ValveStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_VALVE"
+  },
+  {
+    "id": 111,
+    "name": "ValveCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_VALVE"
+  },
+  {
+    "id": 112,
+    "name": "ListEntitiesDateTimeResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_DATETIME_DATETIME"
+  },
+  {
+    "id": 113,
+    "name": "DateTimeStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_DATETIME_DATETIME"
+  },
+  {
+    "id": 114,
+    "name": "DateTimeCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_DATETIME_DATETIME"
+  },
+  {
+    "id": 115,
+    "name": "VoiceAssistantTimerEventResponse",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_VOICE_ASSISTANT"
+  },
+  {
+    "id": 116,
+    "name": "ListEntitiesUpdateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_UPDATE"
+  },
+  {
+    "id": 117,
+    "name": "UpdateStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_UPDATE"
+  },
+  {
+    "id": 118,
+    "name": "UpdateCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_UPDATE"
+  },
+  {
+    "id": 119,
+    "name": "VoiceAssistantAnnounceRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_VOICE_ASSISTANT"
+  },
+  {
+    "id": 120,
+    "name": "VoiceAssistantAnnounceFinished",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_VOICE_ASSISTANT"
+  },
+  {
+    "id": 121,
+    "name": "VoiceAssistantConfigurationRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_VOICE_ASSISTANT"
+  },
+  {
+    "id": 122,
+    "name": "VoiceAssistantConfigurationResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_VOICE_ASSISTANT"
+  },
+  {
+    "id": 123,
+    "name": "VoiceAssistantSetConfiguration",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_VOICE_ASSISTANT"
+  },
+  {
+    "id": 124,
+    "name": "NoiseEncryptionSetKeyRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_API_NOISE"
+  },
+  {
+    "id": 125,
+    "name": "NoiseEncryptionSetKeyResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_API_NOISE"
+  },
+  {
+    "id": 126,
+    "name": "BluetoothScannerStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 127,
+    "name": "BluetoothScannerSetModeRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 128,
+    "name": "ZWaveProxyFrame",
+    "direction": "SOURCE_BOTH",
+    "ifdef": "USE_ZWAVE_PROXY"
+  },
+  {
+    "id": 129,
+    "name": "ZWaveProxyRequest",
+    "direction": "SOURCE_BOTH",
+    "ifdef": "USE_ZWAVE_PROXY"
+  },
+  {
+    "id": 130,
+    "name": "HomeassistantActionResponse",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_API_HOMEASSISTANT_ACTION_RESPONSES"
+  },
+  {
+    "id": 131,
+    "name": "ExecuteServiceResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_API_USER_DEFINED_ACTION_RESPONSES"
+  },
+  {
+    "id": 132,
+    "name": "ListEntitiesWaterHeaterResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_WATER_HEATER"
+  },
+  {
+    "id": 133,
+    "name": "WaterHeaterStateResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_WATER_HEATER"
+  },
+  {
+    "id": 134,
+    "name": "WaterHeaterCommandRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_WATER_HEATER"
+  },
+  {
+    "id": 135,
+    "name": "ListEntitiesInfraredResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_INFRARED"
+  },
+  {
+    "id": 136,
+    "name": "InfraredRFTransmitRawTimingsRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_IR_RF || USE_RADIO_FREQUENCY"
+  },
+  {
+    "id": 137,
+    "name": "InfraredRFReceiveEvent",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_IR_RF || USE_RADIO_FREQUENCY"
+  },
+  {
+    "id": 138,
+    "name": "SerialProxyConfigureRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_SERIAL_PROXY"
+  },
+  {
+    "id": 139,
+    "name": "SerialProxyDataReceived",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_SERIAL_PROXY"
+  },
+  {
+    "id": 140,
+    "name": "SerialProxyWriteRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_SERIAL_PROXY"
+  },
+  {
+    "id": 141,
+    "name": "SerialProxySetModemPinsRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_SERIAL_PROXY"
+  },
+  {
+    "id": 142,
+    "name": "SerialProxyGetModemPinsRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_SERIAL_PROXY"
+  },
+  {
+    "id": 143,
+    "name": "SerialProxyGetModemPinsResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_SERIAL_PROXY"
+  },
+  {
+    "id": 144,
+    "name": "SerialProxyRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_SERIAL_PROXY"
+  },
+  {
+    "id": 145,
+    "name": "BluetoothSetConnectionParamsRequest",
+    "direction": "SOURCE_CLIENT",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 146,
+    "name": "BluetoothSetConnectionParamsResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_BLUETOOTH_PROXY"
+  },
+  {
+    "id": 147,
+    "name": "SerialProxyRequestResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_SERIAL_PROXY"
+  },
+  {
+    "id": 148,
+    "name": "ListEntitiesRadioFrequencyResponse",
+    "direction": "SOURCE_SERVER",
+    "ifdef": "USE_RADIO_FREQUENCY"
+  }
+]
