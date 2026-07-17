@@ -33,8 +33,8 @@ flowchart TB
 
 1. **Transport** owns context-aware dialing, deadlines, bounded reads and writes, Noise, explicit insecure test transport, and secret-safe errors.
 2. **Wire** owns ESPHome framing and reproducibly generated protobuf types.
-3. **Lifecycle** owns hello, API version, device information, ping, disconnect, and one connection attempt.
-4. **Session** owns one active connection per device, discovery, subscriptions, state snapshots, command serialization, and observable reconnect state.
+3. **Lifecycle** owns hello, API version, ping, disconnect, and one connection attempt. Device information is planned.
+4. **Client** owns one active connection, discovery, subscriptions, state snapshots, and serialized frame writes. Reconnect state belongs to its caller.
 5. **MGMT compatibility facade** exposes only the symbols needed by the pinned MGMT driver with matching behavior. It does not own MGMT pooling or convergence.
 6. **Typed public API** provides the preferred generic Go experience without requiring callers to traffic in generated messages.
 7. **Simulator** is a server-side peer using the same framing and wire definitions. It is not a fake client.
@@ -72,6 +72,8 @@ Fan support is also M1 because the conveyor uses ESPHome's generic H-bridge fan 
 - Callbacks never run on the network read loop or while internal locks are held.
 - Every queue is finite and has documented overflow behavior.
 - Cancellation closes the relevant network operation and background goroutines.
+- Synchronous connection failures wrap their original causes so `errors.Is` and `errors.As` remain useful; stage and target are included, but credentials are not.
+- Once `Done` closes, `CloseReason` reports asynchronous network, protocol, context, peer, or queue termination; intentional close has no failure reason.
 - Reconnect is observable and never silently replays a non-idempotent command.
 - Metadata and states cross the API boundary as immutable snapshots.
 - Unknown fields, enum values, and safe-to-ignore messages do not crash the process.
@@ -80,9 +82,9 @@ Fan support is also M1 because the conveyor uses ESPHome's generic H-bridge fan 
 
 ## Dependency direction and budget
 
-The core target is the Go standard library plus only dependencies that are technically unavoidable and accepted by ADR. Protobuf runtime and one established Noise implementation are the expected candidates. mDNS, CLI frameworks, YAML parsers, telemetry SDKs, assertion libraries, and simulator frameworks are not core runtime dependencies.
+The core target is the Go standard library plus only dependencies that are technically unavoidable and accepted by ADR. Protobuf runtime and one established Noise implementation are the expected candidates. General mDNS discovery, CLI frameworks, YAML parsers, telemetry SDKs, assertion libraries, and simulator frameworks are not core runtime dependencies. The default dial path includes only a narrow, standard-library `.local` A-record resolver because MGMT's immutable examples and normal ESPHome hostnames depend on it. It does not browse services or add a module.
 
-Name resolution is supplied by `net` or an injected dialer. Optional discovery, CLI, and integrations live in separate packages or programs and cannot make MGMT pay their dependency cost.
+Normal DNS is supplied by `net`; `.local` names use the bounded internal mDNS resolver; tests and specialized applications may inject a dialer. Optional service discovery, CLI, and integrations live in separate packages or programs and cannot make MGMT pay their dependency cost.
 
 See [dependency policy](dependency-policy.md) for the admission gate.
 

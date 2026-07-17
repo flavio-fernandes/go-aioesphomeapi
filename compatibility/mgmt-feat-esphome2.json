@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-17",
+  "status": "candidate",
+  "upstream": {
+    "repository": "https://github.com/purpleidea/mgmt",
+    "branch": "master",
+    "revision": "0bd1c2f4aa7c2d107de0dbe413ed8c9e5a36fd99"
+  },
+  "baseline": {
+    "repository": "https://github.com/flavio-fernandes/mgmt",
+    "branch": "feat/esphome",
+    "revision": "5bf41f505bc601e6d2c4da8ecb3050b7c01ff34a"
+  },
+  "candidate": {
+    "repository": "https://github.com/flavio-fernandes/mgmt",
+    "branch": "feat/esphome2",
+    "revision": "398a8e9296fc79513756964304f16fdf7c1a1da0",
+    "pull_request": "https://github.com/flavio-fernandes/mgmt/pull/1",
+    "commits": [
+      {
+        "revision": "9c672b4d",
+        "subject": "esphome: replace apiclient dependency"
+      },
+      {
+        "revision": "3579a8ad",
+        "subject": "esphome: add fan and RGB light control"
+      },
+      {
+        "revision": "398a8e9296fc79513756964304f16fdf7c1a1da0",
+        "subject": "examples: add native ESPHome conveyer demo"
+      }
+    ]
+  },
+  "library": {
+    "repository": "https://github.com/flavio-fernandes/go-aioesphomeapi",
+    "revision": "238f06dc564ec3b4a16473ef5225447c4303166c",
+    "module_version": "v0.0.0-20260717103238-238f06dc564e",
+    "pull_request": "https://github.com/flavio-fernandes/go-aioesphomeapi/pull/29"
+  },
+  "mcl_contract": {
+    "source_changes": 0,
+    "preserved_files": [
+      {
+        "path": "examples/lang/esphome0.mcl",
+        "baseline_sha256": "8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df",
+        "candidate_sha256": "8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df",
+        "unchanged": true
+      },
+      {
+        "path": "examples/lang/esphome-blink.mcl",
+        "baseline_sha256": "cc57833875290b60e7e7f1004b93d00fb17249ad2f31267ac20ff91c1052c7ad",
+        "candidate_sha256": "cc57833875290b60e7e7f1004b93d00fb17249ad2f31267ac20ff91c1052c7ad",
+        "unchanged": true
+      }
+    ],
+    "added_file": {
+      "path": "examples/lang/esphome-conveyer.mcl",
+      "sha256": "c746b6382afaba3daaa248860402fd788ed379e889bbfde65b402efde422fc8b"
+    }
+  },
+  "candidate_file_hashes": [
+    {
+      "path": "util/esphome/apiclient.go",
+      "sha256": "15f014aa3140bc03e7f61cc769387dc95e20be2bdb34176c2a8a16788af4465d"
+    },
+    {
+      "path": "util/esphome/driver.go",
+      "sha256": "1610c067da702da85fc8fe5b3e312c23d3acd3daf2a9a3aac50351ff2e09f67d"
+    },
+    {
+      "path": "util/esphome/esphome.go",
+      "sha256": "dfa35dbd3c25ba93b5b0d3dbd3fab6776cbc428a14fbb669dc6b3d56ea65816f"
+    },
+    {
+      "path": "util/esphome/session.go",
+      "sha256": "bf6b3f58d2fb3be476a68c5d552550bda8afbb12233149766be37d7573d011e0"
+    },
+    {
+      "path": "util/esphome/esphome_test.go",
+      "sha256": "515cd9227e66d4485e9b5ce6724990d73d293698fdcc03a35ac80a89ac24e5e4"
+    },
+    {
+      "path": "engine/resources/esphome.go",
+      "sha256": "dadabb44d25b938d7e08e043270ee1ee4ce9e4e463a83ced9384b01918bd0534"
+    },
+    {
+      "path": "engine/resources/esphome_test.go",
+      "sha256": "4eb869bb85a83bf7d933e86bd56b449e24b64f3dd07448f48b1099a6e0667750"
+    },
+    {
+      "path": "go.mod",
+      "sha256": "4f57502218386edf20d7c3dc57db586c975925dfcebd8e1bf733b6ba345282dc"
+    },
+    {
+      "path": "go.sum",
+      "sha256": "7481c71da179bf471b5b26b131123fee4accb7648586a820cabb5903d31bfa6b"
+    }
+  ],
+  "dependency_delta": {
+    "direct_added": [
+      "github.com/flavio-fernandes/go-aioesphomeapi v0.0.0-20260717103238-238f06dc564e"
+    ],
+    "removed": [
+      "github.com/richard87/esphome-apiclient v1.1.0",
+      "github.com/mdlayher/ethernet",
+      "github.com/mdlayher/raw"
+    ],
+    "already_selected_unchanged": [
+      "github.com/flynn/noise v1.1.0",
+      "golang.org/x/crypto v0.48.0",
+      "google.golang.org/protobuf v1.36.11"
+    ],
+    "module_graph_net_change": -2
+  },
+  "verification": {
+    "library_unit_tests": "pass",
+    "library_race_tests": "pass",
+    "library_vet": "pass",
+    "library_simulator": "pass",
+    "library_govulncheck_reachable_vulnerabilities": 0,
+    "mgmt_build": "pass",
+    "mgmt_util_esphome_race_tests": "pass",
+    "mgmt_resource_targeted_tests": "pass",
+    "mgmt_resource_suite_with_two_unrelated_shell_environment_tests_excluded": "pass",
+    "mgmt_vet": "pass",
+    "mgmt_mcl_checks": "pass",
+    "esphome_2026_7_0_firmware_config": "pass",
+    "esphome_2026_7_0_firmware_compile": "pass",
+    "mgmt_simulator_runtime": "pending"
+  },
+  "limitations": [
+    "No MGMT process has completed a Native API session against the library simulator in this record.",
+    "No physical device was flashed or actuated.",
+    "The two excluded MGMT resource tests concern shell environment behavior and fail identically outside this ESPHome change."
+  ]
+}

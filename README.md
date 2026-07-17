@@ -3,19 +3,22 @@
 An independent, Go-native client for the [ESPHome Native API](https://developers.esphome.io/architecture/api/protocol_details/), built first to be the safest and smallest library MGMT can use for native ESPHome integration.
 
 > [!IMPORTANT]
-> The ESPHome 2026.7.0 protocol is now pinned and generated, but there is not yet a usable client. The [support matrix](docs/support-matrix.md) is the authoritative record of implemented and verified behavior.
+> The first usable client slice is implemented on this development branch: secure Noise transport, explicit test-only plaintext, MGMT's current entity surface, Fan and RGB Light commands, deterministic simulators, and actionable connection errors. A real MGMT process passes encrypted acceptance for both original unchanged MCL examples and the unchanged conveyor MCL; the blink example also passes against sanitized ESPHome 2026.7.0 hardware. Real-driver tests cover MGMT-owned polling, reconnect, and outage accounting without hardware. It is not a tagged release yet. The [support matrix](docs/support-matrix.md) is the authoritative record of evidence and limitations.
 
 ## The realigned goal
 
-MGMT's experimental [`feat/esphome`](https://github.com/purpleidea/mgmt/compare/master...flavio-fernandes:mgmt:feat/esphome) branch currently uses [`Richard87/esphome-apiclient`](https://github.com/Richard87/esphome-apiclient). This project will provide the MGMT-required behavior behind a deliberately small compatibility facade, then improve it with secure defaults, bounded concurrency, deterministic device simulation, current protocol tracking, and a conservative dependency budget.
+MGMT's original experimental [`feat/esphome-richard87`](https://github.com/flavio-fernandes/mgmt/tree/feat/esphome-richard87) branch preserved the [`Richard87/esphome-apiclient`](https://github.com/Richard87/esphome-apiclient) implementation. The active [`feat/esphome`](https://github.com/flavio-fernandes/mgmt/tree/feat/esphome) branch now uses this library, preserves both existing `.mcl` examples byte for byte, and adds Fan, RGB Light, and conveyor-demo support. This project provides that behavior behind a deliberately small compatibility facade, then improves it with secure defaults, bounded concurrency, deterministic device simulation, current protocol tracking, and a conservative dependency budget.
 
 Success means MGMT can replace the client dependency without changing the behavior of its existing `.mcl` examples. The intended migration changes Go import paths and only the smallest reviewed adapter details; it does not rename MCL functions, resources, parameters, or semantics.
 
-This is still a greenfield implementation. The reference client is a behavioral baseline, not a code base. The official ESPHome protocol definition remains wire truth.
+This remains an independent greenfield implementation. The reference client is a behavioral baseline, not a code base. The official ESPHome protocol definition remains wire truth.
 
 ## Start here
 
 - Copy/paste repository commands: [cheatsheet](CHEATSHEET.md)
+- Standalone Go executable without MGMT: [standalone simulator demo](docs/standalone-simulator-demo.md)
+- Friendly no-hardware MGMT walkthrough: [MGMT simulator demo](docs/mgmt-simulator-demo.md)
+- Maintainer-only real-device walkthrough: [MGMT hardware blink demo](docs/mgmt-hardware-blink.md)
 - Exact MGMT behavior we must preserve: [MGMT compatibility contract](docs/mgmt-integration.md)
 - What is implemented and evidenced: [support matrix](docs/support-matrix.md)
 - Why dependencies face a high bar: [dependency policy](docs/dependency-policy.md)
@@ -28,9 +31,11 @@ Documentation is part of the product. Runnable commands must be tested, safe by 
 ## Design promises
 
 - Existing MGMT `.mcl` behavior is a release-blocking compatibility contract.
+- ESPHome `.local` device names resolve through bounded built-in mDNS, so the unchanged MGMT blink and conveyor examples do not depend on host-file edits or a separately configured resolver.
 - Core types remain generic ESPHome concepts; MGMT and conveyor types stay outside the library.
 - Noise is required by the normal production path. Plaintext requires an unmistakable insecure opt-in.
-- One concurrency-safe session per device has bounded queues, observable reconnects, and no silent command replay.
+- One concurrency-safe connection per client has bounded queues and no silent command replay. The caller owns reconnect policy.
+- Synchronous failures preserve their underlying causes, and `CloseReason()` explains why an established connection ended without exposing keys.
 - A deterministic simulated device exercises the real framing and session path without hardware.
 - The standard library is preferred. Every runtime dependency needs an ADR and evidence; convenience dependencies do not enter the core.
 - Generated protobuf compatibility and the stable handwritten API are clearly separated.
@@ -54,7 +59,7 @@ The conveyor demonstration is the first visible acceptance system, not the libra
 
 ## Repository status
 
-The repository is public and GPL-3.0-only licensed. The immutable MGMT baseline is recorded in [`compatibility/mgmt-feat-esphome.json`](compatibility/mgmt-feat-esphome.json), and the ESPHome 2026.7.0 wire surface is recorded in [`protocol/upstream.lock.json`](protocol/upstream.lock.json). Client implementation is the next controlled slice.
+The repository is public and GPL-3.0-only licensed. The original immutable MGMT baseline is recorded in [`compatibility/mgmt-feat-esphome.json`](compatibility/mgmt-feat-esphome.json), the replacement candidate is recorded in [`compatibility/mgmt-feat-esphome2.json`](compatibility/mgmt-feat-esphome2.json), and append-only runtime proofs cover the [conveyor](compatibility/mgmt-feat-esphome2-runtime.json), [both original baseline examples plus polling/reconnect](compatibility/mgmt-feat-esphome2-baselines.json), the [post-merge `feat/esphome` branch](compatibility/mgmt-feat-esphome-postmerge.json), [real `.local` mDNS parity](compatibility/mgmt-feat-esphome-mdns.json), the [final MGMT diagnostics pin](compatibility/mgmt-feat-esphome-diagnostics.json), and the [first sanitized real-hardware blink run](compatibility/mgmt-feat-esphome-hardware-blink.json). The ESPHome 2026.7.0 wire surface is recorded in [`protocol/upstream.lock.json`](protocol/upstream.lock.json). Run the no-hardware quickstart in the [cheatsheet](CHEATSHEET.md).
 
 ## License
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Maintain MGMT Compatibility"
+  short_description: "Preserve and verify the MGMT integration lane"
+  default_prompt: "Use $maintain-mgmt-compatibility to update MGMT branch, PR, module-pin, or compatibility evidence work."

@@ -13,6 +13,8 @@ Two immutable snapshots inform the current design:
 - MGMT `feat/esphome` at `8eab220` defines external MCL and adapter behavior.
 - `Richard87/esphome-apiclient` `v1.1.0` at `982fb85860e7214e3384e68cb69bf94b16a6985b` defines the initial Go migration comparison.
 
+The original snapshot remains immutable. A second append-only record, `compatibility/mgmt-feat-esphome2.json`, captures the rebased MGMT baseline, the replacement branch, this library's exact candidate revision, preserved MCL hashes, dependency delta, and verification results. A later run creates another record instead of rewriting either historical record.
+
 The local manifest records only public repository paths, symbols, revisions, and SHA-256 values. It does not vendor the GPL MGMT source or reference-client implementation.
 
 ## Clean implementation rule
@@ -20,6 +22,12 @@ The local manifest records only public repository paths, symbols, revisions, and
 Implement wire behavior from the official protocol definition and public documentation. Use reference clients to identify interoperability questions, observable behavior, and test cases. Do not transliterate or copy their implementation. If any compatible fragment is intentionally derived, record its source, commit, license, file, rationale, and required notice before merge.
 
 Black-box and cross-repository tests may compile or execute a pinned external checkout. Test results are evidence; external source does not become this repository’s GPL-3.0-only content.
+
+For `.local` compatibility, the reference snapshot was inspected only to
+confirm the observable behavior: names ending in `.local` are resolved with an
+IPv4 multicast DNS A query before TCP dial. The implementation in
+`internal/mdns` was written independently from DNS wire-format rules and Go's
+standard networking interfaces; no reference-client source was copied.
 
 ## Generated code
 

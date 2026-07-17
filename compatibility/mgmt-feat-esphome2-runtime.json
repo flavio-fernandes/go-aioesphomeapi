@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-17",
+  "status": "runtime_verified",
+  "extends": "compatibility/mgmt-feat-esphome2.json",
+  "candidate": {
+    "repository": "https://github.com/flavio-fernandes/mgmt",
+    "branch": "feat/esphome2",
+    "revision": "acddc3f1804dd3ae3e29f077996b7845e768ae29",
+    "pull_request": "https://github.com/flavio-fernandes/mgmt/pull/1",
+    "runtime_followup": {
+      "revision": "acddc3f1804dd3ae3e29f077996b7845e768ae29",
+      "subject": "esphome: preserve safety cleanup connection",
+      "engine_resource_sha256": "7d4b1ef8c17d7e3676dd589a6eba39e6882385ebbb19b0115620ddbd947868ef"
+    }
+  },
+  "library": {
+    "repository": "https://github.com/flavio-fernandes/go-aioesphomeapi",
+    "revision": "352513396edf30b098e545e05ebc22659a9e3674",
+    "pull_request": "https://github.com/flavio-fernandes/go-aioesphomeapi/pull/29"
+  },
+  "mcl_contract": {
+    "source_changes": 0,
+    "files": [
+      {
+        "path": "examples/lang/esphome0.mcl",
+        "sha256": "8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df"
+      },
+      {
+        "path": "examples/lang/esphome-blink.mcl",
+        "sha256": "cc57833875290b60e7e7f1004b93d00fb17249ad2f31267ac20ff91c1052c7ad"
+      },
+      {
+        "path": "examples/lang/esphome-conveyer.mcl",
+        "sha256": "c746b6382afaba3daaa248860402fd788ed379e889bbfde65b402efde422fc8b"
+      }
+    ]
+  },
+  "acceptance": {
+    "runner": "tools/test-mgmt-conveyor.sh",
+    "result": "pass",
+    "isolation": "private Linux user, mount, and network namespaces",
+    "network": "loopback-only TCP port 6053 inside the private network namespace",
+    "transport": "Noise with a public test-only key",
+    "assertions": [
+      "the reviewed conveyor MCL SHA-256 matches before execution",
+      "a real MGMT process completes entity discovery and initial state subscription",
+      "binary-sensor and RGB sensor telemetry reaches MCL",
+      "the simulator device log reaches MGMT",
+      "MGMT sends the expected fan state, speed, and direction command",
+      "MGMT sends the expected RGB light state, brightness, and blue color command",
+      "MGMT reports convergence and exits successfully",
+      "MGMT sends a second fan-stop command during graceful cleanup",
+      "MGMT reports no failed fan cleanup"
+    ]
+  },
+  "limitations": [
+    "This record exercises the conveyor MCL only; switch, number, button, text-sensor, polling, and fault scenarios retain their lower evidence levels.",
+    "No physical device was flashed or actuated.",
+    "A simulator is not ESPHome firmware, so hardware evidence remains pending."
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-17",
+  "status": "runtime_verified",
+  "extends": "compatibility/mgmt-feat-esphome-mdns.json",
+  "mgmt": {
+    "repository": "https://github.com/flavio-fernandes/mgmt",
+    "branch": "feat/esphome",
+    "revision": "d625919912cb5b5791fe41d9c58326e79a0efcff",
+    "module_pin": "github.com/flavio-fernandes/go-aioesphomeapi v0.0.0-20260717212537-73b5d58e5dd3"
+  },
+  "library": {
+    "repository": "https://github.com/flavio-fernandes/go-aioesphomeapi",
+    "branch": "agent/implement-conveyor-client-main",
+    "revision": "73b5d58e5dd39d6dce0df024c3a792f668824b3b",
+    "runtime_module_delta": 0,
+    "runtime_transitive_delta": 0
+  },
+  "mcl_contract": {
+    "source_changes": 0,
+    "files": [
+      {
+        "path": "examples/lang/esphome0.mcl",
+        "sha256": "8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df",
+        "runtime": "pass"
+      },
+      {
+        "path": "examples/lang/esphome-blink.mcl",
+        "sha256": "cc57833875290b60e7e7f1004b93d00fb17249ad2f31267ac20ff91c1052c7ad",
+        "runtime": "pass",
+        "resolution": "multicast DNS without a hosts-file mapping"
+      },
+      {
+        "path": "examples/lang/esphome-conveyer.mcl",
+        "sha256": "c746b6382afaba3daaa248860402fd788ed379e889bbfde65b402efde422fc8b",
+        "runtime": "pass",
+        "resolution": "multicast DNS without a hosts-file mapping"
+      }
+    ]
+  },
+  "acceptance": {
+    "consumer_selection": "committed MGMT go.mod pin with GOWORK=off",
+    "baseline_runner": "tools/test-mgmt-baselines.sh",
+    "baseline_result": "pass",
+    "conveyor_runner": "tools/test-mgmt-conveyor.sh",
+    "conveyor_result": "pass",
+    "isolation": "private Linux user and network namespaces",
+    "transport": "mDNS resolution followed by Noise with a public test-only key",
+    "hosts_file_injection": false,
+    "checks": [
+      "go test -race ./util/esphome",
+      "go test -race ./engine/resources -run TestEsphome|TestParseEsphome",
+      "go vet ./util/esphome ./engine/resources",
+      "MGMT build from its committed module pin",
+      "both original MCL examples over the baseline runner",
+      "unchanged conveyor MCL over the conveyor runner"
+    ]
+  },
+  "diagnostics": {
+    "library_unit_evidence": [
+      "TCP dial errors preserve *net.OpError and name the attempted address",
+      "mDNS, Noise, and hello failures have distinct error categories",
+      "hello failure stages preserve their underlying causes",
+      "CloseReason reports asynchronous termination while intentional Close remains non-failing",
+      "injected dialers bypass built-in mDNS"
+    ],
+    "mgmt_impact": "initial connection failures inherit the library's target-aware wrapped errors without MCL changes"
+  },
+  "parity": {
+    "valid_encrypted_mgmt_behavior": "preserved",
+    "deliberate_exception": "implicit plaintext on an empty key remains rejected by security policy"
+  },
+  "limitations": [
+    "No physical device was flashed or actuated.",
+    "The asynchronous CloseReason accessor is library evidence; MGMT does not yet surface it through its adapter.",
+    "A simulator mDNS responder is not hardware evidence."
+  ]
+}

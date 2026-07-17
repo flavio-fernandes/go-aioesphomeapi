@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-17",
+  "status": "hardware_verified",
+  "extends": "compatibility/mgmt-feat-esphome-diagnostics.json",
+  "mgmt": {
+    "repository": "https://github.com/flavio-fernandes/mgmt",
+    "branch": "feat/esphome",
+    "revision": "d625919912cb5b5791fe41d9c58326e79a0efcff",
+    "build_version": "1.1.0-46-gd6259199",
+    "module_pin": "github.com/flavio-fernandes/go-aioesphomeapi v0.0.0-20260717212537-73b5d58e5dd3"
+  },
+  "library": {
+    "repository": "https://github.com/flavio-fernandes/go-aioesphomeapi",
+    "revision_under_test": "73b5d58e5dd39d6dce0df024c3a792f668824b3b",
+    "runtime_module_delta": 0,
+    "runtime_transitive_delta": 0
+  },
+  "firmware": {
+    "release": "ESPHome 2026.7.0",
+    "profile": "sanitized ESP32 onboard-LED blink profile",
+    "native_api": "Noise encrypted",
+    "entities": [
+      "GPIO switch",
+      "template binary sensor"
+    ],
+    "provisioning": "device was already flashed by the maintainer; this run did not build or change firmware"
+  },
+  "mcl_contract": {
+    "path": "examples/lang/esphome-blink.mcl",
+    "sha256": "cc57833875290b60e7e7f1004b93d00fb17249ad2f31267ac20ff91c1052c7ad",
+    "source_changes": 0,
+    "hostname": "esphome-blink.local"
+  },
+  "acceptance": {
+    "authorization": "explicit maintainer authorization for the named blink device",
+    "observation": "MGMT state transitions and sanitized ESPHome Native API logs; no camera or serial session",
+    "duration_seconds": 25,
+    "bounded_runner": "timeout with SIGINT followed by MGMT graceful shutdown",
+    "runner_exit": "expected timeout status 124 after MGMT completed graceful SIGINT shutdown",
+    "results": [
+      "make build passed on the exact feat/esphome revision",
+      "built-in multicast DNS resolved the unchanged .local target",
+      "Noise handshake and ESPHome hello completed",
+      "entity discovery found the expected switch and binary sensor",
+      "initial and pushed binary-sensor states reached MGMT",
+      "at least eight on-to-off convergence cycles issued real switch commands",
+      "device logs reached the MGMT endpoint logger",
+      "MGMT handled the bounded interrupt and shut down cleanly"
+    ]
+  },
+  "privacy": {
+    "raw_log_file_created": false,
+    "raw_log_committed": false,
+    "omitted": [
+      "Noise key",
+      "network address",
+      "MAC and BSSID",
+      "SSID",
+      "local filesystem paths",
+      "firmware compile timestamp"
+    ]
+  },
+  "limitations": [
+    "The physical LED output was not independently observed by a camera or second observer; device state and firmware logs confirm the command path.",
+    "No firmware was built or flashed during this acceptance run.",
+    "This proves the blink switch and binary-sensor slice, not Fan, Light, Number, Button, conveyor safety, reconnect, or factory-scale behavior.",
+    "The checked-in demonstration key is intentionally public and is not suitable for an untrusted network."
+  ]
+}
