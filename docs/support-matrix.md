@@ -14,7 +14,7 @@ This is the sole source of truth for compatibility claims. Protocol presence, re
 | `hardware` | Tested against a recorded ESPHome release and sanitized hardware profile. |
 | `production` | Security, race, fuzz, load, observability, compatibility, and release gates pass. |
 
-Every implementation column is `none` today. `planned` is roadmap intent, not evidence.
+The pinned protocol inventory contains 148 unique message IDs. Generated presence is `known`; every handwritten implementation column remains `none` today. `planned` is roadmap intent, not evidence.
 
 ## MGMT compatibility baseline
 
@@ -41,40 +41,40 @@ Every implementation column is `none` today. `planned` is roadmap intent, not ev
 
 | Capability | Upstream | Public API | Simulator | MGMT | Hardware | Target |
 |---|---|---|---|---|---|---|
-| Plain framing with limits | untracked | none | none | none | none | M1 |
-| Noise transport | untracked | none | none | none | none | M1 |
-| Hello and API version | untracked | none | none | none | none | M1 |
-| Device information | untracked | none | none | none | none | M1 |
-| Ping, disconnect, close | untracked | none | none | none | none | M1 |
-| Entity discovery | untracked | none | none | none | none | M1 |
-| State subscriptions | untracked | none | none | none | none | M1 |
-| Bounded device logs | untracked | none | none | none | none | M1 |
-| Client-owned reconnect | untracked | none | none | n/a | none | M2 |
-| Home Assistant services/actions | untracked | none | none | none | none | M3 |
-| Bluetooth proxy | untracked | none | none | none | none | backlog |
-| Voice assistant | untracked | none | none | none | none | backlog |
-| Camera streaming | untracked | none | none | none | none | backlog |
+| Plain framing with limits | known | none | none | none | none | M1 |
+| Noise transport | known | none | none | none | none | M1 |
+| Hello and API version | known | none | none | none | none | M1 |
+| Device information | known | none | none | none | none | M1 |
+| Ping, disconnect, close | known | none | none | none | none | M1 |
+| Entity discovery | known | none | none | none | none | M1 |
+| State subscriptions | known | none | none | none | none | M1 |
+| Bounded device logs | known | none | none | none | none | M1 |
+| Client-owned reconnect | known | none | none | n/a | none | M2 |
+| Home Assistant services/actions | known | none | none | none | none | M3 |
+| Bluetooth proxy | known | none | none | none | none | backlog |
+| Voice assistant | known | none | none | none | none | backlog |
+| Camera streaming | known | none | none | none | none | backlog |
 
 ## Entity families
 
 | Family | MGMT M1 need | Protocol known | Typed | Simulated | MGMT | Hardware | Target |
 |---|---|---|---|---|---|---|---|
-| Binary sensor | state | no | no | no | no | no | M1 |
-| Sensor | state | no | no | no | no | no | M1 |
-| Text sensor | state | no | no | no | no | no | M1 |
-| Switch | state/command | no | no | no | no | no | M1 |
-| Number | state/command | no | no | no | no | no | M1 |
-| Button | command seam | no | no | no | no | no | M1 |
-| Fan | conveyor state/command | no | no | no | no | no | M1 |
-| Light | no | no | no | no | no | no | M2 |
-| Select | no | no | no | no | no | no | M2 |
-| Text | no | no | no | no | no | no | M3 |
-| Climate | no | no | no | no | no | no | M3 |
-| Cover | no | no | no | no | no | no | M3 |
-| Lock | no | no | no | no | no | no | M3 |
-| Alarm control panel | no | no | no | no | no | no | backlog |
-| Media player | no | no | no | no | no | no | backlog |
-| Update | no | no | no | no | no | no | backlog |
+| Binary sensor | state | yes | no | no | no | no | M1 |
+| Sensor | state | yes | no | no | no | no | M1 |
+| Text sensor | state | yes | no | no | no | no | M1 |
+| Switch | state/command | yes | no | no | no | no | M1 |
+| Number | state/command | yes | no | no | no | no | M1 |
+| Button | command seam | yes | no | no | no | no | M1 |
+| Fan | conveyor state/command | yes | no | no | no | no | M1 |
+| Light | conveyor color/state/command | yes | no | no | no | no | M1 |
+| Select | no | yes | no | no | no | no | M2 |
+| Text | no | yes | no | no | no | no | M3 |
+| Climate | no | yes | no | no | no | no | M3 |
+| Cover | no | yes | no | no | no | no | M3 |
+| Lock | no | yes | no | no | no | no | M3 |
+| Alarm control panel | no | yes | no | no | no | no | backlog |
+| Media player | no | yes | no | no | no | no | backlog |
+| Update | no | yes | no | no | no | no | backlog |
 
 ## Reference-client parity
 

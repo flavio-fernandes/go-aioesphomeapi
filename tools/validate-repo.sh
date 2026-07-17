@@ -10,6 +10,9 @@ required=(
   docs/mgmt-integration.md docs/dependency-policy.md docs/reference-baseline.md
   docs/m1-implementation-plan.md
   compatibility/mgmt-feat-esphome.json
+  protocol/upstream.lock.json protocol/inventory.json
+  protocol/upstream/api.proto protocol/upstream/api_options.proto protocol/upstream/LICENSE
+  pb/api.pb.go pb/api_options.pb.go tools/sync-protocol.sh tools/generate-protocol.sh
 )
 
 for path in "${required[@]}"; do
@@ -24,7 +27,7 @@ if ! grep -Fq '[cheatsheet](CHEATSHEET.md)' README.md; then
   exit 1
 fi
 
-if ! grep -Fq '**Current phase: compatibility architecture only.**' CHEATSHEET.md; then
+if ! grep -Fq '**Current phase: protocol generated; client implementation underway.**' CHEATSHEET.md; then
   echo "CHEATSHEET.md must state the current implementation phase" >&2
   exit 1
 fi
@@ -35,8 +38,23 @@ if ! grep -Fq '8eab220' compatibility/mgmt-feat-esphome.json ||
   exit 1
 fi
 
+for record in \
+  "9ddd6b66a016cd5ccb216052668d680cb83413e2d4eb3b1cff84a50b30492828 protocol/upstream/api.proto" \
+  "c4ba32a9d34e8785442112aed5b202a1614a9d74d59a90c992cdb13902bd79f5 protocol/upstream/api_options.proto" \
+  "1f312390122725ee382f85af00e3df84f2490cd8fa61b9ea172bc6591cc0ac63 protocol/upstream/LICENSE"; do
+  expected="${record%% *}"
+  path="${record#* }"
+  actual="$(sha256sum "${path}" | cut -d' ' -f1)"
+  if [[ "${actual}" != "${expected}" ]]; then
+    echo "pinned protocol checksum mismatch: ${path}" >&2
+    exit 1
+  fi
+done
+
 if command -v python3 >/dev/null 2>&1; then
   python3 -m json.tool compatibility/mgmt-feat-esphome.json >/dev/null
+  python3 -m json.tool protocol/upstream.lock.json >/dev/null
+  python3 -m json.tool protocol/inventory.json >/dev/null
 fi
 
 if grep -RInE --exclude-dir=.git --exclude='validate-repo.sh' \

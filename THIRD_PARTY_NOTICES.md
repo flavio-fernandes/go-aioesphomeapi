@@ -1,8 +1,12 @@
 # Third-party notices and provenance
 
-No third-party source code is included in the bootstrap commit.
+## ESPHome protocol definitions
 
-Future protocol definitions may be derived from ESPHome's `api.proto`. ESPHome documents the non-C++ portion of its source tree under the MIT license; every protocol sync must record the exact upstream repository, commit, file path, license text, and generator version before generated Go output is accepted.
+`protocol/upstream/api.proto` and `api_options.proto` are unmodified copies from `esphome/esphome` release 2026.7.0 at commit `920a8b761b680d9864da2ef4b44b4af95c99dba8`. ESPHome's license states that non-C++ portions of its repository are MIT-licensed. The exact upstream license is preserved at `protocol/upstream/LICENSE`; source, license, and generator hashes are recorded in `protocol/upstream.lock.json`.
+
+The `pb` Go files are generated from those definitions with `protoc` v31.1 and `protoc-gen-go` v1.36.11. They contain no reference-client source.
+
+Every future protocol sync must record the exact upstream repository, commit, file path, license text, and generator version before generated Go output is accepted.
 
 Reference implementations are for behavioral research only:
 

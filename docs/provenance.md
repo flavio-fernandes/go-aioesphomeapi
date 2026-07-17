@@ -4,7 +4,7 @@
 
 Protocol synchronization starts from `esphome/esphome`, specifically `esphome/components/api/api.proto`, at an immutable commit SHA. Release tags can guide selection but do not replace a commit pin.
 
-Each sync records upstream repository and URL, commit and release, source and license SHA-256, compiler/plugin versions, generated diff, protocol inventory changes, support-matrix changes, and test results. The machine-readable lock will live at `protocol/upstream.lock.json` after its schema is accepted.
+Each sync records upstream repository and URL, commit and release, source and license SHA-256, compiler/plugin versions, generated diff, protocol inventory changes, support-matrix changes, and test results. The machine-readable lock lives at `protocol/upstream.lock.json`.
 
 ## Compatibility research sources
 
@@ -29,4 +29,4 @@ The `pb` package is permitted as the narrow MGMT compatibility exception describ
 
 ## Current record
 
-No protocol definition, generated code, or third-party implementation is committed. The compatibility manifest and research documents contain facts and hashes only.
+ESPHome 2026.7.0 protocol definitions and their generated Go output are committed with the exact upstream license and lock. No third-party implementation source is committed. Generated presence raises protocol inventory entries only to `known`.
