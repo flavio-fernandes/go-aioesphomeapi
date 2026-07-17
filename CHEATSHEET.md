@@ -50,6 +50,21 @@ go test -race ./...
 go vet ./...
 ```
 
+### 4a. Run the short security fuzz check
+
+This optional contributor check feeds synthetic, malformed bytes into the
+bounded plaintext framer and protobuf decoder. It needs no network, key, or
+hardware and normally finishes in about ten seconds.
+
+```bash
+go test ./internal/wire -run=^$ -fuzz=FuzzPlainFramerRead -fuzztime=5s
+go test ./internal/wire -run=^$ -fuzz=FuzzDecode -fuzztime=5s
+```
+
+Each command should end with `PASS`. A crash, panic, excessive allocation, or
+unexpected decoded frame is a security bug; keep the generated fuzz input
+private until it is reviewed for sensitive data, then follow `SECURITY.md`.
+
 ### 5. Run the safe first example
 
 This uses a real Noise handshake over an in-process connection. It opens no port, needs no hardware, and contains only a public test key.
@@ -165,3 +180,7 @@ bash ./tools/validate-repo.sh
 ```
 
 **A command here fails from a clean clone:** open a documentation issue. A broken cheatsheet command is a product bug.
+
+**A fuzz command cannot start:** confirm `go version` reports Go 1.25.10 or a
+later compatible Go 1.25 patch and that the repository dependencies have been
+downloaded by `go test ./...`.

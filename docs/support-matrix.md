@@ -34,6 +34,7 @@ The pinned protocol inventory contains 148 unique message IDs. Generated presenc
 | RGB Light state and command | conveyor | mgmt | M1 | State, brightness, and blue RGB command passed. |
 | Device logs | yes | mgmt | M1 | Simulator info log reached the MGMT endpoint logger. |
 | Done signal and idempotent close | yes | simulated | M1 | Race tests cover clean termination. |
+| Hostile peer and stalled operation | security | simulated | M1 | Named drop, malformed-protobuf, unknown-message, incomplete-discovery, and stalled-discovery tests fail closed over the real framing/session path. |
 | Library-owned reconnect | no | none | M2 | MGMT owns reconnect; client option stays disabled. |
 | MGMT persistent and polling modes | external contract | mgmt / none | M1 | Persistent mode passed; polling runtime evidence remains pending. |
 | Unchanged `esphome0.mcl` | yes | none | M1 | Hash locked in manifest. |
@@ -53,6 +54,7 @@ The candidate record is [`compatibility/mgmt-feat-esphome2.json`](../compatibili
 | Conveyor firmware with ESPHome 2026.7.0 | configuration and compile pass | Firmware build proof, not hardware proof. |
 | MGMT-to-library simulator session | pass for the unchanged conveyor MCL | Binary sensor, sensor, Fan, Light, Noise, discovery, initial state, and logs reach `mgmt`. |
 | Graceful conveyor cleanup | pass after MGMT follow-up `acddc3f1` | A second fan-stop command is observed; failed cleanup is forbidden. |
+| Hostile-peer simulator and fuzz smoke | pass in library tests | Simulator evidence only; no MGMT or hardware claim. |
 | Physical device flash and actuation | not performed | Hardware cells remain `no`. |
 
 ## Protocol and transport

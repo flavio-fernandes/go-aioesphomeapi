@@ -35,5 +35,9 @@ jobs:
         run: go mod tidy && git diff --exit-code -- go.mod go.sum
       - name: Test with race detector
         run: go test -race ./...
+      - name: Fuzz framing smoke test
+        run: go test ./internal/wire -run=^$ -fuzz=FuzzPlainFramerRead -fuzztime=5s
+      - name: Fuzz protobuf decoding smoke test
+        run: go test ./internal/wire -run=^$ -fuzz=FuzzDecode -fuzztime=5s
       - name: Vet
         run: go vet ./...
