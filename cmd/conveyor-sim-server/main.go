@@ -14,6 +14,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/flavio-fernandes/go-aioesphomeapi/internal/mdns"
 	"github.com/flavio-fernandes/go-aioesphomeapi/pb"
 	"github.com/flavio-fernandes/go-aioesphomeapi/simulator"
 	"google.golang.org/protobuf/proto"
@@ -21,6 +22,7 @@ import (
 
 func main() {
 	address := flag.String("listen", "127.0.0.1:6053", "loopback TCP address")
+	mdnsHost := flag.String("mdns-host", "", "optional synthetic .local name for isolated acceptance")
 	flag.Parse()
 
 	listener, err := net.Listen("tcp", *address)
@@ -30,6 +32,20 @@ func main() {
 	device := simulator.New(simulator.ConveyorScenario())
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	var mdnsResponder *mdns.Responder
+	if *mdnsHost != "" {
+		mdnsResponder, err = mdns.NewResponder(*mdnsHost, net.IPv4(127, 0, 0, 1))
+		if err != nil {
+			_ = device.Close()
+			log.Fatal("start simulator mDNS responder: ", err)
+		}
+		defer mdnsResponder.Close()
+		go func() {
+			if serveErr := mdnsResponder.Serve(ctx); serveErr != nil {
+				log.Print("simulator mDNS responder: ", serveErr)
+			}
+		}()
+	}
 	go func() {
 		<-ctx.Done()
 		_ = device.Close()

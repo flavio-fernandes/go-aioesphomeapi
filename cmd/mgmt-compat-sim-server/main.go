@@ -18,6 +18,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/flavio-fernandes/go-aioesphomeapi/internal/mdns"
 	"github.com/flavio-fernandes/go-aioesphomeapi/pb"
 	"github.com/flavio-fernandes/go-aioesphomeapi/simulator"
 	"google.golang.org/protobuf/proto"
@@ -28,6 +29,7 @@ func main() {
 	address := flag.String("listen", "127.0.0.1:6053", "loopback Native API address")
 	forwardAddress := flag.String("forward-listen", "", "optional private-namespace TCP forward address")
 	parentNetworkNamespace := flag.String("parent-netns", "", "parent network namespace identifier required by non-loopback forwarding")
+	mdnsHost := flag.String("mdns-host", "", "optional synthetic .local name for loopback acceptance")
 	flag.Parse()
 
 	scenario, err := namedScenario(*scenarioName)
@@ -49,6 +51,24 @@ func main() {
 	serveDone := make(chan error, 1)
 	go func() { serveDone <- device.Serve(listener) }()
 	go printCommands(device.Commands())
+	var mdnsResponder *mdns.Responder
+	if *mdnsHost != "" {
+		host, _, splitErr := net.SplitHostPort(listener.Addr().String())
+		if splitErr != nil {
+			_ = device.Close()
+			log.Fatal("read simulator listener address: ", splitErr)
+		}
+		mdnsResponder, err = mdns.NewResponder(*mdnsHost, net.ParseIP(host))
+		if err != nil {
+			_ = device.Close()
+			log.Fatal("start simulator mDNS responder: ", err)
+		}
+		go func() {
+			if serveErr := mdnsResponder.Serve(ctx); serveErr != nil {
+				log.Print("simulator mDNS responder: ", serveErr)
+			}
+		}()
+	}
 
 	var forwarder *tcpForwarder
 	if *forwardAddress != "" {
@@ -71,6 +91,9 @@ func main() {
 	}
 	if forwarder != nil {
 		_ = forwarder.Close()
+	}
+	if mdnsResponder != nil {
+		_ = mdnsResponder.Close()
 	}
 	_ = device.Close()
 }

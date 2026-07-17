@@ -9,13 +9,13 @@ if [[ "${1:-}" == "--inside" ]]; then
 	readonly mgmt_root="$1"
 	readonly mgmt_binary="$2"
 	readonly simulator_binary="$3"
-	readonly hosts_file="$4"
-	readonly evidence_dir="$5"
-	readonly parent_netns="$6"
+	readonly evidence_dir="$4"
+	readonly parent_netns="$5"
 
 	ip link set lo up
+	ip link set lo multicast on
+	ip route add 224.0.0.0/4 dev lo
 	ip address add 192.168.1.50/32 dev lo
-	mount --bind "${hosts_file}" /etc/hosts
 
 	run_case() {
 		local name="$1"
@@ -60,7 +60,7 @@ if [[ "${1:-}" == "--inside" ]]; then
 	grep -Fq "received number command: key=203 value=0" "${evidence_dir}/basic-io-simulator.log"
 
 	run_case "blink" "esphome-blink.mcl" \
-		--scenario blink --listen 127.0.0.1:6053
+		--scenario blink --listen 127.0.0.1:6053 --mdns-host esphome-blink.local
 	grep -Fq "print[led state]: Msg: on-board led is on: true" "${evidence_dir}/blink-mgmt.log"
 	grep -Fq "esphome:switch[Onboard LED]: turning off" "${evidence_dir}/blink-mgmt.log"
 	grep -Fq "device log [info]: blink simulator ready" "${evidence_dir}/blink-mgmt.log"
@@ -82,7 +82,7 @@ readonly mgmt_binary="$(cd "$(dirname "$2")" && pwd)/$(basename "$2")"
 readonly esphome0_path="${mgmt_root}/examples/lang/esphome0.mcl"
 readonly blink_path="${mgmt_root}/examples/lang/esphome-blink.mcl"
 
-for command in go ip mount readlink sha256sum timeout unshare; do
+for command in go ip readlink sha256sum timeout unshare; do
 	if ! command -v "${command}" >/dev/null 2>&1; then
 		echo "required command is missing: ${command}" >&2
 		exit 1
@@ -105,15 +105,11 @@ evidence_dir="$(mktemp -d)"
 cleanup() { rm -rf "${evidence_dir}"; }
 trap cleanup EXIT
 simulator_binary="${evidence_dir}/mgmt-compat-sim-server"
-hosts_file="${evidence_dir}/hosts"
 parent_netns="$(readlink /proc/self/ns/net)"
 
 (
 	cd "${repo_root}"
 	go build -o "${simulator_binary}" ./cmd/mgmt-compat-sim-server
 )
-cp /etc/hosts "${hosts_file}"
-printf '127.0.0.1\tesphome-blink.local\n' >>"${hosts_file}"
-
-unshare --user --map-root-user --mount --net --fork \
-	"$0" --inside "${mgmt_root}" "${mgmt_binary}" "${simulator_binary}" "${hosts_file}" "${evidence_dir}" "${parent_netns}"
+unshare --user --map-root-user --net --fork \
+	"$0" --inside "${mgmt_root}" "${mgmt_binary}" "${simulator_binary}" "${evidence_dir}" "${parent_netns}"

@@ -3,7 +3,10 @@ package aioesphomeapi
 import (
 	"context"
 	"net"
+	"strings"
 	"time"
+
+	"github.com/flavio-fernandes/go-aioesphomeapi/internal/mdns"
 )
 
 // DialContextFunc makes the transport injectable without exposing protocol
@@ -63,5 +66,19 @@ func WithCallbackQueueSize(size int) Option {
 
 func defaultDialer(timeout time.Duration) DialContextFunc {
 	dialer := &net.Dialer{Timeout: timeout}
-	return dialer.DialContext
+	return func(ctx context.Context, network, address string) (net.Conn, error) {
+		host, port, err := net.SplitHostPort(address)
+		if err == nil && isMDNSHost(host) {
+			ip, lookupErr := mdns.Lookup(ctx, host, timeout)
+			if lookupErr != nil {
+				return nil, lookupErr
+			}
+			address = net.JoinHostPort(ip.String(), port)
+		}
+		return dialer.DialContext(ctx, network, address)
+	}
+}
+
+func isMDNSHost(host string) bool {
+	return strings.HasSuffix(strings.TrimSuffix(strings.ToLower(host), "."), ".local")
 }

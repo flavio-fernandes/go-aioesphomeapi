@@ -8,12 +8,12 @@ if [[ "${1:-}" == "--inside" ]]; then
 	readonly mgmt_root="$1"
 	readonly mgmt_binary="$2"
 	readonly simulator_binary="$3"
-	readonly hosts_file="$4"
-	readonly evidence_dir="$5"
+	readonly evidence_dir="$4"
 
 	ip link set lo up
-	mount --bind "${hosts_file}" /etc/hosts
-	"${simulator_binary}" --listen 127.0.0.1:6053 >"${evidence_dir}/simulator.log" 2>&1 &
+	ip link set lo multicast on
+	ip route add 224.0.0.0/4 dev lo
+	"${simulator_binary}" --listen 127.0.0.1:6053 --mdns-host esphome-conveyer.local >"${evidence_dir}/simulator.log" 2>&1 &
 	simulator_pid=$!
 	cleanup() {
 		kill "${simulator_pid}" 2>/dev/null || true
@@ -78,7 +78,7 @@ readonly mgmt_root="$(cd "$1" && pwd)"
 readonly mgmt_binary="$(cd "$(dirname "$2")" && pwd)/$(basename "$2")"
 readonly mcl_path="${mgmt_root}/examples/lang/esphome-conveyer.mcl"
 
-for command in go ip mount sha256sum timeout unshare; do
+for command in go ip sha256sum timeout unshare; do
 	if ! command -v "${command}" >/dev/null 2>&1; then
 		echo "required command is missing: ${command}" >&2
 		exit 1
@@ -102,14 +102,10 @@ evidence_dir="$(mktemp -d)"
 cleanup() { rm -rf "${evidence_dir}"; }
 trap cleanup EXIT
 simulator_binary="${evidence_dir}/conveyor-sim-server"
-hosts_file="${evidence_dir}/hosts"
 
 (
 	cd "${repo_root}"
 	go build -o "${simulator_binary}" ./cmd/conveyor-sim-server
 )
-cp /etc/hosts "${hosts_file}"
-printf '127.0.0.1\tesphome-conveyer.local\n' >>"${hosts_file}"
-
-unshare --user --map-root-user --mount --net --fork \
-	"$0" --inside "${mgmt_root}" "${mgmt_binary}" "${simulator_binary}" "${hosts_file}" "${evidence_dir}"
+unshare --user --map-root-user --net --fork \
+	"$0" --inside "${mgmt_root}" "${mgmt_binary}" "${simulator_binary}" "${evidence_dir}"
