@@ -74,6 +74,7 @@ The evidence is append-only: [`compatibility/mgmt-feat-esphome2.json`](../compat
 | Security-updated MGMT pin | pass on `feat/esphome` at `ede17372`, pinning library `main` at `f1f9e3ef` | Go 1.25.12, `x/crypto` v0.52.0, zero open Dependabot alerts, targeted race/vet/build, and all reviewed MCL simulator lanes pass without module-count or MCL changes. |
 | Latest-state timeline candidate | pass with library `62c6962b` and MGMT `8e8b1599` | Manual-clock pushes retain equal-time order; one switch command survives a same-device reconnect as the latest snapshot, with positive outage accounting and zero command-count delta. All unchanged MCL lanes remain green. |
 | Latest-state timeline post-merge | pass with library `3655bef5` and MGMT `eb8953a4` | The committed MGMT pin passes targeted race/vet, canonical build, focused same-device reconnect, and all unchanged MCL lanes without hosts substitution. |
+| Upstream MGMT draft PR | pass with library `091b9af4` and MGMT `3e09c568` on upstream `e5baaa2d` | Zero-conflict rebase with 20 patch-identical feature commits; targeted race/vet, canonical build, all MCL type checks, and all unchanged runtime lanes pass. PR #961 remains draft pending affiliation confirmation and upstream review. |
 | Firmware flash and physical conveyor actuation | not performed | Conveyor, Fan, Light, and firmware-provisioning hardware cells remain `no`. |
 
 ## Protocol and transport
