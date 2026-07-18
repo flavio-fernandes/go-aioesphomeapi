@@ -65,6 +65,7 @@ The evidence is append-only: [`compatibility/mgmt-feat-esphome2.json`](../compat
 | Final mDNS and diagnostics pin | MGMT `d6259199` pins library `73b5d58e` | All unchanged MCL demos pass from the committed module version; synchronous connection failures retain causes and attempted targets. |
 | Physical ESPHome blink device | pass on ESPHome 2026.7.0 with MGMT `d6259199` | Noise, `.local`, hello, discovery, binary-state push, switch command, and logs reach `hardware`. |
 | Final reviewed MGMT branch | pass on `feat/esphome` at `90a172d0`, pinning merged library `main` at `6f954bc9` | Targeted race/vet, both reviewed baseline MCL examples, and the reviewed conveyor MCL pass without `/etc/hosts`; issue reconciliation may close only evidence-complete work. |
+| Security-updated MGMT pin | pass on `feat/esphome` at `ede17372`, pinning library `main` at `f1f9e3ef` | Go 1.25.12, `x/crypto` v0.52.0, zero open Dependabot alerts, targeted race/vet/build, and all reviewed MCL simulator lanes pass without module-count or MCL changes. |
 | Firmware flash and physical conveyor actuation | not performed | Conveyor, Fan, Light, and firmware-provisioning hardware cells remain `no`. |
 
 ## Protocol and transport

@@ -67,6 +67,10 @@ work. Update both files when future work changes the operational truth.
 - Keep the official scanner version in one executable repository script. Run
   it on pull requests, `main` pushes, and a schedule; do not add its module to
   the library graph or automatically merge dependency updates.
+- Verified security pin: library `f1f9e3ef9b5efca161aa97cbe0040d278fdb4038`
+  and MGMT `feat/esphome` `ede1737219be106e2c5e06bb497af9a1ec9e17c8`.
+  The committed MGMT graph and all three MCL acceptance lanes passed with the
+  Go workspace disabled.
 
 ## 2026-07-17 M1 hostile-peer and lifecycle review
 
