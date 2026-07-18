@@ -89,3 +89,23 @@ work. Update both files when future work changes the operational truth.
 - `Ping(ctx)` is a caller-controlled liveness seam. A sent probe that times out
   closes the ambiguous connection so its late response cannot satisfy a later
   probe. Automatic keepalive policy remains separate work under issue #11.
+
+## 2026-07-18 protocol compatibility inventory
+
+- Keep canonical descriptor facts and reviewed compatibility claims separate.
+  `protocol/inventory.annotations.json` is the small handwritten input;
+  `protocol/inventory.json` is always generated from that input, the upstream
+  lock, and the compiled protobuf descriptors.
+- Every pinned message must expose the same fields and all evidence arrays.
+  Generated presence earns only `known`; an empty array is stronger and safer
+  than an inferred claim.
+- The pinned protobuf does not declare when most messages were introduced.
+  Record `not_declared_upstream`, the snapshot where the message is known, and
+  a null minimum API version instead of inventing a compatibility floor.
+- M1 currently accounts for 33 wire messages. Thirty-one have typed and
+  simulated proof; DeviceInfo request/response remain known-only under issue
+  #11. MGMT and hardware evidence is attached per message, so text-sensor and
+  button gaps remain visible for issue #9.
+- Keep unknown message IDs, enum values, and fields as separate plans. Unknown
+  IDs are verified; unknown M1 enums and fields remain planned until focused
+  tests establish their handwritten behavior.

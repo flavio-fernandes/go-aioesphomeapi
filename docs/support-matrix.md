@@ -14,7 +14,13 @@ This is the sole source of truth for compatibility claims. Protocol presence, re
 | `hardware` | Tested against a recorded ESPHome release and sanitized hardware profile. |
 | `production` | Security, race, fuzz, load, observability, compatibility, and release gates pass. |
 
-The pinned protocol inventory contains 148 unique message IDs. Generated presence is `known`; the table below distinguishes the implemented conveyor/MGMT slice from all other generated messages. `planned` is roadmap intent, not evidence.
+The pinned protocol inventory contains 148 unique message IDs. Its
+[generated compatibility view](protocol-inventory.md) records gates, MGMT need,
+reference parity, public behavior, and each evidence level for every message.
+Thirty-one messages make up the implemented M1 slice; the other 117 remain
+explicitly `generated_only`. Generated presence is `known`; the table below
+distinguishes the implemented conveyor/MGMT slice from all other generated
+messages. `planned` is roadmap intent, not evidence.
 
 ## MGMT compatibility baseline
 

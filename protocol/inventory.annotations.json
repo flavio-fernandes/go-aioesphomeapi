@@ -1,0 +1,443 @@
+{
+  "schema_version": 1,
+  "upstream": {
+    "release": "2026.7.0",
+    "commit": "920a8b761b680d9864da2ef4b44b4af95c99dba8"
+  },
+  "default_version_gate": {
+    "status": "not_declared_upstream",
+    "known_at": "2026.7.0",
+    "minimum_api": null
+  },
+  "unknown_values": {
+    "message_ids": {
+      "status": "verified",
+      "behavior": "Skip a bounded unknown message ID and continue processing later known traffic.",
+      "test_plan": "Send an unknown ID between discovery and Ping traffic over the real simulator wire path; require both operations to complete and CloseReason to remain nil.",
+      "evidence": [
+        "client_integration_test.go",
+        "simulator/fault_test.go"
+      ]
+    },
+    "enum_values": {
+      "status": "planned",
+      "behavior": "Preserve the numeric protobuf value at the generated wire boundary; handwritten behavior must reject or ignore an unrecognized value without panic.",
+      "test_plan": "Inject unknown values into each M1 enum-bearing state and command family, verify panic-free decode, and assert the documented typed behavior before raising evidence.",
+      "evidence": []
+    },
+    "fields": {
+      "status": "planned",
+      "behavior": "Let the protobuf runtime decode unknown fields without treating generated presence as handwritten support.",
+      "test_plan": "Append valid unknown fields to representative M1 messages and verify known fields and subsequent frames remain usable under race and fuzz checks.",
+      "evidence": []
+    }
+  },
+  "evidence_profiles": {
+    "known_only": {
+      "known": [
+        "protocol/upstream.lock.json",
+        "protocol/upstream/api.proto"
+      ],
+      "typed": [],
+      "simulated": [],
+      "mgmt": [],
+      "hardware": [],
+      "production": []
+    },
+    "typed_simulated": {
+      "known": [
+        "protocol/upstream.lock.json",
+        "protocol/upstream/api.proto"
+      ],
+      "typed": [
+        "client.go",
+        "entities.go",
+        "commands.go"
+      ],
+      "simulated": [
+        "client_integration_test.go",
+        "simulator/basic_test.go",
+        "simulator/fault_test.go"
+      ],
+      "mgmt": [],
+      "hardware": [],
+      "production": []
+    },
+    "typed_simulated_mgmt": {
+      "known": [
+        "protocol/upstream.lock.json",
+        "protocol/upstream/api.proto"
+      ],
+      "typed": [
+        "client.go",
+        "entities.go",
+        "commands.go"
+      ],
+      "simulated": [
+        "client_integration_test.go",
+        "simulator/basic_test.go",
+        "simulator/fault_test.go"
+      ],
+      "mgmt": [
+        "compatibility/mgmt-feat-esphome-security.json"
+      ],
+      "hardware": [],
+      "production": []
+    },
+    "typed_simulated_mgmt_hardware": {
+      "known": [
+        "protocol/upstream.lock.json",
+        "protocol/upstream/api.proto"
+      ],
+      "typed": [
+        "client.go",
+        "entities.go",
+        "commands.go"
+      ],
+      "simulated": [
+        "client_integration_test.go",
+        "simulator/basic_test.go",
+        "simulator/fault_test.go"
+      ],
+      "mgmt": [
+        "compatibility/mgmt-feat-esphome-security.json"
+      ],
+      "hardware": [
+        "compatibility/mgmt-feat-esphome-hardware-blink.json"
+      ],
+      "production": []
+    }
+  },
+  "messages": [
+    {
+      "name": "HelloRequest",
+      "milestone": "M1",
+      "entity_family": "session",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "secure_session_hello",
+      "evidence_profile": "typed_simulated_mgmt_hardware",
+      "notes": "Starts the Native API session after the transport is established."
+    },
+    {
+      "name": "HelloResponse",
+      "milestone": "M1",
+      "entity_family": "session",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "secure_session_hello",
+      "evidence_profile": "typed_simulated_mgmt_hardware",
+      "notes": "Validates the peer hello and records the advertised API version and name."
+    },
+    {
+      "name": "DisconnectRequest",
+      "milestone": "M1",
+      "entity_family": "session",
+      "mgmt_required": false,
+      "reference_parity": "reference_behavior",
+      "public_behavior": "peer_disconnect",
+      "evidence_profile": "typed_simulated",
+      "notes": "Acknowledges a peer-requested disconnect and records the session close reason."
+    },
+    {
+      "name": "DisconnectResponse",
+      "milestone": "M1",
+      "entity_family": "session",
+      "mgmt_required": false,
+      "reference_parity": "reference_behavior",
+      "public_behavior": "peer_disconnect",
+      "evidence_profile": "typed_simulated",
+      "notes": "Completes the Native API disconnect exchange."
+    },
+    {
+      "name": "PingRequest",
+      "milestone": "M1",
+      "entity_family": "session",
+      "mgmt_required": false,
+      "reference_parity": "reference_behavior",
+      "public_behavior": "liveness_probe",
+      "evidence_profile": "typed_simulated",
+      "notes": "Receives and answers peer liveness probes."
+    },
+    {
+      "name": "PingResponse",
+      "milestone": "M1",
+      "entity_family": "session",
+      "mgmt_required": false,
+      "reference_parity": "reference_behavior",
+      "public_behavior": "liveness_probe",
+      "evidence_profile": "typed_simulated",
+      "notes": "Completes the caller-controlled Ping operation."
+    },
+    {
+      "name": "DeviceInfoRequest",
+      "milestone": "M1",
+      "entity_family": "device_info",
+      "mgmt_required": false,
+      "reference_parity": "reference_behavior_not_required_by_mgmt",
+      "public_behavior": "generated_only",
+      "evidence_profile": "known_only",
+      "notes": "M1 lifecycle target owned by issue #11; no handwritten request behavior is implemented yet."
+    },
+    {
+      "name": "DeviceInfoResponse",
+      "milestone": "M1",
+      "entity_family": "device_info",
+      "mgmt_required": false,
+      "reference_parity": "reference_behavior_not_required_by_mgmt",
+      "public_behavior": "generated_only",
+      "evidence_profile": "known_only",
+      "notes": "M1 lifecycle target owned by issue #11; generated fields are known but not exposed as typed behavior."
+    },
+    {
+      "name": "ListEntitiesRequest",
+      "milestone": "M1",
+      "entity_family": "discovery",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "entity_discovery",
+      "evidence_profile": "typed_simulated_mgmt_hardware",
+      "notes": "Starts bounded entity discovery for the registry exposed to MGMT."
+    },
+    {
+      "name": "ListEntitiesDoneResponse",
+      "milestone": "M1",
+      "entity_family": "discovery",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "entity_discovery",
+      "evidence_profile": "typed_simulated_mgmt_hardware",
+      "notes": "Atomically completes discovery; duplicate completion is harmless."
+    },
+    {
+      "name": "SubscribeStatesRequest",
+      "milestone": "M1",
+      "entity_family": "state",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "state_subscription",
+      "evidence_profile": "typed_simulated_mgmt_hardware",
+      "notes": "Requests the initial state snapshot and later pushed state changes."
+    },
+    {
+      "name": "ListEntitiesBinarySensorResponse",
+      "milestone": "M1",
+      "entity_family": "binary_sensor",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "entity_discovery",
+      "evidence_profile": "typed_simulated_mgmt_hardware",
+      "notes": "Adds binary-sensor metadata to the immutable registry snapshot."
+    },
+    {
+      "name": "BinarySensorStateResponse",
+      "milestone": "M1",
+      "entity_family": "binary_sensor",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "state_subscription",
+      "evidence_profile": "typed_simulated_mgmt_hardware",
+      "notes": "Publishes binary-sensor state to subscribed callbacks and MGMT."
+    },
+    {
+      "name": "ListEntitiesSensorResponse",
+      "milestone": "M1",
+      "entity_family": "sensor",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "entity_discovery",
+      "evidence_profile": "typed_simulated_mgmt",
+      "notes": "Adds numeric sensor metadata to the immutable registry snapshot."
+    },
+    {
+      "name": "SensorStateResponse",
+      "milestone": "M1",
+      "entity_family": "sensor",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "state_subscription",
+      "evidence_profile": "typed_simulated_mgmt",
+      "notes": "Publishes numeric sensor state; missing and NaN policy remains tracked by issue #9."
+    },
+    {
+      "name": "ListEntitiesTextSensorResponse",
+      "milestone": "M1",
+      "entity_family": "text_sensor",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "entity_discovery",
+      "evidence_profile": "typed_simulated",
+      "notes": "Adds text-sensor metadata; MGMT runtime evidence remains tracked by issue #9."
+    },
+    {
+      "name": "TextSensorStateResponse",
+      "milestone": "M1",
+      "entity_family": "text_sensor",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "state_subscription",
+      "evidence_profile": "typed_simulated",
+      "notes": "Publishes text-sensor state; MGMT runtime evidence remains tracked by issue #9."
+    },
+    {
+      "name": "ListEntitiesSwitchResponse",
+      "milestone": "M1",
+      "entity_family": "switch",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "entity_discovery",
+      "evidence_profile": "typed_simulated_mgmt_hardware",
+      "notes": "Adds switch metadata to the immutable registry snapshot."
+    },
+    {
+      "name": "SwitchStateResponse",
+      "milestone": "M1",
+      "entity_family": "switch",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "state_subscription",
+      "evidence_profile": "typed_simulated_mgmt_hardware",
+      "notes": "Publishes observed switch state."
+    },
+    {
+      "name": "SwitchCommandRequest",
+      "milestone": "M1",
+      "entity_family": "switch",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "typed_command",
+      "evidence_profile": "typed_simulated_mgmt_hardware",
+      "notes": "Sends a serialized switch command without implicit replay."
+    },
+    {
+      "name": "ListEntitiesNumberResponse",
+      "milestone": "M1",
+      "entity_family": "number",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "entity_discovery",
+      "evidence_profile": "typed_simulated_mgmt",
+      "notes": "Adds number metadata and bounds to the registry snapshot."
+    },
+    {
+      "name": "NumberStateResponse",
+      "milestone": "M1",
+      "entity_family": "number",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "state_subscription",
+      "evidence_profile": "typed_simulated_mgmt",
+      "notes": "Publishes observed number state."
+    },
+    {
+      "name": "NumberCommandRequest",
+      "milestone": "M1",
+      "entity_family": "number",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "typed_command",
+      "evidence_profile": "typed_simulated_mgmt",
+      "notes": "Sends a serialized number command without implicit replay."
+    },
+    {
+      "name": "ListEntitiesButtonResponse",
+      "milestone": "M1",
+      "entity_family": "button",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "entity_discovery",
+      "evidence_profile": "typed_simulated",
+      "notes": "Adds button metadata; MGMT command evidence remains tracked by issue #9."
+    },
+    {
+      "name": "ButtonCommandRequest",
+      "milestone": "M1",
+      "entity_family": "button",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "typed_command",
+      "evidence_profile": "typed_simulated",
+      "notes": "Sends a non-idempotent button command without implicit replay; MGMT evidence remains tracked by issue #9."
+    },
+    {
+      "name": "ListEntitiesFanResponse",
+      "milestone": "M1",
+      "entity_family": "fan",
+      "mgmt_required": true,
+      "reference_parity": "conveyor_extension",
+      "public_behavior": "entity_discovery",
+      "evidence_profile": "typed_simulated_mgmt",
+      "notes": "Adds generic ESPHome Fan metadata for the conveyor profile."
+    },
+    {
+      "name": "FanStateResponse",
+      "milestone": "M1",
+      "entity_family": "fan",
+      "mgmt_required": true,
+      "reference_parity": "conveyor_extension",
+      "public_behavior": "state_subscription",
+      "evidence_profile": "typed_simulated_mgmt",
+      "notes": "Publishes Fan power, speed, oscillation, direction, and preset state."
+    },
+    {
+      "name": "FanCommandRequest",
+      "milestone": "M1",
+      "entity_family": "fan",
+      "mgmt_required": true,
+      "reference_parity": "conveyor_extension",
+      "public_behavior": "typed_command",
+      "evidence_profile": "typed_simulated_mgmt",
+      "notes": "Sends generic ESPHome Fan commands, including the conveyor cleanup stop."
+    },
+    {
+      "name": "ListEntitiesLightResponse",
+      "milestone": "M1",
+      "entity_family": "light",
+      "mgmt_required": true,
+      "reference_parity": "conveyor_extension",
+      "public_behavior": "entity_discovery",
+      "evidence_profile": "typed_simulated_mgmt",
+      "notes": "Adds generic ESPHome Light metadata and supported color modes."
+    },
+    {
+      "name": "LightStateResponse",
+      "milestone": "M1",
+      "entity_family": "light",
+      "mgmt_required": true,
+      "reference_parity": "conveyor_extension",
+      "public_behavior": "state_subscription",
+      "evidence_profile": "typed_simulated_mgmt",
+      "notes": "Publishes Light power, brightness, and color state for the conveyor status light."
+    },
+    {
+      "name": "LightCommandRequest",
+      "milestone": "M1",
+      "entity_family": "light",
+      "mgmt_required": true,
+      "reference_parity": "conveyor_extension",
+      "public_behavior": "typed_command",
+      "evidence_profile": "typed_simulated_mgmt",
+      "notes": "Sends generic ESPHome Light commands, including RGB status colors."
+    },
+    {
+      "name": "SubscribeLogsRequest",
+      "milestone": "M1",
+      "entity_family": "logs",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "bounded_log_subscription",
+      "evidence_profile": "typed_simulated_mgmt_hardware",
+      "notes": "Starts a bounded log subscription at the requested level."
+    },
+    {
+      "name": "SubscribeLogsResponse",
+      "milestone": "M1",
+      "entity_family": "logs",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "bounded_log_subscription",
+      "evidence_profile": "typed_simulated_mgmt_hardware",
+      "notes": "Dispatches device log records away from the network read loop."
+    }
+  ]
+}
