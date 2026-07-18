@@ -56,7 +56,9 @@ MGMT go.mod delta: +X / -Y modules
 Go directive: unchanged / changed with approved reason
 ```
 
-CI will eventually generate and compare this report. Unexpected additions fail closed.
+CI generates and compares this report with `./tools/report-dependencies.sh` on
+every pull request, push to `main`, and weekly run. Unexpected runtime modules,
+version drift, and unrecognized licenses fail closed.
 
 ## Continuous vulnerability monitoring
 

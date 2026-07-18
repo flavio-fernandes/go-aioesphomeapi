@@ -32,6 +32,10 @@ coverage.out
 *.test
 vendor/
 
+# Automatically generated fuzz failure inputs are never committed; review
+# them privately per SECURITY.md and recreate a synthetic seed if needed.
+testdata/fuzz/
+
 # Editors and operating systems
 .DS_Store
 .idea/

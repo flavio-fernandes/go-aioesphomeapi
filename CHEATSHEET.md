@@ -80,6 +80,32 @@ A clean run ends with `No vulnerabilities found.` A reachable finding fails the
 command and must be fixed before merge. Required-but-unreachable module findings
 still need maintainer triage under the [dependency policy](docs/dependency-policy.md).
 
+### 4c. Report dependencies, checksums, and licenses
+
+This contributor check prints the Go directive, every runtime module with its
+detected license and `go.sum` checksums, the pinned tool-only helpers, and the
+accepted dependency budget. It fails on any unexpected module, version drift,
+or unrecognized license. It needs only the Go toolchain.
+
+```bash
+./tools/report-dependencies.sh
+```
+
+A clean run ends with `dependency report matches the accepted budget`.
+
+### 4d. Prove the generated protocol files are current
+
+This check regenerates the protocol wire types and inventory in a throwaway
+copy and compares them with the checked-in files, so it never modifies your
+checkout. It needs the pinned generators from `tools/generate-protocol.sh`
+(protoc v31.1 and protoc-gen-go v1.36.11); CI runs it on every pull request.
+
+```bash
+./tools/check-generated-drift.sh
+```
+
+A clean run ends with `generated protocol files match their pinned inputs`.
+
 ### 5. Run the safe first example
 
 This uses a real Noise handshake over an in-process connection. It opens no port, needs no hardware, and contains only a public test key.
