@@ -1,0 +1,115 @@
+name: MGMT compatibility
+
+# Check out the pinned MGMT revision from the append-only compatibility
+# record, verify its commit and tree hashes, patch it to build against this
+# library checkout, and run the targeted ESPHome lanes plus both no-hardware
+# MCL simulator scenarios over Noise and multicast DNS.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "47 10 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pinned-mgmt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out the library
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          path: library
+      - name: Read the pinned MGMT revision from the compatibility record
+        id: pin
+        run: |
+          python3 - <<'EOF' >> "$GITHUB_OUTPUT"
+          import json
+          record = json.load(open("library/compatibility/mgmt-upstream-pr-961-ready.json"))
+          mgmt = record["mgmt"]
+          repository = mgmt["fork_repository"].removeprefix("https://github.com/")
+          print(f"repository={repository}")
+          print(f"revision={mgmt['ready_revision']}")
+          print(f"tree={mgmt['ready_tree']}")
+          EOF
+      - name: Check out the pinned MGMT revision
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          repository: ${{ steps.pin.outputs.repository }}
+          ref: ${{ steps.pin.outputs.revision }}
+          path: mgmt
+          # Full history so MGMT's `git describe` versioning works during
+          # `make build` instead of printing "fatal: No names found".
+          fetch-depth: 0
+      - name: Verify the pinned commit and tree hashes
+        run: |
+          test "$(git -C mgmt rev-parse HEAD)" = "${{ steps.pin.outputs.revision }}"
+          test "$(git -C mgmt rev-parse 'HEAD^{tree}')" = "${{ steps.pin.outputs.tree }}"
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version: 1.25.12
+          cache: true
+      # nex, goyacc, and goimports are pinned through the Go module checksum
+      # system; ragel comes from the distribution because MGMT's language
+      # build regenerates a ragel scanner, matching upstream MGMT CI.
+      - name: Install the MGMT code generators
+        run: |
+          go install github.com/blynn/nex@v0.0.0-20210330102341-1a3320dab988
+          go install golang.org/x/tools/cmd/goyacc@v0.48.0
+          go install golang.org/x/tools/cmd/goimports@v0.48.0
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ragel
+      - name: Patch pinned MGMT to build against this library checkout
+        run: |
+          cd mgmt
+          go mod edit -replace github.com/flavio-fernandes/go-aioesphomeapi=../library
+      # Augeas and libvirt are unrelated optional MGMT resources that need
+      # native libraries this lane does not exercise; MGMT's supported
+      # `noaugeas novirt` build tags exclude them. The lane specifically
+      # validates the ESPHome integration.
+      - name: Run the targeted MGMT ESPHome lanes
+        run: |
+          cd mgmt
+          make resources
+          go vet -tags='noaugeas novirt' ./util/esphome ./engine/resources
+          go test -race -count=1 -tags='noaugeas novirt' ./util/esphome
+          go test -race -count=1 -tags='noaugeas novirt' -run 'TestEsphome|TestParseEsphome' ./engine/resources
+      - name: Build the patched MGMT binary
+        run: |
+          cd mgmt
+          GOTAGS='noaugeas novirt' make build
+      - name: Confirm only the module patch changed the pinned checkout
+        run: |
+          cd mgmt
+          test "$(git status --porcelain -- ':!go.mod' ':!go.sum' | tee /dev/stderr | wc -l)" = "0"
+          git diff --name-only -- examples/lang | tee /dev/stderr | wc -l | grep -qx 0
+      # The lane scripts isolate their loopback network with
+      # `unshare --user --map-root-user --net`. Ubuntu 24.04 may restrict
+      # *unprivileged* user namespaces (kernel.apparmor_restrict_unprivileged_userns),
+      # so run only these two invocations under sudo: privileged namespace
+      # creation is exempt, and the runner-wide hardening knob stays untouched.
+      # Root must also trust the runner-owned checkouts, or the scripts'
+      # `git rev-parse` dies instantly on dubious ownership.
+      - name: Let root trust the runner-owned checkouts
+        run: |
+          sudo git config --global --add safe.directory "$GITHUB_WORKSPACE/library"
+          sudo git config --global --add safe.directory "$GITHUB_WORKSPACE/mgmt"
+      - name: Converge both reviewed baseline MCL scenarios over Noise
+        run: |
+          cd library
+          sudo env "PATH=$PATH" ./tools/test-mgmt-baselines.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt" 2>&1
+      - name: Converge the reviewed conveyor MCL scenario over Noise
+        run: |
+          cd library
+          sudo env "PATH=$PATH" ./tools/test-mgmt-conveyor.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt" 2>&1

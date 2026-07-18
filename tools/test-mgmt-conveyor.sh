@@ -107,5 +107,12 @@ simulator_binary="${evidence_dir}/conveyor-sim-server"
 	cd "${repo_root}"
 	go build -o "${simulator_binary}" ./cmd/conveyor-sim-server
 )
-unshare --user --map-root-user --net --fork \
+# The user namespace only exists so an unprivileged contributor may create
+# the network namespace; root (for example in CI) creates it directly, since
+# an unmapped-uid workspace would be untraversable behind --map-root-user.
+unshare_flags=(--net --fork)
+if [[ "$(id -u)" != "0" ]]; then
+	unshare_flags=(--user --map-root-user --net --fork)
+fi
+unshare "${unshare_flags[@]}" \
 	"$0" --inside "${mgmt_root}" "${mgmt_binary}" "${simulator_binary}" "${evidence_dir}"

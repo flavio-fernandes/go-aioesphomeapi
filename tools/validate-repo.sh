@@ -21,7 +21,8 @@ required=(
   protocol/upstream.lock.json protocol/inventory.annotations.json protocol/inventory.json
   protocol/upstream/api.proto protocol/upstream/api_options.proto protocol/upstream/LICENSE
   pb/api.pb.go pb/api_options.pb.go tools/sync-protocol.sh tools/generate-protocol.sh
-  tools/run-govulncheck.sh
+  tools/run-govulncheck.sh tools/report-dependencies.sh tools/check-generated-drift.sh
+  .github/workflows/mgmt-compat.yml
 )
 
 for path in "${required[@]}"; do
@@ -46,6 +47,18 @@ if [[ ! -x tools/run-govulncheck.sh ]] ||
   ! grep -Fq 'run: ./tools/run-govulncheck.sh' .github/workflows/policy.yml ||
   ! grep -Fq 'cron: "17 9 * * 1"' .github/workflows/policy.yml; then
   echo "vulnerability monitoring must be executable, version-pinned, and scheduled in policy CI" >&2
+  exit 1
+fi
+
+if [[ ! -x tools/report-dependencies.sh ]] || [[ ! -x tools/check-generated-drift.sh ]] ||
+  ! grep -Fq 'fuzz=FuzzPlainFramerRead' .github/workflows/policy.yml ||
+  ! grep -Fq 'fuzz=FuzzDecode' .github/workflows/policy.yml ||
+  ! grep -Fq 'fuzz=FuzzAnswerIP' .github/workflows/policy.yml ||
+  ! grep -Fq 'run: ./tools/report-dependencies.sh' .github/workflows/policy.yml ||
+  ! grep -Fq 'run: ./tools/check-generated-drift.sh' .github/workflows/policy.yml ||
+  ! grep -Fq 'test-mgmt-baselines.sh' .github/workflows/mgmt-compat.yml ||
+  ! grep -Fq 'test-mgmt-conveyor.sh' .github/workflows/mgmt-compat.yml; then
+  echo "release verification lanes must stay executable and wired into CI" >&2
   exit 1
 fi
 

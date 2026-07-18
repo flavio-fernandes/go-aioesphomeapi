@@ -65,6 +65,9 @@ go test ./internal/mdns -run=^$ -fuzz=FuzzAnswerIP -fuzztime=5s
 Each command should end with `PASS`. A crash, panic, excessive allocation, or
 unexpected decoded frame is a security bug; keep the generated fuzz input
 private until it is reviewed for sensitive data, then follow `SECURITY.md`.
+Never commit a generated failure file as-is: after review, minimize it, make
+sure it is fully synthetic, and only then add it deliberately under
+`testdata/fuzz/` as regression corpus. CI never commits fuzz output.
 
 ### 4b. Check for reachable vulnerabilities
 
@@ -79,6 +82,50 @@ module checksum system; it does not add anything to this library's `go.mod`.
 A clean run ends with `No vulnerabilities found.` A reachable finding fails the
 command and must be fixed before merge. Required-but-unreachable module findings
 still need maintainer triage under the [dependency policy](docs/dependency-policy.md).
+
+### 4c. Report dependencies, checksums, and licenses
+
+This contributor check prints the Go directive, every runtime module with its
+detected license and `go.sum` checksums, the pinned tool-only helpers, and the
+accepted dependency budget. It fails on any unexpected module, version drift,
+or unrecognized license. It needs only the Go toolchain.
+
+```bash
+./tools/report-dependencies.sh
+```
+
+A clean run ends with `dependency report matches the accepted budget`.
+
+### 4d. Prove the generated protocol files are current
+
+This check regenerates the protocol wire types and inventory in a throwaway
+copy and compares them with the checked-in files, so it never modifies your
+checkout. It needs the pinned generators from `tools/generate-protocol.sh`
+(protoc v31.1 and protoc-gen-go v1.36.11); CI runs it on every pull request.
+
+```bash
+./tools/check-generated-drift.sh
+```
+
+A clean run ends with `generated protocol files match their pinned inputs`.
+
+### 4e. Run the extended fuzz lane on demand
+
+The hosted `fuzz-extended` job runs every fuzz target for a finite ten minutes
+inside the "Repository policy" workflow. It runs automatically on the weekly
+schedule; a maintainer can also start it manually from `main` or any branch.
+A pull-request comment cannot trigger it: GitHub only starts
+`workflow_dispatch` runs from the Actions page ("Repository policy" → "Run
+workflow"), the CLI, or the REST API.
+
+```bash
+gh workflow run policy.yml --repo flavio-fernandes/go-aioesphomeapi --ref main
+gh run list --repo flavio-fernandes/go-aioesphomeapi --workflow=policy.yml --limit 3
+```
+
+The dispatched run executes the validate, Go, generated-drift, and
+fuzz-extended jobs; each fuzz step must end with `PASS`. The same coverage runs
+locally by raising `-fuzztime` in the section 4a commands to `10m`.
 
 ### 5. Run the safe first example
 
