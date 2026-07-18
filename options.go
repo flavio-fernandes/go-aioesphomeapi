@@ -37,8 +37,8 @@ func WithEncryptionKey(key string) Option {
 	return func(c *config) { c.encryptionKey = key }
 }
 
-// WithExpectedName requires the name received during the Noise handshake to
-// match name. An empty value disables this additional identity check.
+// WithExpectedName requires both the Noise handshake name, when encrypted,
+// and the Native API Hello name to match. An empty value disables the check.
 func WithExpectedName(name string) Option {
 	return func(c *config) { c.expectedName = name }
 }

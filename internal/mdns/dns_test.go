@@ -35,6 +35,7 @@ func TestAnswerIPAcceptsCompressedName(t *testing.T) {
 		t.Fatal(err)
 	}
 	binary.BigEndian.PutUint16(message[6:8], 1)
+	binary.BigEndian.PutUint16(message[2:4], responseFlags)
 	message = append(message, 0xc0, 0x0c)
 	message = binary.BigEndian.AppendUint16(message, typeA)
 	message = binary.BigEndian.AppendUint16(message, classIN|classCacheFlush)
@@ -44,6 +45,17 @@ func TestAnswerIPAcceptsCompressedName(t *testing.T) {
 	ip, ok := answerIP(message, "esphome-blink.local")
 	if !ok || !ip.Equal(net.IPv4(203, 0, 113, 7)) {
 		t.Fatalf("got %v, %t", ip, ok)
+	}
+}
+
+func TestAnswerIPRejectsKnownAnswerInQuery(t *testing.T) {
+	message, err := response("esphome-blink.local", net.IPv4(203, 0, 113, 7))
+	if err != nil {
+		t.Fatal(err)
+	}
+	binary.BigEndian.PutUint16(message[2:4], 0)
+	if ip, ok := answerIP(message, "esphome-blink.local"); ok || ip != nil {
+		t.Fatalf("accepted a query packet as an answer: %v", ip)
 	}
 }
 

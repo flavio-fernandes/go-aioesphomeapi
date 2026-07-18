@@ -6,6 +6,7 @@ import (
 	"time"
 
 	api "github.com/flavio-fernandes/go-aioesphomeapi"
+	"github.com/flavio-fernandes/go-aioesphomeapi/pb"
 	"github.com/flavio-fernandes/go-aioesphomeapi/simulator"
 )
 
@@ -38,5 +39,29 @@ func TestGenericCompatibilityScenarios(t *testing.T) {
 				t.Fatalf("connection did not clean up: %+v", stats)
 			}
 		})
+	}
+}
+
+func TestCommandOverflowIsObservable(t *testing.T) {
+	device := simulator.New(simulator.ConveyorScenario())
+	t.Cleanup(func() { _ = device.Close() })
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	client, err := api.DialWithContext(ctx, "synthetic-simulator:6053", time.Second, device.ClientOptions()...)
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	t.Cleanup(func() { _ = client.Close() })
+	for i := 0; i < 70; i++ {
+		if err := client.SendCommand(&pb.ButtonCommandRequest{Key: simulator.ResetButtonKey}); err != nil {
+			t.Fatalf("send command %d: %v", i, err)
+		}
+	}
+	deadline := time.Now().Add(time.Second)
+	for device.Stats().DroppedCommands == 0 && time.Now().Before(deadline) {
+		time.Sleep(time.Millisecond)
+	}
+	if stats := device.Stats(); stats.DroppedCommands == 0 {
+		t.Fatalf("overflow was silent: %+v", stats)
 	}
 }

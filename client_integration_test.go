@@ -100,6 +100,21 @@ func TestSecureConveyorRoundTrip(t *testing.T) {
 	}
 }
 
+func TestPingUsesNativeRoundTrip(t *testing.T) {
+	device := simulator.New(simulator.BasicIOScenario())
+	t.Cleanup(func() { _ = device.Close() })
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	client, err := api.DialWithContext(ctx, "simulator:6053", time.Second, device.ClientOptions()...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = client.Close() })
+	if err := client.Ping(ctx); err != nil {
+		t.Fatalf("ping: %v", err)
+	}
+}
+
 func TestPlaintextRequiresExplicitOptIn(t *testing.T) {
 	_, err := api.DialWithContext(context.Background(), "unused", time.Millisecond)
 	if !errors.Is(err, api.ErrTransportPolicy) {
@@ -112,6 +127,16 @@ func TestPlaintextRequiresExplicitOptIn(t *testing.T) {
 		t.Fatalf("explicit plaintext dial: %v", err)
 	}
 	_ = client.Close()
+}
+
+func TestExpectedNameAlsoProtectsPlaintext(t *testing.T) {
+	device := simulator.New(simulator.BlinkScenario(), simulator.WithPlaintext())
+	t.Cleanup(func() { _ = device.Close() })
+	options := append(device.ClientOptions(), api.WithExpectedName("different-device"))
+	_, err := api.DialWithContext(context.Background(), "simulator:6053", time.Second, options...)
+	if !errors.Is(err, api.ErrHello) || !errors.Is(err, api.ErrPeerName) {
+		t.Fatalf("got %v, want hello and peer-name mismatch", err)
+	}
 }
 
 func TestInjectedDialerBypassesMDNS(t *testing.T) {

@@ -2,6 +2,8 @@ package aioesphomeapi
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/binary"
 	"errors"
 	"io"
 	"net"
@@ -22,11 +24,13 @@ type scriptedFrame struct {
 }
 
 type scriptedFramer struct {
-	mutex    sync.Mutex
-	frames   []scriptedFrame
-	writeErr error
-	closed   chan struct{}
-	once     sync.Once
+	mutex        sync.Mutex
+	frames       []scriptedFrame
+	writeErr     error
+	writeID      uint32
+	writePayload []byte
+	closed       chan struct{}
+	once         sync.Once
 }
 
 func newScriptedFramer(frames ...scriptedFrame) *scriptedFramer {
@@ -46,20 +50,21 @@ func (f *scriptedFramer) ReadFrame() (uint32, []byte, error) {
 	return 0, nil, io.ErrClosedPipe
 }
 
-func (f *scriptedFramer) WriteFrame(uint32, []byte) error { return f.writeErr }
+func (f *scriptedFramer) WriteFrame(id uint32, payload []byte) error {
+	f.mutex.Lock()
+	f.writeID = id
+	f.writePayload = append([]byte(nil), payload...)
+	err := f.writeErr
+	f.mutex.Unlock()
+	return err
+}
 func (f *scriptedFramer) Close() error {
 	f.once.Do(func() { close(f.closed) })
 	return nil
 }
 
 func bareClient(f wire.Framer) *Client {
-	return &Client{
-		framer:   f,
-		entities: newEntityRegistry(),
-		done:     make(chan struct{}),
-		handlers: make(map[uint32]map[uint64]callback),
-		events:   make(chan proto.Message, 4),
-	}
+	return newClient(f, 4)
 }
 
 func TestDialPreservesNetOpErrorAndAddress(t *testing.T) {
@@ -107,27 +112,71 @@ func TestNoiseHandshakeErrorKeepsCategoryAndAddress(t *testing.T) {
 	}
 }
 
+func TestDialReportsSanitizedPeerKeyRejection(t *testing.T) {
+	front, back := net.Pipe()
+	t.Cleanup(func() { _ = back.Close() })
+	key := make([]byte, 32)
+	for i := range key {
+		key[i] = byte(i + 1)
+	}
+	encoded := base64.StdEncoding.EncodeToString(key)
+	peerDone := make(chan error, 1)
+	go func() {
+		var preamble [3]byte
+		if _, err := io.ReadFull(back, preamble[:]); err != nil {
+			peerDone <- err
+			return
+		}
+		if _, err := readTestNoisePacket(back); err != nil {
+			peerDone <- err
+			return
+		}
+		if err := writeTestNoisePacket(back, []byte{1, 'r', 'e', 'j', 'e', 'c', 't', 'i', 'n', 'g', 0, 0}); err != nil {
+			peerDone <- err
+			return
+		}
+		peerDone <- writeTestNoisePacket(back, append([]byte{1}, []byte("Handshake MAC failure\n")...))
+	}()
+	address := "rejecting-device.local:6053"
+	_, err := DialWithContext(context.Background(), address, time.Second,
+		WithEncryptionKey(encoded), WithExpectedName("rejecting"),
+		WithDialContext(func(context.Context, string, string) (net.Conn, error) { return front, nil }),
+	)
+	if !errors.Is(err, ErrNoiseHandshake) || !errors.Is(err, ErrNoiseKeyRejected) {
+		t.Fatalf("got %v, want handshake and key-rejected categories", err)
+	}
+	if !strings.Contains(err.Error(), address) || !strings.Contains(err.Error(), "Handshake MAC failure") {
+		t.Fatalf("error omits target or sanitized reason: %v", err)
+	}
+	if strings.Contains(err.Error(), encoded) || strings.ContainsAny(err.Error(), "\r\n\t") {
+		t.Fatalf("error leaks key or control characters: %q", err)
+	}
+	if peerErr := <-peerDone; peerErr != nil {
+		t.Fatalf("rejecting peer: %v", peerErr)
+	}
+}
+
 func TestHelloFailureStagesPreserveCauses(t *testing.T) {
 	writeCause := errors.New("synthetic write failure")
 	writeFramer := newScriptedFramer()
 	writeFramer.writeErr = writeCause
-	writeErr := bareClient(writeFramer).hello("test")
+	writeErr := bareClient(writeFramer).hello("test", "")
 	if !errors.Is(writeErr, ErrHello) || !errors.Is(writeErr, writeCause) || !strings.Contains(writeErr.Error(), "send request") {
 		t.Fatalf("write stage: %v", writeErr)
 	}
 
 	readCause := errors.New("synthetic read failure")
-	readErr := bareClient(newScriptedFramer(scriptedFrame{err: readCause})).hello("test")
+	readErr := bareClient(newScriptedFramer(scriptedFrame{err: readCause})).hello("test", "")
 	if !errors.Is(readErr, ErrHello) || !errors.Is(readErr, readCause) || !strings.Contains(readErr.Error(), "read response") {
 		t.Fatalf("read stage: %v", readErr)
 	}
 
-	idErr := bareClient(newScriptedFramer(scriptedFrame{id: 99})).hello("test")
+	idErr := bareClient(newScriptedFramer(scriptedFrame{id: 99})).hello("test", "")
 	if !errors.Is(idErr, ErrHello) || !strings.Contains(idErr.Error(), "message ID 99") {
 		t.Fatalf("message-ID stage: %v", idErr)
 	}
 
-	decodeErr := bareClient(newScriptedFramer(scriptedFrame{id: 2, payload: []byte{0xff}})).hello("test")
+	decodeErr := bareClient(newScriptedFramer(scriptedFrame{id: 2, payload: []byte{0xff}})).hello("test", "")
 	if !errors.Is(decodeErr, ErrHello) || !errors.Is(decodeErr, wire.ErrMalformedFrame) || !strings.Contains(decodeErr.Error(), "decode response") {
 		t.Fatalf("decode stage: %v", decodeErr)
 	}
@@ -136,10 +185,175 @@ func TestHelloFailureStagesPreserveCauses(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	versionErr := bareClient(newScriptedFramer(scriptedFrame{id: 2, payload: payload})).hello("test")
+	versionErr := bareClient(newScriptedFramer(scriptedFrame{id: 2, payload: payload})).hello("test", "")
 	if !errors.Is(versionErr, ErrHello) || !strings.Contains(versionErr.Error(), "unsupported API major version 2") {
 		t.Fatalf("version stage: %v", versionErr)
 	}
+}
+
+func TestHelloExpectedNameMismatch(t *testing.T) {
+	payload, err := proto.Marshal(&pb.HelloResponse{ApiVersionMajor: 1, Name: "actual-device"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = bareClient(newScriptedFramer(scriptedFrame{id: 2, payload: payload})).hello("test", "expected-device")
+	if !errors.Is(err, ErrHello) || !errors.Is(err, ErrPeerName) {
+		t.Fatalf("got %v, want hello and peer-name categories", err)
+	}
+}
+
+func TestDialBoundsPlaintextHelloByTimeout(t *testing.T) {
+	front, back := net.Pipe()
+	t.Cleanup(func() { _ = back.Close() })
+	go func() {
+		framer := wire.NewPlainFramer(back, wire.DefaultMaxFrameSize)
+		_, _, _ = framer.ReadFrame()
+	}()
+	started := time.Now()
+	_, err := DialWithContext(context.Background(), "silent-plaintext:6053", 30*time.Millisecond,
+		WithInsecurePlaintext(),
+		WithDialContext(func(context.Context, string, string) (net.Conn, error) { return front, nil }),
+	)
+	if !errors.Is(err, ErrHello) {
+		t.Fatalf("got %v, want hello category", err)
+	}
+	if elapsed := time.Since(started); elapsed > 500*time.Millisecond {
+		t.Fatalf("hello exceeded bound: %s", elapsed)
+	}
+}
+
+func TestDialBoundsNoiseHelloByTimeout(t *testing.T) {
+	front, back := net.Pipe()
+	t.Cleanup(func() { _ = back.Close() })
+	key := make([]byte, 32)
+	for i := range key {
+		key[i] = byte(i + 1)
+	}
+	encoded := base64.StdEncoding.EncodeToString(key)
+	go func() {
+		framer, err := wire.NewNoiseServerFramer(back, key, "silent-noise", time.Second, wire.DefaultMaxFrameSize)
+		if err == nil {
+			_, _, _ = framer.ReadFrame()
+		}
+	}()
+	_, err := DialWithContext(context.Background(), "silent-noise:6053", 50*time.Millisecond,
+		WithEncryptionKey(encoded), WithExpectedName("silent-noise"),
+		WithDialContext(func(context.Context, string, string) (net.Conn, error) { return front, nil }),
+	)
+	if !errors.Is(err, ErrHello) {
+		t.Fatalf("got %v, want hello category", err)
+	}
+}
+
+func TestDialHelloPreservesContextCancellation(t *testing.T) {
+	front, back := net.Pipe()
+	t.Cleanup(func() { _ = back.Close() })
+	helloRead := make(chan struct{})
+	go func() {
+		framer := wire.NewPlainFramer(back, wire.DefaultMaxFrameSize)
+		_, _, _ = framer.ReadFrame()
+		close(helloRead)
+	}()
+	ctx, cancel := context.WithCancel(context.Background())
+	result := make(chan error, 1)
+	go func() {
+		_, err := DialWithContext(ctx, "canceled-hello:6053", time.Second,
+			WithInsecurePlaintext(),
+			WithDialContext(func(context.Context, string, string) (net.Conn, error) { return front, nil }),
+		)
+		result <- err
+	}()
+	select {
+	case <-helloRead:
+	case <-time.After(time.Second):
+		t.Fatal("peer did not receive hello")
+	}
+	cancel()
+	select {
+	case err := <-result:
+		if !errors.Is(err, ErrHello) || !errors.Is(err, context.Canceled) {
+			t.Fatalf("got %v, want hello and cancellation causes", err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("canceled hello did not return")
+	}
+}
+
+func TestDialTimeoutBoundsInjectedDialer(t *testing.T) {
+	started := time.Now()
+	_, err := DialWithContext(context.Background(), "silent-dial:6053", 30*time.Millisecond,
+		WithInsecurePlaintext(),
+		WithDialContext(func(ctx context.Context, _, _ string) (net.Conn, error) {
+			<-ctx.Done()
+			return nil, ctx.Err()
+		}),
+	)
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("got %v, want dial deadline", err)
+	}
+	if elapsed := time.Since(started); elapsed > 500*time.Millisecond {
+		t.Fatalf("dial exceeded bound: %s", elapsed)
+	}
+}
+
+func TestSubscribeLogsDoesNotRequestConfigDump(t *testing.T) {
+	framer := newScriptedFramer()
+	client := bareClient(framer)
+	if _, err := client.SubscribeLogs(pb.LogLevel_LOG_LEVEL_INFO, nil); err != nil {
+		t.Fatal(err)
+	}
+	framer.mutex.Lock()
+	id, payload := framer.writeID, append([]byte(nil), framer.writePayload...)
+	framer.mutex.Unlock()
+	message, err := wire.Decode(id, payload)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request, ok := message.(*pb.SubscribeLogsRequest)
+	if !ok || request.DumpConfig {
+		t.Fatalf("unexpected log request: %#v", message)
+	}
+}
+
+func TestPingHonorsContext(t *testing.T) {
+	client := bareClient(newScriptedFramer())
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Millisecond)
+	defer cancel()
+	err := client.Ping(ctx)
+	if !errors.Is(err, ErrPing) || !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("got %v, want ping timeout", err)
+	}
+	select {
+	case <-client.Done():
+	case <-time.After(time.Second):
+		t.Fatal("ambiguous timed-out ping did not close the connection")
+	}
+}
+
+func TestSpuriousEntityCompletionIsHarmless(t *testing.T) {
+	client := bareClient(newScriptedFramer())
+	client.handleList(&pb.ListEntitiesDoneResponse{})
+	client.handleList(&pb.ListEntitiesDoneResponse{})
+}
+
+func readTestNoisePacket(reader io.Reader) ([]byte, error) {
+	var header [3]byte
+	if _, err := io.ReadFull(reader, header[:]); err != nil {
+		return nil, err
+	}
+	length := int(binary.BigEndian.Uint16(header[1:]))
+	payload := make([]byte, length)
+	_, err := io.ReadFull(reader, payload)
+	return payload, err
+}
+
+func writeTestNoisePacket(writer io.Writer, payload []byte) error {
+	header := []byte{1, byte(len(payload) >> 8), byte(len(payload))}
+	if _, err := writer.Write(header); err != nil {
+		return err
+	}
+	_, err := writer.Write(payload)
+	return err
 }
 
 func TestReadLoopRecordsFailureReason(t *testing.T) {

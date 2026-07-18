@@ -229,9 +229,20 @@ as `*net.OpError`, `ErrNameResolution`, `ErrNoiseHandshake`, and `ErrHello`.
 Never paste a production error into an issue until you have removed private
 hostnames and addresses.
 
+An ESPHome peer that explicitly rejects a key returns both the broad
+`ErrNoiseHandshake` category and the more actionable `ErrNoiseKeyRejected`
+category. Its untrusted reason text is printable and length-limited; key
+material is never included.
+
 **An established connection closes:** wait for `client.Done()`, then inspect
 `client.CloseReason()`. A deliberate `client.Close()` leaves the reason nil;
 network, protocol, peer-disconnect, context, and queue failures record a cause.
+
+**Check an established connection now:** call `client.Ping(ctx)` with your own
+short context deadline. The probe is serialized and returns `ErrPing` while
+preserving cancellation, connection, or protocol causes. A sent probe that
+times out closes the ambiguous connection so a late reply cannot satisfy a
+later probe. Automatic periodic keepalive remains application policy for now.
 
 **A fuzz command cannot start:** confirm `go version` reports Go 1.25.10 or a
 later compatible Go 1.25 patch and that the repository dependencies have been

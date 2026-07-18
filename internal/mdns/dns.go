@@ -95,6 +95,9 @@ func answerIP(message []byte, host string) (net.IP, bool) {
 	if len(message) < dnsHeaderSize || len(message) > maxDNSMessageSize {
 		return nil, false
 	}
+	if binary.BigEndian.Uint16(message[2:4])&0x8000 == 0 {
+		return nil, false
+	}
 	questionCount := int(binary.BigEndian.Uint16(message[4:6]))
 	recordCount := int(binary.BigEndian.Uint16(message[6:8])) + int(binary.BigEndian.Uint16(message[8:10])) + int(binary.BigEndian.Uint16(message[10:12]))
 	if questionCount > 64 || recordCount > 256 {

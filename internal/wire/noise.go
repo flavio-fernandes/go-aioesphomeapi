@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strings"
 	"sync"
 	"time"
 
@@ -13,6 +14,8 @@ import (
 )
 
 var noisePrologue = []byte("NoiseAPIInit\x00\x00")
+
+const maxNoiseRejectionReason = 96
 
 type noiseFramer struct {
 	conn     net.Conn
@@ -44,7 +47,7 @@ func NewNoiseClientFramer(conn net.Conn, psk []byte, expectedName string, timeou
 		return nil, ErrNoiseKey
 	}
 	if maxFrame <= 0 || maxFrame > maxNoisePacketSize-20 {
-		maxFrame = DefaultMaxFrameSize - 20
+		maxFrame = maxNoisePacketSize - 20
 	}
 	if timeout > 0 {
 		if err := conn.SetDeadline(time.Now().Add(timeout)); err != nil {
@@ -79,11 +82,14 @@ func NewNoiseClientFramer(conn net.Conn, psk []byte, expectedName string, timeou
 	}
 	serverName := string(serverHello[1 : nameEnd+1])
 	if expectedName != "" && serverName != expectedName {
-		return nil, ErrNoiseName
+		return nil, ErrPeerName
 	}
 	response, err := readNoisePacket(conn)
 	if err != nil {
 		return nil, fmt.Errorf("%w: read server handshake message: %w", ErrNoiseHandshake, err)
+	}
+	if len(response) >= 1 && response[0] == 1 {
+		return nil, fmt.Errorf("%w: %w: %s", ErrNoiseHandshake, ErrNoiseKeyRejected, sanitizeNoiseRejection(response[1:]))
 	}
 	if len(response) < 2 || response[0] != 0 {
 		return nil, fmt.Errorf("%w: invalid server handshake packet", ErrNoiseHandshake)
@@ -105,7 +111,7 @@ func NewNoiseServerFramer(conn net.Conn, psk []byte, serverName string, timeout 
 		return nil, ErrNoiseKey
 	}
 	if maxFrame <= 0 || maxFrame > maxNoisePacketSize-20 {
-		maxFrame = DefaultMaxFrameSize - 20
+		maxFrame = maxNoisePacketSize - 20
 	}
 	if timeout > 0 {
 		if err := conn.SetDeadline(time.Now().Add(timeout)); err != nil {
@@ -155,7 +161,10 @@ func NewNoiseServerFramer(conn net.Conn, psk []byte, serverName string, timeout 
 }
 
 func (f *noiseFramer) WriteFrame(messageType uint32, payload []byte) error {
-	if len(payload) > f.maxFrame || messageType > uint32(^uint16(0)) {
+	if messageType > uint32(^uint16(0)) {
+		return ErrMessageType
+	}
+	if len(payload) > f.maxFrame {
 		return ErrFrameTooLarge
 	}
 	plain := make([]byte, 4+len(payload))
@@ -173,6 +182,25 @@ func (f *noiseFramer) WriteFrame(messageType uint32, payload []byte) error {
 		return ErrFrameTooLarge
 	}
 	return writeNoisePacket(f.conn, ciphertext)
+}
+
+func sanitizeNoiseRejection(raw []byte) string {
+	if len(raw) > maxNoiseRejectionReason {
+		raw = raw[:maxNoiseRejectionReason]
+	}
+	clean := make([]byte, len(raw))
+	for i, value := range raw {
+		if value >= 0x20 && value <= 0x7e {
+			clean[i] = value
+		} else {
+			clean[i] = '?'
+		}
+	}
+	reason := strings.TrimSpace(string(clean))
+	if reason == "" {
+		return "unspecified rejection"
+	}
+	return reason
 }
 
 func (f *noiseFramer) ReadFrame() (uint32, []byte, error) {

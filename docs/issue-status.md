@@ -18,6 +18,11 @@ record is [`compatibility/mgmt-feat-esphome-review.json`](../compatibility/mgmt-
 | [#3](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/3) freeze MGMT behavior and migration diff | close | Immutable manifests, preserved `feat/esphome-richard87`, reviewed MCL hashes, PRs #30/#31, and MGMT PRs #1/#3 preserve the shared-session behavior and document the plaintext hardening. |
 | [#4](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/4) pinned ESPHome protocol package | close | PR #28 pins source/tool/license hashes, reproducibly generates `pb`, inventories 148 unique IDs, and passes regeneration, validation, race, and vet evidence. |
 | [#13](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/13) migrate MGMT driver | close | MGMT `feat/esphome` pins merged library `main`; targeted race/vet and all reviewed MCL simulator lanes pass; the reference implementation remains preserved for comparison. |
+| [#32](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/32) duplicate entity-list completion panic | close | Entity-list completion is consumed atomically; duplicate and spurious completion tests traverse the real simulator wire path under the race detector and the connection remains usable. |
+| [#33](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/33) unbounded Hello | close | One context/timeout budget now covers dial, Noise, and Hello. Plaintext and Noise silent-peer tests prove bounded return and preserve `ErrHello` plus cancellation/deadline causes. |
+| [#34](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/34) unknown-message compatibility | close | ADR 0008 now requires bounded unknown IDs to be skipped; a real-wire simulator test proves discovery and Ping continue, while malformed known protobuf remains fatal. |
+| [#35](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/35) Noise key rejection diagnostics | close | `ErrNoiseKeyRejected` remains within the broad handshake category; wire and public-client tests prove target-aware, capped, printable diagnostics with no key material. |
+| [#36](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/36) robustness batch | close | Tests cover the corrected Noise limit and message-type category, bounded mDNS retransmission/response validation, Hello name checks on plaintext, no forced log dump, context-bound Ping, observable simulator overflow, and wrapped accept errors. Automatic keepalive remains correctly tracked by #11. |
 
 ## Active Gate 0 and Milestone 1 work
 
@@ -36,18 +41,10 @@ record is [`compatibility/mgmt-feat-esphome-review.json`](../compatibility/mgmt-
 | [#15](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/15) conveyor firmware/workbench | Land the board-specific profile in the approved workbench repository with reviewed pins/power/entities and every local safety invariant; retain compile evidence and add the authorized flash/recovery checklist. Physical flashing remains separately authorized. |
 | [#23](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/23) durable GitHub automation | The connected GitHub app now performs repository, issue, branch, commit, PR, check, and merge operations without exposing a token. A safe local Git/Actions fallback still needs an OS keyring or short-lived repository-scoped app credential; the invalid file-backed CLI credential must not be reused. |
 
-## Blocking review findings
-
-Issues #32 through #36 were opened by a fresh review while this reconciliation
-was in progress. They are Milestone 1 work, not optional roadmap breadth.
+## Remaining blocking review findings
 
 | Issue | Required outcome |
 |---|---|
-| [#32](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/32) duplicate entity-list completion panic | Prevent a hostile peer from closing the same completion channel twice; add duplicate and spurious-done regression tests and prove the embedding process cannot panic. |
-| [#33](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/33) unbounded Hello | Bound the complete dial, transport handshake, and Hello exchange by both context and timeout for Noise and plaintext; preserve the Hello error category and causes. |
-| [#34](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/34) unknown-message compatibility | Decide and document forward-compatible unknown-ID handling. The recommended behavior skips bounded unknown frames, continues subsequent traffic, and keeps malformed known messages fatal. |
-| [#35](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/35) Noise key rejection diagnostics | Preserve the broad handshake category while exposing a distinct server-rejected-key cause; sanitize and cap the unauthenticated reason and never include key material. |
-| [#36](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/36) robustness batch | Address or split all nine findings: Noise bound/type errors, mDNS retransmit/response validation, expected-name/plaintext behavior, log dump policy, liveness probe, simulator command overflow, and wrapped accept errors. |
 | [#39](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/39) continuous vulnerability monitoring | Add pinned `govulncheck` to pull-request/push CI and a scheduled workflow; document a fail-closed reachable-finding policy and an explicit triage policy for other findings. |
 | [#40](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/40) MGMT disconnect attribution | Extend the MGMT driver boundary to surface the library's sanitized `CloseReason`; prove persistent and applicable polling paths report asynchronous encrypted connection loss and queue overflow without misreporting deliberate shutdown. Closing #13 remains valid because its original replacement acceptance criteria are complete; this is newly identified operability work. |
 
@@ -62,19 +59,14 @@ open until their milestone is active.
 
 ## Recommended implementation order
 
-1. Fix #32 and #33 first because an authenticated peer can currently panic or
-   indefinitely block the embedding MGMT process.
-2. Surface #40 while fixing the lifecycle paths in #32 and #33 so MGMT can
-   attribute asynchronous connection loss without coupling its session layer
-   to the concrete library client.
-3. Resolve the forward-compatibility decision in #34, then fix #35 and split or
-   complete every item in #36.
-4. Finish #2 so later simulator evidence has one accepted deterministic contract.
-5. Enrich #5 while adding the missing MGMT entity evidence in #9.
-6. Complete the simulator and lifecycle gaps in #10 and #11.
-7. Close the security and release-candidate gates in #6, #8, #12, and #39.
-8. Enforce repository controls and durable fallback automation in #7 and #23.
-9. Finish the interactive and workbench deliverables in #14 and #15.
+1. Finish #2 so later simulator evidence has one accepted deterministic contract.
+2. Enrich #5 while adding the missing MGMT entity evidence in #9.
+3. Complete the simulator and lifecycle gaps in #10 and #11, and surface #40
+   so MGMT can attribute asynchronous connection loss without coupling its
+   session layer to the concrete library client.
+4. Close the security and release-candidate gates in #6, #8, #12, and #39.
+5. Enforce repository controls and durable fallback automation in #7 and #23.
+6. Finish the interactive and workbench deliverables in #14 and #15.
 
 This order requires no physical hardware until the explicitly authorized part
 of #15.
