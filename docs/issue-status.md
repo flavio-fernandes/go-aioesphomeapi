@@ -6,7 +6,7 @@ features do not qualify. Future milestone epics stay open until that milestone
 is intentionally scheduled and completed.
 
 This snapshot was reconciled on 2026-07-18 against library implementation
-`main` at `f789731bc9f460a92ef3a3db159387101a2066ab` and MGMT `feat/esphome` at
+`main` at `091b9af4f600dfa98b1ebea169265d2afc254047` and MGMT `feat/esphome` at
 `eb8953a4be99147ae4cc7f48b6e3b6939b426ab2`. The latest append-only
 machine-readable record is
 [`compatibility/mgmt-feat-esphome-simulator-timeline-postmerge.json`](../compatibility/mgmt-feat-esphome-simulator-timeline-postmerge.json).

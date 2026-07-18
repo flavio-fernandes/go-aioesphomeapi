@@ -71,6 +71,8 @@ acceptance scripts, or external-app examples.
 
 ## Slow subscriber saturation
 
+- The implementation merged through PR #60 at
+  `091b9af4f600dfa98b1ebea169265d2afc254047`.
 - Use `WithCallbackQueueSize(1)`, block the first state callback on a
   caller-owned channel, then advance two equal-time timeline events. The first
   fills the queue and the second must close with `ErrEventQueueFull`.
