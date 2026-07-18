@@ -49,6 +49,7 @@ was in progress. They are Milestone 1 work, not optional roadmap breadth.
 | [#35](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/35) Noise key rejection diagnostics | Preserve the broad handshake category while exposing a distinct server-rejected-key cause; sanitize and cap the unauthenticated reason and never include key material. |
 | [#36](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/36) robustness batch | Address or split all nine findings: Noise bound/type errors, mDNS retransmit/response validation, expected-name/plaintext behavior, log dump policy, liveness probe, simulator command overflow, and wrapped accept errors. |
 | [#39](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/39) continuous vulnerability monitoring | Add pinned `govulncheck` to pull-request/push CI and a scheduled workflow; document a fail-closed reachable-finding policy and an explicit triage policy for other findings. |
+| [#40](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/40) MGMT disconnect attribution | Extend the MGMT driver boundary to surface the library's sanitized `CloseReason`; prove persistent and applicable polling paths report asynchronous encrypted connection loss and queue overflow without misreporting deliberate shutdown. Closing #13 remains valid because its original replacement acceptance criteria are complete; this is newly identified operability work. |
 
 ## Deliberately open roadmap
 
@@ -63,14 +64,17 @@ open until their milestone is active.
 
 1. Fix #32 and #33 first because an authenticated peer can currently panic or
    indefinitely block the embedding MGMT process.
-2. Resolve the forward-compatibility decision in #34, then fix #35 and split or
+2. Surface #40 while fixing the lifecycle paths in #32 and #33 so MGMT can
+   attribute asynchronous connection loss without coupling its session layer
+   to the concrete library client.
+3. Resolve the forward-compatibility decision in #34, then fix #35 and split or
    complete every item in #36.
-3. Finish #2 so later simulator evidence has one accepted deterministic contract.
-4. Enrich #5 while adding the missing MGMT entity evidence in #9.
-5. Complete the simulator and lifecycle gaps in #10 and #11.
-6. Close the security and release-candidate gates in #6, #8, #12, and #39.
-7. Enforce repository controls and durable fallback automation in #7 and #23.
-8. Finish the interactive and workbench deliverables in #14 and #15.
+4. Finish #2 so later simulator evidence has one accepted deterministic contract.
+5. Enrich #5 while adding the missing MGMT entity evidence in #9.
+6. Complete the simulator and lifecycle gaps in #10 and #11.
+7. Close the security and release-candidate gates in #6, #8, #12, and #39.
+8. Enforce repository controls and durable fallback automation in #7 and #23.
+9. Finish the interactive and workbench deliverables in #14 and #15.
 
 This order requires no physical hardware until the explicitly authorized part
 of #15.
