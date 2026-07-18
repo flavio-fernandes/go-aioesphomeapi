@@ -45,7 +45,7 @@ The pinned protocol inventory contains 148 unique message IDs. Generated presenc
 
 ## Current MGMT migration proof
 
-The candidate record is [`compatibility/mgmt-feat-esphome2.json`](../compatibility/mgmt-feat-esphome2.json). Evidence is intentionally split so a successful build is not mistaken for external runtime behavior.
+The evidence is append-only: [`compatibility/mgmt-feat-esphome2.json`](../compatibility/mgmt-feat-esphome2.json) records the first candidate, while [`compatibility/mgmt-feat-esphome-review.json`](../compatibility/mgmt-feat-esphome-review.json) records the final reviewed branches. Historical rows remain so a successful build is never mistaken for later runtime or hardware evidence.
 
 | Check | Result | Evidence level impact |
 |---|---|---|
@@ -64,6 +64,7 @@ The candidate record is [`compatibility/mgmt-feat-esphome2.json`](../compatibili
 | Post-merge `.local` parity | pass with library `55602f04` | Real MGMT resolves blink and conveyor names from multicast answers; no `/etc/hosts` entry or new module is used. |
 | Final mDNS and diagnostics pin | MGMT `d6259199` pins library `73b5d58e` | All unchanged MCL demos pass from the committed module version; synchronous connection failures retain causes and attempted targets. |
 | Physical ESPHome blink device | pass on ESPHome 2026.7.0 with MGMT `d6259199` | Noise, `.local`, hello, discovery, binary-state push, switch command, and logs reach `hardware`. |
+| Final reviewed MGMT branch | pass on `feat/esphome` at `90a172d0`, pinning merged library `main` at `6f954bc9` | Targeted race/vet, both reviewed baseline MCL examples, and the reviewed conveyor MCL pass without `/etc/hosts`; issue reconciliation may close only evidence-complete work. |
 | Firmware flash and physical conveyor actuation | not performed | Conveyor, Fan, Light, and firmware-provisioning hardware cells remain `no`. |
 
 ## Protocol and transport

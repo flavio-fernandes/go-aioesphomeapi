@@ -1,6 +1,6 @@
 # ADR 0006: Make the pinned MGMT branch the first compatibility contract
 
-- Status: proposed for Gate 0 acceptance
+- Status: accepted through PR #27 and the merged MGMT replacement
 - Date: 2026-07-17
 
 ## Context

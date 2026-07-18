@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-17",
+  "status": "review_reconciled",
+  "extends": "compatibility/mgmt-feat-esphome-hardware-blink.json",
+  "library": {
+    "repository": "https://github.com/flavio-fernandes/go-aioesphomeapi",
+    "branch": "main",
+    "revision": "6f954bc92a84b8a2bcb12acef5462b2445edfc08",
+    "implementation_pull_request": "https://github.com/flavio-fernandes/go-aioesphomeapi/pull/30",
+    "fixture_pull_request": "https://github.com/flavio-fernandes/go-aioesphomeapi/pull/31"
+  },
+  "mgmt": {
+    "repository": "https://github.com/flavio-fernandes/mgmt",
+    "branch": "feat/esphome",
+    "revision": "90a172d09239925db5a527ee7b2a5edc383c08a3",
+    "module_pin": "github.com/flavio-fernandes/go-aioesphomeapi v0.0.0-20260717221321-6f954bc92a84",
+    "review_pull_request": "https://github.com/flavio-fernandes/mgmt/pull/3",
+    "preserved_reference_branch": {
+      "branch": "feat/esphome-richard87",
+      "revision": "5bf41f505bc601e6d2c4da8ecb3050b7c01ff34a"
+    }
+  },
+  "mcl_contract": {
+    "reviewed_defect_corrections": true,
+    "files": [
+      {
+        "path": "examples/lang/esphome0.mcl",
+        "sha256": "8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df",
+        "runtime": "pass"
+      },
+      {
+        "path": "examples/lang/esphome-blink.mcl",
+        "sha256": "359cedc5b3fd1e6793a0705fc4d7c7f844f5d3dc825a372fdf0c6769ef30c187",
+        "runtime": "pass"
+      },
+      {
+        "path": "examples/lang/esphome-conveyor.mcl",
+        "sha256": "38bb730a2897eeed1f8ed72e0299387ae2465e8b9b11b31c831f274e158868d6",
+        "runtime": "pass"
+      }
+    ]
+  },
+  "verification": {
+    "library": [
+      "repository policy validation",
+      "go test -race ./...",
+      "go vet ./...",
+      "five-second plaintext framing fuzz smoke",
+      "five-second protobuf decoding fuzz smoke",
+      "five-second mDNS parser fuzz smoke"
+    ],
+    "mgmt": [
+      "make build with Go 1.25.10",
+      "go test -race ./util/esphome",
+      "go test -race ./engine/resources -run TestEsphome|TestParseEsphome",
+      "go vet ./util/esphome ./engine/resources",
+      "both reviewed baseline MCL examples over Noise and multicast DNS",
+      "reviewed conveyor MCL over Noise and multicast DNS"
+    ],
+    "hosts_file_injection": false,
+    "hardware_used_for_this_record": false
+  },
+  "parity": {
+    "valid_encrypted_behavior_from_feat_esphome_richard87": "preserved",
+    "intentional_exception": "an empty key cannot silently select plaintext"
+  },
+  "limitations": [
+    "This record reconciles merged code and no-hardware evidence; it does not add physical conveyor evidence.",
+    "Issue acceptance remains authoritative; working adjacent behavior does not close unmet criteria.",
+    "Future milestone issues remain deliberately open."
+  ]
+}

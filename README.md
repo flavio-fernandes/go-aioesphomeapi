@@ -3,7 +3,7 @@
 An independent, Go-native client for the [ESPHome Native API](https://developers.esphome.io/architecture/api/protocol_details/), built first to be the safest and smallest library MGMT can use for native ESPHome integration.
 
 > [!IMPORTANT]
-> The first usable client slice is implemented on this development branch: secure Noise transport, explicit test-only plaintext, MGMT's current entity surface, Fan and RGB Light commands, deterministic simulators, and actionable connection errors. A real MGMT process passes encrypted acceptance for both original unchanged MCL examples and the unchanged conveyor MCL; the blink example also passes against sanitized ESPHome 2026.7.0 hardware. Real-driver tests cover MGMT-owned polling, reconnect, and outage accounting without hardware. It is not a tagged release yet. The [support matrix](docs/support-matrix.md) is the authoritative record of evidence and limitations.
+> The first usable client slice is implemented on `main`: secure Noise transport, explicit test-only plaintext, MGMT's current entity surface, Fan and RGB Light commands, deterministic simulators, and actionable connection errors. A real MGMT process passes encrypted acceptance for both reviewed baseline MCL examples and the reviewed conveyor MCL; the blink example also passes against sanitized ESPHome 2026.7.0 hardware. Real-driver tests cover MGMT-owned polling, reconnect, and outage accounting without hardware. It is not a tagged release yet. The [support matrix](docs/support-matrix.md) is the authoritative record of evidence and limitations.
 
 ## The realigned goal
 
@@ -24,6 +24,7 @@ This remains an independent greenfield implementation. The reference client is a
 - Why dependencies face a high bar: [dependency policy](docs/dependency-policy.md)
 - Controlled delivery sequence: [roadmap](docs/roadmap.md)
 - Exact Milestone 1 build order: [implementation sequence](docs/m1-implementation-plan.md)
+- Which issues are complete and what remains: [issue status](docs/issue-status.md)
 - How the reference implementations compare: [baseline audit](docs/reference-baseline.md)
 
 Documentation is part of the product. Runnable commands must be tested, safe by default, and explicit about prerequisites. The [documentation contract](docs/documentation-style.md) applies to every feature.
