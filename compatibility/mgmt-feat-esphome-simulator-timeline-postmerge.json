@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-18",
+  "status": "postmerge_verified",
+  "extends": "compatibility/mgmt-feat-esphome-simulator-timeline-candidate.json",
+  "decision": "ADR 0013 simulator latest-state reconnect re-baseline",
+  "library": {
+    "repository": "https://github.com/flavio-fernandes/go-aioesphomeapi",
+    "branch": "main",
+    "revision": "3655bef5c0a9d871ca5ee262665afddcf83158a7",
+    "pull_request": "https://github.com/flavio-fernandes/go-aioesphomeapi/pull/55"
+  },
+  "mgmt": {
+    "repository": "https://github.com/flavio-fernandes/mgmt",
+    "branch": "feat/esphome",
+    "revision": "eb8953a4be99147ae4cc7f48b6e3b6939b426ab2",
+    "module_pin": "github.com/flavio-fernandes/go-aioesphomeapi v0.0.0-20260718123503-3655bef5c0a9",
+    "pull_request": "https://github.com/flavio-fernandes/mgmt/pull/6"
+  },
+  "focused_reconnect": {
+    "test": "TestAPIClientSessionReconnectKeepsLatestDeviceStateRealWire",
+    "transport": "Noise over loopback TCP with a public test-only key",
+    "command_sequence_before_disconnect": [
+      "SwitchCommand key=202 state=false"
+    ],
+    "same_device_reconnect_snapshot": "switch key=202 state=false",
+    "command_sequence_after_reconnect": [],
+    "total_state_changing_commands": 1,
+    "command_count_delta_from_pre_change": 0,
+    "outage_accounting": "positive outage and increasing outage ID",
+    "result": "pass from the exact merged library and MGMT revisions"
+  },
+  "mcl_contract": {
+    "source_changes": 0,
+    "files": [
+      {
+        "path": "examples/lang/esphome0.mcl",
+        "sha256": "8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df",
+        "runtime": "pass"
+      },
+      {
+        "path": "examples/lang/esphome-blink.mcl",
+        "sha256": "359cedc5b3fd1e6793a0705fc4d7c7f844f5d3dc825a372fdf0c6769ef30c187",
+        "runtime": "pass",
+        "resolution": "multicast DNS without a hosts-file mapping"
+      },
+      {
+        "path": "examples/lang/esphome-conveyor.mcl",
+        "sha256": "38bb730a2897eeed1f8ed72e0299387ae2465e8b9b11b31c831f274e158868d6",
+        "runtime": "pass",
+        "resolution": "multicast DNS without a hosts-file mapping"
+      }
+    ]
+  },
+  "acceptance": {
+    "consumer_selection": "committed MGMT go.mod pin with GOWORK=off",
+    "checks": [
+      "go test -race ./util/esphome",
+      "go vet ./util/esphome",
+      "canonical MGMT make build",
+      "tools/test-mgmt-baselines.sh",
+      "tools/test-mgmt-conveyor.sh"
+    ],
+    "isolation": "private Linux user and network namespaces",
+    "hosts_file_injection": false,
+    "hardware_used": false
+  },
+  "outcome": "The latest-state reconnect gate in ADR 0013 is complete. Historical records remain unchanged.",
+  "remaining_issue_10_work": [
+    "ordered command expectation helpers",
+    "conditional non-zero seed validation when randomized actions are introduced",
+    "delayed, fragmented, and coalesced transport shaping",
+    "slow-subscriber saturation proof",
+    "owned-resource cleanup and final budget assertions"
+  ]
+}

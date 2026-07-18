@@ -6,9 +6,10 @@ features do not qualify. Future milestone epics stay open until that milestone
 is intentionally scheduled and completed.
 
 This snapshot was reconciled on 2026-07-18 against library `main` at
-`f1f9e3ef9b5efca161aa97cbe0040d278fdb4038` and MGMT `feat/esphome` at
-`ede1737219be106e2c5e06bb497af9a1ec9e17c8`. The append-only machine-readable
-record is [`compatibility/mgmt-feat-esphome-security.json`](../compatibility/mgmt-feat-esphome-security.json).
+`3655bef5c0a9d871ca5ee262665afddcf83158a7` and MGMT `feat/esphome` at
+`eb8953a4be99147ae4cc7f48b6e3b6939b426ab2`. The latest append-only
+machine-readable record is
+[`compatibility/mgmt-feat-esphome-simulator-timeline-postmerge.json`](../compatibility/mgmt-feat-esphome-simulator-timeline-postmerge.json).
 
 ## Evidence-complete issues
 
@@ -37,7 +38,7 @@ record is [`compatibility/mgmt-feat-esphome-security.json`](../compatibility/mgm
 | [#7](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/7) public-repository controls | Verify and capture actual branch protection, approval/CODEOWNERS enforcement, stale-review dismissal, conversation resolution, secret scanning/push protection, private reporting, dependency updates, and emergency bypass through a safe test PR. |
 | [#8](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/8) bounded framing and Noise | Add deterministic fragmented/coalesced and partial read/write tests, transport deadline/cancellation tests, allocation bounds, and explicit redaction assertions. Update the caller-resolution wording for accepted built-in `.local` mDNS. |
 | [#9](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/9) complete MGMT entity slice | Add MGMT-level text-sensor state and button-command evidence plus missing/NaN, capability/type rejection, concurrent command/state, unknown-value, and slow-consumer tests. |
-| [#10](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/10) simulator fault engine | Finish the ADR 0013 pinned MGMT re-baseline for the implemented manual clock/latest-state timeline. Then add conditional seed validation when randomized actions arrive, ordered command expectations, delayed/fragmented/coalesced shaping, slow-subscriber saturation, and owned-resource cleanup assertions. |
+| [#10](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/10) simulator fault engine | The manual clock/latest-state timeline and ADR 0013 pinned MGMT re-baseline are complete. Add conditional seed validation when randomized actions arrive, ordered command expectations, delayed/fragmented/coalesced shaping, slow-subscriber saturation, and owned-resource cleanup assertions. |
 | [#11](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/11) connection lifecycle | Implement and test device info and bounded client keepalive; add virtual-time state-machine, one-dial-owner, cancellation, goroutine-leak, callback-isolation, and command-interruption/no-replay evidence. |
 | [#12](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/12) release-candidate verification | Add scheduled fuzzing, generated-drift CI, explicit allocation/goroutine budgets, automated dependency reporting, and an automatic pinned MGMT checkout lane. Local policy/race/vet/fuzz and current MGMT simulator lanes pass. |
 | [#14](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/14) interactive conveyor demo | Complete the presenter story: pushed sensor changes, network interruption and safe stop, contradictory-sensor and slow-subscriber faults, responsibility display, presenter runbook, and sanitized physical recovery checklist. |
