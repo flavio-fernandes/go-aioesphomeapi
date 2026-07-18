@@ -134,14 +134,34 @@ func readLock(path string, target *upstreamLock) error {
 	return json.Unmarshal(data, target)
 }
 
-func featureFamily(ifdef string) string {
+// featureFamily derives a machine-readable entity family from an upstream
+// ifdef feature gate. A compound gate expression needs an explicit reviewed
+// mapping here; an unmapped one must fail generation instead of embedding a
+// malformed family name in the published inventory.
+func featureFamily(ifdef string) (string, error) {
 	if ifdef == "" {
-		return "protocol"
+		return "protocol", nil
 	}
 	if ifdef == "USE_IR_RF || USE_RADIO_FREQUENCY" {
-		return "infrared_radio_frequency"
+		return "infrared_radio_frequency", nil
 	}
-	return strings.ToLower(strings.TrimPrefix(ifdef, "USE_"))
+	family := strings.ToLower(strings.TrimPrefix(ifdef, "USE_"))
+	if !isEntityFamilyName(family) {
+		return "", fmt.Errorf("feature gate %q derives invalid entity family %q; add a reviewed mapping in featureFamily", ifdef, family)
+	}
+	return family, nil
+}
+
+func isEntityFamilyName(family string) bool {
+	if family == "" {
+		return false
+	}
+	for _, character := range family {
+		if (character < 'a' || character > 'z') && (character < '0' || character > '9') && character != '_' {
+			return false
+		}
+	}
+	return true
 }
 
 func emptyEvidence() evidence {
@@ -280,13 +300,17 @@ func buildInventory(annotationPath, lockPath string) (inventory, error) {
 		seenIDs[id] = name
 		seenNames[name] = struct{}{}
 		ifdef := extension(options, pb.E_Ifdef, "")
+		family, err := featureFamily(ifdef)
+		if err != nil {
+			return inventory{}, fmt.Errorf("message %s: %w", name, err)
+		}
 		item := entry{
 			ID:              id,
 			Name:            name,
 			Direction:       extension(options, pb.E_Source, pb.APISourceType_SOURCE_BOTH).String(),
 			VersionGate:     config.DefaultVersionGate,
 			FeatureGate:     ifdef,
-			EntityFamily:    featureFamily(ifdef),
+			EntityFamily:    family,
 			Milestone:       "not_scheduled",
 			MGMTRequired:    false,
 			ReferenceParity: "not_assessed",
