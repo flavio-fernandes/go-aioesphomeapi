@@ -129,7 +129,7 @@ graph remains two direct and two transitive runtime modules on Go 1.25.12.
 
 | Capability | Public API | Simulator evidence | MGMT evidence | Target | Notes |
 |---|---|---|---|---|---|
-| Typed scenario validation | typed | simulated | n/a | M1 | `Scenario.Validate` and deferred `DialContext`/`Serve` rejection preserve `New` compatibility; errors expose stable codes without scenario data. |
+| Typed scenario validation | typed | simulated | n/a | M1 | `Scenario.Validate` rejects ambiguous same-family initial-state keys, while allowing cross-family key reuse; deferred `DialContext`/`Serve` rejection preserves `New` compatibility and errors expose stable codes plus safe indexes without scenario data. |
 | Defensive scenario creation | typed | simulated | n/a | M1 | Valid protobuf entities, initial states, timeline events, and logs are cloned before the device can observe caller mutation. |
 | Conditional random seed | typed | simulated | n/a | M1 | Zero is valid without randomized actions; issue #10 must require non-zero only when such actions are introduced. |
 | Manual virtual time and ordered state pushes | typed | simulated | n/a | M1 | Explicit synchronous advances apply absolute events; equal-time events retain declaration order. The MGMT reconnect lane exercises the same latest-state store but does not advance timeline events. |

@@ -35,6 +35,10 @@ acceptance scripts, or external-app examples.
 
 ## Virtual state and reconnect acceptance
 
+- Initial snapshots must contain at most one state per entity family/key. The
+  same numeric key may be reused by a different family. Call `Scenario.Validate`
+  before constructing the device; duplicate `States` or `InitialStates` entries
+  return `ValidationDuplicateKey` with safe indexes and never select a winner.
 - Create a clock with `simulator.NewManualClock()` and pass it through
   `simulator.WithManualClock(clock)`. `Device.Clock()` returns the same clock
   when a one-device test prefers the default.
