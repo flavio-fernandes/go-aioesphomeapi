@@ -15,6 +15,10 @@ Fail closed: this workflow reports findings and does not change visibility or pu
    Use `./tools/run-govulncheck.sh` for the pinned source scan and inspect open
    Dependabot alerts separately. An unreachable call path does not clear a
    module-level alert when a compatible patched release exists.
+   For credential-redaction tests, cover every representation accepted by the
+   decoder, including raw bytes, canonical base64, and CR/LF-wrapped base64;
+   verify the public error contains neither the complete credential nor its
+   wrapped printable fragments.
 4. Compare README and release notes against `docs/support-matrix.md`. Remove or qualify every claim without matching evidence.
 5. Verify repository rulesets, private vulnerability reporting, least-privilege workflows, immutable action pins, branch deletion policy, and dependency update policy.
 6. Build artifacts from the candidate in a clean environment. Produce checksums and provenance without embedding usernames, paths, hosts, or timestamps that prevent reproducibility.

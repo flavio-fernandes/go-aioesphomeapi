@@ -187,9 +187,10 @@ func (f *noiseFramer) WriteFrame(messageType uint32, payload []byte) error {
 
 func sanitizeNoiseRejection(raw, psk []byte) string {
 	// The rejection text is controlled by the peer. Treat an echo of either
-	// accepted key representation as entirely sensitive, including when a key
+	// accepted key representation as entirely sensitive, including when base64
+	// input contains CR/LF line breaks accepted by DecodeString and when a key
 	// crosses the printable-length boundary below.
-	if len(psk) > 0 && (bytes.Contains(raw, psk) || bytes.Contains(raw, []byte(base64.StdEncoding.EncodeToString(psk)))) {
+	if len(psk) > 0 && (bytes.Contains(raw, psk) || containsBase64KeyEcho(raw, psk)) {
 		return "peer rejection reason redacted"
 	}
 	if len(raw) > maxNoiseRejectionReason {
@@ -208,6 +209,24 @@ func sanitizeNoiseRejection(raw, psk []byte) string {
 		return "unspecified rejection"
 	}
 	return reason
+}
+
+func containsBase64KeyEcho(raw, psk []byte) bool {
+	encoded := []byte(base64.StdEncoding.EncodeToString(psk))
+	if bytes.Contains(raw, encoded) {
+		return true
+	}
+
+	// encoding/base64 ignores CR and LF while decoding. Apply the same narrow
+	// normalization before looking for an echoed key so sanitizing those bytes
+	// to '?' cannot expose the printable key fragments around them.
+	normalized := make([]byte, 0, len(raw))
+	for _, value := range raw {
+		if value != '\r' && value != '\n' {
+			normalized = append(normalized, value)
+		}
+	}
+	return bytes.Contains(normalized, encoded)
 }
 
 func (f *noiseFramer) ReadFrame() (uint32, []byte, error) {

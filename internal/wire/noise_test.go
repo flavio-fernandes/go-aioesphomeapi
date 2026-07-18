@@ -94,6 +94,49 @@ func TestNoiseClientRedactsKeyEchoedByPeer(t *testing.T) {
 	}
 }
 
+func TestNoiseClientRedactsWrappedBase64KeyEchoedByPeer(t *testing.T) {
+	client, server := net.Pipe()
+	defer client.Close()
+	defer server.Close()
+	key := bytes.Repeat([]byte{0x42}, 32)
+	encodedKey := base64.StdEncoding.EncodeToString(key)
+	wrappedKey := encodedKey[:12] + "\r\n" + encodedKey[12:28] + "\n" + encodedKey[28:]
+	serverDone := make(chan error, 1)
+	go func() {
+		var preamble [3]byte
+		if _, err := io.ReadFull(server, preamble[:]); err != nil {
+			serverDone <- err
+			return
+		}
+		if _, err := readNoisePacket(server); err != nil {
+			serverDone <- err
+			return
+		}
+		if err := writeNoisePacket(server, []byte{1, 't', 'e', 's', 't', 0, 0}); err != nil {
+			serverDone <- err
+			return
+		}
+		reason := []byte("rejected " + wrappedKey)
+		serverDone <- writeNoisePacket(server, append([]byte{1}, reason...))
+	}()
+
+	_, err := NewNoiseClientFramer(client, key, "test", time.Second, DefaultMaxFrameSize)
+	if !errors.Is(err, ErrNoiseHandshake) || !errors.Is(err, ErrNoiseKeyRejected) {
+		t.Fatalf("got %v, want handshake and rejected-key categories", err)
+	}
+	if !strings.Contains(err.Error(), "redacted") {
+		t.Fatalf("wrapped key echo was not redacted: %v", err)
+	}
+	for _, fragment := range []string{encodedKey[:12], encodedKey[12:28], encodedKey[28:]} {
+		if strings.Contains(err.Error(), fragment) {
+			t.Fatalf("peer-controlled error leaked wrapped key fragment %q: %q", fragment, err)
+		}
+	}
+	if serverErr := <-serverDone; serverErr != nil {
+		t.Fatalf("rejection peer: %v", serverErr)
+	}
+}
+
 func TestNoisePacketsHandleFragmentedCoalescedAndPartialIO(t *testing.T) {
 	var stream bytes.Buffer
 	writer := &chunkWriter{writer: &stream, chunk: 2}
