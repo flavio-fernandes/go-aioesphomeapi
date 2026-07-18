@@ -31,6 +31,44 @@ func TestScenarioValidateCurrentModel(t *testing.T) {
 			code:     simulator.ValidationInvalidType,
 		},
 		{
+			name: "ambiguous initial state aliases",
+			scenario: simulator.Scenario{
+				States:        []proto.Message{&pb.SwitchStateResponse{Key: 1}},
+				InitialStates: []proto.Message{&pb.SwitchStateResponse{Key: 1}},
+			},
+			code: simulator.ValidationExpectation,
+		},
+		{
+			name: "duplicate initial state key within family",
+			scenario: simulator.Scenario{InitialStates: []proto.Message{
+				&pb.SwitchStateResponse{Key: 4},
+				&pb.SwitchStateResponse{Key: 4},
+			}},
+			code: simulator.ValidationDuplicateKey,
+		},
+		{
+			name: "negative timeline time",
+			scenario: simulator.Scenario{StateTimeline: []simulator.StateEvent{
+				{At: -time.Nanosecond, State: &pb.SwitchStateResponse{Key: 1}},
+			}},
+			code: simulator.ValidationNegativeTime,
+		},
+		{
+			name: "decreasing timeline time",
+			scenario: simulator.Scenario{StateTimeline: []simulator.StateEvent{
+				{At: time.Second, State: &pb.SwitchStateResponse{Key: 1}},
+				{At: time.Millisecond, State: &pb.SwitchStateResponse{Key: 1}},
+			}},
+			code: simulator.ValidationDecreasingTime,
+		},
+		{
+			name: "invalid timeline state",
+			scenario: simulator.Scenario{StateTimeline: []simulator.StateEvent{
+				{At: time.Second, State: &pb.ListEntitiesSwitchResponse{Key: 1}},
+			}},
+			code: simulator.ValidationInvalidType,
+		},
+		{
 			name: "duplicate key within family",
 			scenario: simulator.Scenario{Entities: []proto.Message{
 				&pb.ListEntitiesSwitchResponse{Key: 7},
@@ -119,6 +157,52 @@ func TestNewDefensivelyCopiesValidatedScenario(t *testing.T) {
 		}
 	case <-time.After(time.Second):
 		t.Fatal("copied log was not received")
+	}
+}
+
+func TestNewDefensivelyCopiesInitialStatesAndTimeline(t *testing.T) {
+	clock := simulator.NewManualClock()
+	initial := &pb.SwitchStateResponse{Key: 23, State: false}
+	future := &pb.SwitchStateResponse{Key: 23, State: true}
+	device := simulator.New(simulator.Scenario{
+		Name:          "timeline-copy-simulator",
+		InitialStates: []proto.Message{initial},
+		StateTimeline: []simulator.StateEvent{{At: time.Second, State: future}},
+	}, simulator.WithManualClock(clock))
+	t.Cleanup(func() { _ = device.Close() })
+	initial.State = true
+	future.State = false
+
+	client := dialSimulator(t, device)
+	t.Cleanup(func() { _ = client.Close() })
+	states := make(chan bool, 2)
+	unsubscribe, err := client.SubscribeStates(func(message proto.Message) {
+		if state, ok := message.(*pb.SwitchStateResponse); ok && state.Key == 23 {
+			states <- state.State
+		}
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(unsubscribe)
+	select {
+	case state := <-states:
+		if state {
+			t.Fatal("device observed caller mutation to initial state")
+		}
+	case <-time.After(time.Second):
+		t.Fatal("initial state was not received")
+	}
+	if err := clock.Advance(time.Second); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case state := <-states:
+		if !state {
+			t.Fatal("device observed caller mutation to timeline state")
+		}
+	case <-time.After(time.Second):
+		t.Fatal("timeline state was not received")
 	}
 }
 

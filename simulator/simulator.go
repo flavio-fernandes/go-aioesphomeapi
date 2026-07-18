@@ -36,14 +36,28 @@ type Scenario struct {
 	// scenario contains no randomized actions.
 	Seed     uint64
 	Entities []proto.Message
-	States   []proto.Message
-	Logs     []*pb.SubscribeLogsResponse
-	Faults   []Fault
+	// States is the original name for InitialStates. It remains supported for
+	// source compatibility; a scenario must set at most one of the two fields.
+	States []proto.Message
+	// InitialStates is the snapshot sent to every new state subscriber.
+	InitialStates []proto.Message
+	// StateTimeline contains absolute virtual-time updates in declaration
+	// order. Events at the same time retain that order.
+	StateTimeline []StateEvent
+	Logs          []*pb.SubscribeLogsResponse
+	Faults        []Fault
+}
+
+// StateEvent changes one entity state at an absolute ManualClock time.
+type StateEvent struct {
+	At    time.Duration
+	State proto.Message
 }
 
 type config struct {
 	plaintext bool
 	key       []byte
+	clock     *ManualClock
 }
 type Option func(*config)
 
@@ -59,20 +73,49 @@ func WithEncryptionKey(base64Key string) Option {
 	}
 }
 
+// WithManualClock shares caller-controlled virtual time with the Device. A nil
+// clock is ignored and the Device receives its own clock at time zero.
+func WithManualClock(clock *ManualClock) Option {
+	return func(c *config) {
+		if clock != nil {
+			c.clock = clock
+		}
+	}
+}
+
+type stateIdentity struct {
+	family string
+	key    uint32
+}
+
+type deviceSession struct {
+	connection net.Conn
+	writeMu    sync.Mutex
+	framer     wire.Framer
+	subscribed bool
+}
+
 // Device accepts injected net.Pipe connections and records received commands.
 type Device struct {
 	scenario        Scenario
 	validationErr   error
 	config          config
+	clock           *ManualClock
 	commands        chan proto.Message
 	done            chan struct{}
 	closeOnce       sync.Once
 	mu              sync.Mutex
 	accepted        uint64
 	droppedCommands uint64
-	connections     map[net.Conn]struct{}
+	droppedSessions uint64
+	connections     map[net.Conn]*deviceSession
 	listeners       map[net.Listener]struct{}
 	wg              sync.WaitGroup
+	stateSerial     sync.Mutex
+	stateMu         sync.Mutex
+	currentStates   map[stateIdentity]proto.Message
+	stateOrder      []stateIdentity
+	timelineIndex   int
 }
 
 // New creates a stopped-port, in-process device. The default is Noise-encrypted
@@ -95,15 +138,30 @@ func New(scenario Scenario, options ...Option) *Device {
 			option(&cfg)
 		}
 	}
-	return &Device{
+	if cfg.clock == nil {
+		cfg.clock = NewManualClock()
+	}
+	device := &Device{
 		scenario:      scenario,
 		validationErr: validationErr,
 		config:        cfg,
+		clock:         cfg.clock,
 		commands:      make(chan proto.Message, 64),
 		done:          make(chan struct{}),
-		connections:   make(map[net.Conn]struct{}),
+		connections:   make(map[net.Conn]*deviceSession),
 		listeners:     make(map[net.Listener]struct{}),
+		currentStates: make(map[stateIdentity]proto.Message),
 	}
+	if validationErr == nil {
+		for _, state := range device.initialStates() {
+			device.storeStateLocked(state)
+		}
+	}
+	device.clock.register(device)
+	if validationErr == nil {
+		_ = device.advanceTimeline(device.clock.Now())
+	}
+	return device
 }
 
 // DialContext is passed to aioesphomeapi.WithDialContext.
@@ -184,9 +242,10 @@ func (d *Device) startConnection(connection net.Conn) bool {
 	default:
 	}
 	d.accepted++
-	d.connections[connection] = struct{}{}
+	session := &deviceSession{connection: connection}
+	d.connections[connection] = session
 	d.wg.Add(1)
-	go d.serve(connection)
+	go d.serve(session)
 	return true
 }
 
@@ -199,6 +258,10 @@ func (d *Device) ClientOptions() []aioesphomeapi.Option {
 	return append(options, aioesphomeapi.WithEncryptionKey(base64.StdEncoding.EncodeToString(d.config.key)))
 }
 
+// Clock returns the Device's deterministic clock. Callers that do not need to
+// share time across Devices can advance this default clock directly.
+func (d *Device) Clock() *ManualClock { return d.clock }
+
 // Commands yields defensive copies of commands received by the device.
 func (d *Device) Commands() <-chan proto.Message { return d.commands }
 
@@ -208,6 +271,7 @@ type DeviceStats struct {
 	AcceptedConnections uint64
 	ActiveConnections   int
 	DroppedCommands     uint64
+	DroppedConnections  uint64
 }
 
 // Stats reports deterministic connection counts for cleanup, polling, and
@@ -215,12 +279,38 @@ type DeviceStats struct {
 func (d *Device) Stats() DeviceStats {
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	return DeviceStats{AcceptedConnections: d.accepted, ActiveConnections: len(d.connections), DroppedCommands: d.droppedCommands}
+	return DeviceStats{
+		AcceptedConnections: d.accepted,
+		ActiveConnections:   len(d.connections),
+		DroppedCommands:     d.droppedCommands,
+		DroppedConnections:  d.droppedSessions,
+	}
+}
+
+// DropConnections terminates all current sessions without closing the Device
+// or its listeners. The latest device state and future timeline remain intact,
+// allowing deterministic reconnect and outage tests.
+func (d *Device) DropConnections() int {
+	d.mu.Lock()
+	connections := make([]net.Conn, 0, len(d.connections))
+	for connection := range d.connections {
+		connections = append(connections, connection)
+		delete(d.connections, connection)
+	}
+	if len(connections) > 0 {
+		d.droppedSessions += uint64(len(connections))
+	}
+	d.mu.Unlock()
+	for _, connection := range connections {
+		_ = connection.Close()
+	}
+	return len(connections)
 }
 
 // Close terminates every active simulated connection.
 func (d *Device) Close() error {
 	d.closeOnce.Do(func() {
+		d.clock.unregister(d)
 		close(d.done)
 		d.mu.Lock()
 		for listener := range d.listeners {
@@ -236,7 +326,8 @@ func (d *Device) Close() error {
 	return nil
 }
 
-func (d *Device) serve(connection net.Conn) {
+func (d *Device) serve(session *deviceSession) {
+	connection := session.connection
 	defer d.wg.Done()
 	defer connection.Close()
 	defer func() { d.mu.Lock(); delete(d.connections, connection); d.mu.Unlock() }()
@@ -250,6 +341,7 @@ func (d *Device) serve(connection net.Conn) {
 	if err != nil {
 		return
 	}
+	session.framer = framer
 	id, payload, err := framer.ReadFrame()
 	if err != nil || id != 1 {
 		return
@@ -257,19 +349,13 @@ func (d *Device) serve(connection net.Conn) {
 	if _, err = wire.Decode(id, payload); err != nil {
 		return
 	}
-	if send(framer, &pb.HelloResponse{ApiVersionMajor: 1, ApiVersionMinor: 10, ServerInfo: "go-aioesphomeapi simulator", Name: d.scenario.Name}) != nil {
+	if session.send(&pb.HelloResponse{ApiVersionMajor: 1, ApiVersionMinor: 10, ServerInfo: "go-aioesphomeapi simulator", Name: d.scenario.Name}) != nil {
 		return
 	}
-	if d.triggerFault(framer, FaultAfterHello) {
+	if d.triggerFault(session, FaultAfterHello) {
 		return
 	}
 
-	states := make(map[uint32]proto.Message)
-	for _, state := range d.scenario.States {
-		if key, ok := stateKey(state); ok {
-			states[key] = proto.Clone(state)
-		}
-	}
 	for {
 		id, payload, err = framer.ReadFrame()
 		if err != nil {
@@ -282,84 +368,163 @@ func (d *Device) serve(connection net.Conn) {
 		switch m := message.(type) {
 		case *pb.ListEntitiesRequest:
 			for _, entity := range d.scenario.Entities {
-				if send(framer, proto.Clone(entity)) != nil {
+				if session.send(proto.Clone(entity)) != nil {
 					return
 				}
 			}
-			if d.triggerFault(framer, FaultBeforeEntitiesDone) {
+			if d.triggerFault(session, FaultBeforeEntitiesDone) {
 				return
 			}
-			if send(framer, &pb.ListEntitiesDoneResponse{}) != nil {
+			if session.send(&pb.ListEntitiesDoneResponse{}) != nil {
 				return
 			}
 		case *pb.SubscribeStatesRequest:
-			for _, state := range d.scenario.States {
-				if send(framer, proto.Clone(state)) != nil {
+			d.stateSerial.Lock()
+			d.stateMu.Lock()
+			session.subscribed = true
+			snapshot := d.stateSnapshotLocked()
+			d.stateMu.Unlock()
+			for _, state := range snapshot {
+				if session.send(state) != nil {
+					d.stateSerial.Unlock()
 					return
 				}
 			}
-			if d.triggerFault(framer, FaultAfterInitialStates) {
+			d.stateSerial.Unlock()
+			if d.triggerFault(session, FaultAfterInitialStates) {
 				return
 			}
 		case *pb.SubscribeLogsRequest:
 			for _, entry := range d.scenario.Logs {
 				if entry.Level <= m.Level {
-					if send(framer, proto.Clone(entry)) != nil {
+					if session.send(proto.Clone(entry)) != nil {
 						return
 					}
 				}
 			}
 		case *pb.PingRequest:
-			if send(framer, &pb.PingResponse{}) != nil {
+			if session.send(&pb.PingResponse{}) != nil {
 				return
 			}
 		case *pb.DisconnectRequest:
-			_ = send(framer, &pb.DisconnectResponse{})
+			_ = session.send(&pb.DisconnectResponse{})
 			return
 		case *pb.SwitchCommandRequest:
 			d.record(m)
-			state := &pb.SwitchStateResponse{Key: m.Key, State: m.State}
-			states[m.Key] = state
-			if send(framer, state) != nil {
+			if d.storeAndSend(session, &pb.SwitchStateResponse{Key: m.Key, State: m.State}) != nil {
 				return
 			}
 		case *pb.NumberCommandRequest:
 			d.record(m)
-			state := &pb.NumberStateResponse{Key: m.Key, State: m.State}
-			states[m.Key] = state
-			if send(framer, state) != nil {
+			if d.storeAndSend(session, &pb.NumberStateResponse{Key: m.Key, State: m.State}) != nil {
 				return
 			}
 		case *pb.ButtonCommandRequest:
 			d.record(m)
 		case *pb.FanCommandRequest:
 			d.record(m)
-			state, _ := states[m.Key].(*pb.FanStateResponse)
+			d.stateSerial.Lock()
+			d.stateMu.Lock()
+			state, _ := d.currentStates[stateIdentity{family: "fan", key: m.Key}].(*pb.FanStateResponse)
 			if state == nil {
 				state = &pb.FanStateResponse{Key: m.Key}
 			} else {
 				state = proto.Clone(state).(*pb.FanStateResponse)
 			}
 			applyFan(state, m)
-			states[m.Key] = state
-			if send(framer, state) != nil {
+			d.storeStateLocked(state)
+			d.stateMu.Unlock()
+			err := session.send(state)
+			d.stateSerial.Unlock()
+			if err != nil {
 				return
 			}
 		case *pb.LightCommandRequest:
 			d.record(m)
-			state, _ := states[m.Key].(*pb.LightStateResponse)
+			d.stateSerial.Lock()
+			d.stateMu.Lock()
+			state, _ := d.currentStates[stateIdentity{family: "light", key: m.Key}].(*pb.LightStateResponse)
 			if state == nil {
 				state = &pb.LightStateResponse{Key: m.Key}
 			} else {
 				state = proto.Clone(state).(*pb.LightStateResponse)
 			}
 			applyLight(state, m)
-			states[m.Key] = state
-			if send(framer, state) != nil {
+			d.storeStateLocked(state)
+			d.stateMu.Unlock()
+			err := session.send(state)
+			d.stateSerial.Unlock()
+			if err != nil {
 				return
 			}
 		}
 	}
+}
+
+func (d *Device) storeAndSend(session *deviceSession, state proto.Message) error {
+	d.stateSerial.Lock()
+	defer d.stateSerial.Unlock()
+	d.stateMu.Lock()
+	d.storeStateLocked(state)
+	d.stateMu.Unlock()
+	return session.send(state)
+}
+
+func (d *Device) advanceTimeline(now time.Duration) error {
+	d.stateSerial.Lock()
+	defer d.stateSerial.Unlock()
+	for d.timelineIndex < len(d.scenario.StateTimeline) {
+		event := d.scenario.StateTimeline[d.timelineIndex]
+		if event.At > now {
+			break
+		}
+		d.timelineIndex++
+		d.stateMu.Lock()
+		d.storeStateLocked(event.State)
+		subscribers := make([]*deviceSession, 0, len(d.connections))
+		d.mu.Lock()
+		for _, session := range d.connections {
+			if session.subscribed {
+				subscribers = append(subscribers, session)
+			}
+		}
+		d.mu.Unlock()
+		d.stateMu.Unlock()
+		for _, subscriber := range subscribers {
+			// A concurrent disconnect is normal. State is already committed and
+			// appears in the next subscriber's snapshot.
+			_ = subscriber.send(proto.Clone(event.State))
+		}
+	}
+	return nil
+}
+
+func (d *Device) initialStates() []proto.Message {
+	if len(d.scenario.InitialStates) > 0 {
+		return d.scenario.InitialStates
+	}
+	return d.scenario.States
+}
+
+func (d *Device) storeStateLocked(state proto.Message) {
+	identity, ok := stateIdentityOf(state)
+	if !ok {
+		return
+	}
+	if _, exists := d.currentStates[identity]; !exists {
+		d.stateOrder = append(d.stateOrder, identity)
+	}
+	d.currentStates[identity] = proto.Clone(state)
+}
+
+func (d *Device) stateSnapshotLocked() []proto.Message {
+	result := make([]proto.Message, 0, len(d.stateOrder))
+	for _, identity := range d.stateOrder {
+		if state := d.currentStates[identity]; state != nil {
+			result = append(result, proto.Clone(state))
+		}
+	}
+	return result
 }
 
 func (d *Device) record(message proto.Message) {
@@ -372,7 +537,13 @@ func (d *Device) record(message proto.Message) {
 	}
 }
 
-func send(framer wire.Framer, message proto.Message) error {
+func (s *deviceSession) send(message proto.Message) error {
+	s.writeMu.Lock()
+	defer s.writeMu.Unlock()
+	return s.sendLocked(message)
+}
+
+func (s *deviceSession) sendLocked(message proto.Message) error {
 	id, err := wire.MessageID(message)
 	if err != nil {
 		return err
@@ -381,27 +552,33 @@ func send(framer wire.Framer, message proto.Message) error {
 	if err != nil {
 		return err
 	}
-	return framer.WriteFrame(id, payload)
+	return s.framer.WriteFrame(id, payload)
 }
 
-func stateKey(message proto.Message) (uint32, bool) {
+func (s *deviceSession) writeFrame(id uint32, payload []byte) error {
+	s.writeMu.Lock()
+	defer s.writeMu.Unlock()
+	return s.framer.WriteFrame(id, payload)
+}
+
+func stateIdentityOf(message proto.Message) (stateIdentity, bool) {
 	switch m := message.(type) {
 	case *pb.BinarySensorStateResponse:
-		return m.Key, true
+		return stateIdentity{family: "binary_sensor", key: m.Key}, true
 	case *pb.SensorStateResponse:
-		return m.Key, true
+		return stateIdentity{family: "sensor", key: m.Key}, true
 	case *pb.TextSensorStateResponse:
-		return m.Key, true
+		return stateIdentity{family: "text_sensor", key: m.Key}, true
 	case *pb.SwitchStateResponse:
-		return m.Key, true
+		return stateIdentity{family: "switch", key: m.Key}, true
 	case *pb.NumberStateResponse:
-		return m.Key, true
+		return stateIdentity{family: "number", key: m.Key}, true
 	case *pb.FanStateResponse:
-		return m.Key, true
+		return stateIdentity{family: "fan", key: m.Key}, true
 	case *pb.LightStateResponse:
-		return m.Key, true
+		return stateIdentity{family: "light", key: m.Key}, true
 	default:
-		return 0, false
+		return stateIdentity{}, false
 	}
 }
 

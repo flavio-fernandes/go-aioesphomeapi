@@ -14,6 +14,7 @@ required=(
   compatibility/mgmt-feat-esphome-mdns.json compatibility/mgmt-feat-esphome-diagnostics.json
   compatibility/mgmt-feat-esphome-hardware-blink.json docs/mgmt-hardware-blink.md
   compatibility/mgmt-feat-esphome-security.json
+  compatibility/mgmt-feat-esphome-simulator-timeline-candidate.json
   protocol/upstream.lock.json protocol/inventory.annotations.json protocol/inventory.json
   protocol/upstream/api.proto protocol/upstream/api_options.proto protocol/upstream/LICENSE
   pb/api.pb.go pb/api_options.pb.go tools/sync-protocol.sh tools/generate-protocol.sh
@@ -111,6 +112,7 @@ if command -v python3 >/dev/null 2>&1; then
   python3 -m json.tool compatibility/mgmt-feat-esphome-diagnostics.json >/dev/null
   python3 -m json.tool compatibility/mgmt-feat-esphome-hardware-blink.json >/dev/null
   python3 -m json.tool compatibility/mgmt-feat-esphome-security.json >/dev/null
+  python3 -m json.tool compatibility/mgmt-feat-esphome-simulator-timeline-candidate.json >/dev/null
   python3 -m json.tool protocol/upstream.lock.json >/dev/null
   python3 -m json.tool protocol/inventory.annotations.json >/dev/null
   python3 -m json.tool protocol/inventory.json >/dev/null

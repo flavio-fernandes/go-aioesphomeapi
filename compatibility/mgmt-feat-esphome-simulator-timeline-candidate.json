@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-18",
+  "status": "candidate_verified",
+  "extends": "compatibility/mgmt-feat-esphome-security.json",
+  "decision": "ADR 0013 simulator latest-state reconnect re-baseline",
+  "pre_change": {
+    "library_implementation_base": "fdd9d88c5e09972d5eae2e23ddbb0056d03d0c89",
+    "mgmt_revision": "ede1737219be106e2c5e06bb497af9a1ec9e17c8",
+    "mgmt_module_pin": "github.com/flavio-fernandes/go-aioesphomeapi v0.0.0-20260718111000-f1f9e3ef9b5e",
+    "focused_test": "instrumented TestAPIClientSessionReconnectAndOutageRealWire, 10 race-enabled repetitions",
+    "command_sequence_before_disconnect": [
+      "SwitchCommand key=202 state=false"
+    ],
+    "replacement_peer_snapshot": "switch key=202 state=true",
+    "command_sequence_after_reconnect": [],
+    "total_state_changing_commands": 1,
+    "result": "pass; the historical per-connection/replacement-peer baseline resets to its declared initial state"
+  },
+  "candidate": {
+    "library": {
+      "repository": "https://github.com/flavio-fernandes/go-aioesphomeapi",
+      "branch": "agent/implement-simulator-timeline",
+      "revision": "62c6962ba2112c1fef75814df9b1e8bb454bbcd5"
+    },
+    "mgmt": {
+      "repository": "https://github.com/flavio-fernandes/mgmt",
+      "branch": "agent/validate-simulator-latest-state",
+      "revision": "8e8b1599d6a47bfada752048a797b09d12e7fed5",
+      "module_pin": "github.com/flavio-fernandes/go-aioesphomeapi v0.0.0-20260718122048-62c6962ba211"
+    },
+    "focused_test": "TestAPIClientSessionReconnectKeepsLatestDeviceStateRealWire, 10 race-enabled repetitions",
+    "command_sequence_before_disconnect": [
+      "SwitchCommand key=202 state=false"
+    ],
+    "same_device_reconnect_snapshot": "switch key=202 state=false",
+    "command_sequence_after_reconnect": [],
+    "total_state_changing_commands": 1,
+    "command_count_delta": 0,
+    "outage_accounting": "positive outage and increasing outage ID",
+    "result": "pass; latest state survives a same-device reconnect with no command or timeline replay"
+  },
+  "mcl_contract": {
+    "source_changes": 0,
+    "files": [
+      {
+        "path": "examples/lang/esphome0.mcl",
+        "sha256": "8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df",
+        "runtime": "pass"
+      },
+      {
+        "path": "examples/lang/esphome-blink.mcl",
+        "sha256": "359cedc5b3fd1e6793a0705fc4d7c7f844f5d3dc825a372fdf0c6769ef30c187",
+        "runtime": "pass",
+        "resolution": "multicast DNS without a hosts-file mapping"
+      },
+      {
+        "path": "examples/lang/esphome-conveyor.mcl",
+        "sha256": "38bb730a2897eeed1f8ed72e0299387ae2465e8b9b11b31c831f274e158868d6",
+        "runtime": "pass",
+        "resolution": "multicast DNS without a hosts-file mapping"
+      }
+    ]
+  },
+  "acceptance": {
+    "consumer_selection": "committed MGMT go.mod candidate pin with GOWORK=off",
+    "library_checks": [
+      "repository policy validation",
+      "go test -race ./...",
+      "go vet ./...",
+      "simulator race tests repeated 10 times"
+    ],
+    "mgmt_checks": [
+      "go test -race ./util/esphome",
+      "go vet ./util/esphome",
+      "canonical make build",
+      "tools/test-mgmt-baselines.sh",
+      "tools/test-mgmt-conveyor.sh"
+    ],
+    "isolation": "private Linux user and network namespaces",
+    "transport": "Noise with a public test-only key; hostname lanes use multicast DNS",
+    "hosts_file_injection": false,
+    "hardware_used": false
+  },
+  "limitations": [
+    "This candidate record pins public branch commits; a later append-only record must pin the merged library main and MGMT feat/esphome commits.",
+    "Network shaping, ordered command expectations, slow-subscriber saturation, and final resource budgets remain open under issue 10.",
+    "No physical device was flashed or actuated."
+  ]
+}
