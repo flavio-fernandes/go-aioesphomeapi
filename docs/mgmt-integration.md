@@ -177,18 +177,17 @@ Dependabot alerts without adding or removing a module. Both reviewed baseline
 MCL examples and the conveyor MCL pass from the committed module pin over Noise
 and multicast DNS without `/etc/hosts` or hardware.
 
-## Upstream MGMT draft
+## Upstream MGMT ready for review
 
-The append-only [`mgmt-upstream-pr-961.json`](../compatibility/mgmt-upstream-pr-961.json)
-record pins the current upstream candidate. `feat/esphome` rebases without
-conflict onto `purpleidea/mgmt:master` at `e5baaa2d`; a range-diff reports all
-20 feature commits patch-identical. The follow-up commit `3e09c568` selects
-library `091b9af4`, which adds deterministic bounded slow-subscriber shutdown
-without changing MGMT's module count or MCL surface.
+The append-only [`mgmt-upstream-pr-961-ready.json`](../compatibility/mgmt-upstream-pr-961-ready.json)
+record extends the original draft evidence. `feat/esphome` at `08514da1`
+selects library `091b9af4` and retains tree `1f19752d`, byte-identical to the
+reviewed pre-policy-rewrite head. The history-only rewrite corrected one title
+and five co-author trailer spellings; all 21 commits pass upstream policy.
 
 [purpleidea/mgmt PR #961](https://github.com/purpleidea/mgmt/pull/961) is a
-draft. Targeted race/vet, the canonical build, all three MCL type checks, and
-all unchanged encrypted simulator lanes pass without hosts-file substitution.
-The draft must not be marked ready until the submitter confirms the contributor
-affiliation disclosure required by upstream policy. Upstream review and merge
-remain external outcomes and are not claimed by this evidence.
+ready-for-review contribution. Contributor affiliation is confirmed as
+personal and independent. Targeted race/vet, the canonical build, all three
+MCL type checks, every unchanged encrypted simulator lane, and upstream
+`basic`, `shell`, and `race` jobs pass. Upstream review and merge remain
+external outcomes and are not claimed by this evidence.

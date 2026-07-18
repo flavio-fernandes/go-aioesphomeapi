@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-18",
+  "status": "upstream_pr_ready_verified",
+  "extends": "compatibility/mgmt-upstream-pr-961.json",
+  "library": {
+    "repository": "https://github.com/flavio-fernandes/go-aioesphomeapi",
+    "branch": "main",
+    "implementation_revision": "091b9af4f600dfa98b1ebea169265d2afc254047",
+    "implementation_pull_request": "https://github.com/flavio-fernandes/go-aioesphomeapi/pull/60",
+    "module_pin": "github.com/flavio-fernandes/go-aioesphomeapi v0.0.0-20260718135228-091b9af4f600"
+  },
+  "mgmt": {
+    "upstream_repository": "https://github.com/purpleidea/mgmt",
+    "fork_repository": "https://github.com/flavio-fernandes/mgmt",
+    "branch": "feat/esphome",
+    "upstream_base_revision": "e5baaa2dcf77c4076e23941004c9b114a7657db9",
+    "ready_revision": "08514da10969b0188a1127c3938790139e7fa0c6",
+    "ready_tree": "1f19752d61044ab666682fb48cb4d82a80f1c976",
+    "pre_policy_rewrite_revision": "f0c13352a5077eb70620b53f7f1cc1d46648f46e",
+    "upstream_pull_request": "https://github.com/purpleidea/mgmt/pull/961",
+    "pull_request_state": "ready_for_review",
+    "contributor_affiliation": "personal_independent_confirmed"
+  },
+  "history_review": {
+    "feature_commit_count": 21,
+    "source_tree_changes_during_policy_rewrite": 0,
+    "commit_title_corrections": 1,
+    "coauthor_trailer_corrections": 5,
+    "commit_policy": "pass",
+    "push_policy": "exact force-with-lease",
+    "preserved_reference_branch": {
+      "branch": "feat/esphome-richard87",
+      "revision": "5bf41f505bc601e6d2c4da8ecb3050b7c01ff34a"
+    }
+  },
+  "dependency_review": {
+    "runtime_module_count_change_from_draft_candidate": 0,
+    "go_directive": "1.25.12",
+    "library_runtime_policy": "standard library plus protobuf and Noise; no mDNS, YAML, CLI, telemetry, or simulator framework dependency",
+    "plaintext_policy": "normal MGMT endpoints require Noise; implicit plaintext remains intentionally unsupported"
+  },
+  "mcl_contract": {
+    "source_changes_from_draft_candidate": 0,
+    "files": [
+      {
+        "path": "examples/lang/esphome0.mcl",
+        "sha256": "8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df",
+        "type_check": "pass",
+        "runtime": "pass"
+      },
+      {
+        "path": "examples/lang/esphome-blink.mcl",
+        "sha256": "359cedc5b3fd1e6793a0705fc4d7c7f844f5d3dc825a372fdf0c6769ef30c187",
+        "type_check": "pass",
+        "runtime": "pass",
+        "resolution": "multicast DNS without hosts-file substitution"
+      },
+      {
+        "path": "examples/lang/esphome-conveyor.mcl",
+        "sha256": "38bb730a2897eeed1f8ed72e0299387ae2465e8b9b11b31c831f274e158868d6",
+        "type_check": "pass",
+        "runtime": "pass",
+        "resolution": "multicast DNS without hosts-file substitution"
+      }
+    ]
+  },
+  "acceptance": {
+    "consumer_selection": "committed MGMT go.mod pin with GOWORK=off",
+    "upstream_actions_run": "https://github.com/purpleidea/mgmt/actions/runs/29650383905",
+    "upstream_actions": {
+      "basic": "pass",
+      "shell": "pass",
+      "race": "pass"
+    },
+    "prior_local_and_runtime_checks": "inherited from compatibility/mgmt-upstream-pr-961.json",
+    "hosts_file_injection": false,
+    "hardware_used": false
+  },
+  "ci_follow_up": {
+    "transient_ragel_download_issue": "https://github.com/purpleidea/mgmt/issues/962",
+    "feature_failure": false
+  },
+  "outcome": "The final MGMT feature tree is unchanged, every upstream CI lane passes, required disclosures are complete, and PR #961 is ready for upstream review. Upstream review and merge remain external outcomes."
+}

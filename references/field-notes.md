@@ -32,12 +32,17 @@ work. Update both files when future work changes the operational truth.
   conflicts; a range-diff showed all 20 feature commits patch-identical.
 - Preserve `feat/esphome-richard87`. Use an exact `--force-with-lease` for the
   rebased fork branch, then normal pushes for follow-up commits.
-- Draft upstream PR #961 pins library implementation `091b9af4` from MGMT
-  commit `3e09c568`. After that pin, targeted race/vet, canonical build, all
-  MCL type checks, and every unchanged multicast `.local` runtime lane pass.
-- Keep an upstream contribution draft until required affiliation and AI-use
-  disclosures are accurate. Do not infer whether a contribution is personal
-  or made for an organization.
+- Ready upstream PR #961 pins library implementation `091b9af4` from final
+  MGMT commit `08514da1`. Tree `1f19752d` is byte-identical to the reviewed
+  head before the commit-policy rewrite. All 21 commit messages, targeted
+  race/vet, canonical build, MCL checks, multicast runtime lanes, and upstream
+  `basic`, `shell`, and `race` jobs pass.
+- Keep an upstream contribution in draft until required affiliation and AI-use
+  disclosures are accurate. Here the submitter explicitly confirmed a personal
+  and independent contribution before the PR was marked ready.
+- A transient HTTP 503 while downloading Ragel is a CI bootstrap failure, not
+  feature evidence. Track the retry/fail-fast correction independently in
+  upstream issue #962 instead of changing the feature tree.
 
 ## 2026-07-18 deterministic simulator contract
 

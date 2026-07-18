@@ -17,6 +17,7 @@ required=(
   compatibility/mgmt-feat-esphome-simulator-timeline-candidate.json
   compatibility/mgmt-feat-esphome-simulator-timeline-postmerge.json
   compatibility/mgmt-upstream-pr-961.json
+  compatibility/mgmt-upstream-pr-961-ready.json
   protocol/upstream.lock.json protocol/inventory.annotations.json protocol/inventory.json
   protocol/upstream/api.proto protocol/upstream/api_options.proto protocol/upstream/LICENSE
   pb/api.pb.go pb/api_options.pb.go tools/sync-protocol.sh tools/generate-protocol.sh
@@ -117,6 +118,7 @@ if command -v python3 >/dev/null 2>&1; then
   python3 -m json.tool compatibility/mgmt-feat-esphome-simulator-timeline-candidate.json >/dev/null
   python3 -m json.tool compatibility/mgmt-feat-esphome-simulator-timeline-postmerge.json >/dev/null
   python3 -m json.tool compatibility/mgmt-upstream-pr-961.json >/dev/null
+  python3 -m json.tool compatibility/mgmt-upstream-pr-961-ready.json >/dev/null
   python3 -m json.tool protocol/upstream.lock.json >/dev/null
   python3 -m json.tool protocol/inventory.annotations.json >/dev/null
   python3 -m json.tool protocol/inventory.json >/dev/null
@@ -126,6 +128,14 @@ if ! grep -Fq '091b9af4f600dfa98b1ebea169265d2afc254047' compatibility/mgmt-upst
   ! grep -Fq '3e09c56874553ab6b8027b2c2cb47c83f1ca19dd' compatibility/mgmt-upstream-pr-961.json ||
   ! grep -Fq 'e5baaa2dcf77c4076e23941004c9b114a7657db9' compatibility/mgmt-upstream-pr-961.json; then
   echo "upstream MGMT PR manifest must pin the verified library, feature, and upstream revisions" >&2
+  exit 1
+fi
+
+if ! grep -Fq '091b9af4f600dfa98b1ebea169265d2afc254047' compatibility/mgmt-upstream-pr-961-ready.json ||
+  ! grep -Fq '08514da10969b0188a1127c3938790139e7fa0c6' compatibility/mgmt-upstream-pr-961-ready.json ||
+  ! grep -Fq '1f19752d61044ab666682fb48cb4d82a80f1c976' compatibility/mgmt-upstream-pr-961-ready.json ||
+  ! grep -Fq 'e5baaa2dcf77c4076e23941004c9b114a7657db9' compatibility/mgmt-upstream-pr-961-ready.json; then
+  echo "ready upstream MGMT PR manifest must pin the verified library, feature tree, and upstream revisions" >&2
   exit 1
 fi
 
