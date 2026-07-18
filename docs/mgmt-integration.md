@@ -166,3 +166,13 @@ are deliberately absent from the record. This raises only the exercised blink
 path to `hardware`;
 conveyor, Fan, Light, Number, Button, reconnect, and scale claims remain at
 their existing evidence levels.
+
+## Security-updated active pin
+
+The append-only [`mgmt-feat-esphome-security.json`](../compatibility/mgmt-feat-esphome-security.json)
+record pins library `main` at `f1f9e3ef9b5efca161aa97cbe0040d278fdb4038`
+and MGMT `feat/esphome` at `ede1737219be106e2c5e06bb497af9a1ec9e17c8`.
+MGMT now selects Go 1.25.12 and `x/crypto` v0.52.0, closing all 13
+Dependabot alerts without adding or removing a module. Both reviewed baseline
+MCL examples and the conveyor MCL pass from the committed module pin over Noise
+and multicast DNS without `/etc/hosts` or hardware.

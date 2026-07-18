@@ -13,6 +13,7 @@ required=(
   compatibility/mgmt-feat-esphome2-runtime.json compatibility/mgmt-feat-esphome2-baselines.json
   compatibility/mgmt-feat-esphome-mdns.json compatibility/mgmt-feat-esphome-diagnostics.json
   compatibility/mgmt-feat-esphome-hardware-blink.json docs/mgmt-hardware-blink.md
+  compatibility/mgmt-feat-esphome-security.json
   protocol/upstream.lock.json protocol/inventory.json
   protocol/upstream/api.proto protocol/upstream/api_options.proto protocol/upstream/LICENSE
   pb/api.pb.go pb/api_options.pb.go tools/sync-protocol.sh tools/generate-protocol.sh
@@ -109,8 +110,15 @@ if command -v python3 >/dev/null 2>&1; then
   python3 -m json.tool compatibility/mgmt-feat-esphome-mdns.json >/dev/null
   python3 -m json.tool compatibility/mgmt-feat-esphome-diagnostics.json >/dev/null
   python3 -m json.tool compatibility/mgmt-feat-esphome-hardware-blink.json >/dev/null
+  python3 -m json.tool compatibility/mgmt-feat-esphome-security.json >/dev/null
   python3 -m json.tool protocol/upstream.lock.json >/dev/null
   python3 -m json.tool protocol/inventory.json >/dev/null
+fi
+
+if ! grep -Fq 'f1f9e3ef9b5efca161aa97cbe0040d278fdb4038' compatibility/mgmt-feat-esphome-security.json ||
+  ! grep -Fq 'ede1737219be106e2c5e06bb497af9a1ec9e17c8' compatibility/mgmt-feat-esphome-security.json; then
+  echo "security compatibility manifest must pin the verified library and MGMT revisions" >&2
+  exit 1
 fi
 
 if grep -RInE --exclude-dir=.git --exclude='validate-repo.sh' \

@@ -201,19 +201,20 @@ Adjust the explicit `git add` paths to match your change. Do not use `git add .`
 Until a release is tagged, pin an exact reviewed commit rather than a moving branch:
 
 ```bash
-go get github.com/flavio-fernandes/go-aioesphomeapi@6f954bc92a84b8a2bcb12acef5462b2445edfc08
+go get github.com/flavio-fernandes/go-aioesphomeapi@f1f9e3ef9b5efca161aa97cbe0040d278fdb4038
 ```
 
-MGMT `feat/esphome` at `90a172d09239925db5a527ee7b2a5edc383c08a3`
-pins this commit. Review [library PR #30](https://github.com/flavio-fernandes/go-aioesphomeapi/pull/30)
-for the client implementation and [PR #31](https://github.com/flavio-fernandes/go-aioesphomeapi/pull/31)
-for the reviewed fixture corrections. A tagged release command will replace
+MGMT `feat/esphome` at `ede1737219be106e2c5e06bb497af9a1ec9e17c8`
+pins this commit. Review [library PR #48](https://github.com/flavio-fernandes/go-aioesphomeapi/pull/48)
+for the current dependency security floor, [PR #46](https://github.com/flavio-fernandes/go-aioesphomeapi/pull/46)
+for the mDNS retry correction, and [PR #30](https://github.com/flavio-fernandes/go-aioesphomeapi/pull/30)
+for the original client implementation. A tagged release command will replace
 this development pin later.
 
 To inspect the exact MGMT revision, unchanged MCL hashes, dependency reduction, and verification record:
 
 ```bash
-python3 -m json.tool compatibility/mgmt-feat-esphome2.json
+python3 -m json.tool compatibility/mgmt-feat-esphome-security.json
 ```
 
 Real-device access is deliberately not a beginner copy/paste command. Applications must provide the target and base64 Noise key at runtime, keep both out of source and shell history, and call `WithEncryptionKey`. Plaintext requires `WithInsecurePlaintext()` and is for isolated tests only.

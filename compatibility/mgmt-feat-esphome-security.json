@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-18",
+  "status": "security_pin_verified",
+  "extends": "compatibility/mgmt-feat-esphome-review.json",
+  "library": {
+    "repository": "https://github.com/flavio-fernandes/go-aioesphomeapi",
+    "branch": "main",
+    "revision": "f1f9e3ef9b5efca161aa97cbe0040d278fdb4038",
+    "mdns_pull_request": "https://github.com/flavio-fernandes/go-aioesphomeapi/pull/46",
+    "security_pull_request": "https://github.com/flavio-fernandes/go-aioesphomeapi/pull/48"
+  },
+  "mgmt": {
+    "repository": "https://github.com/flavio-fernandes/mgmt",
+    "branch": "feat/esphome",
+    "revision": "ede1737219be106e2c5e06bb497af9a1ec9e17c8",
+    "module_pin": "github.com/flavio-fernandes/go-aioesphomeapi v0.0.0-20260718111000-f1f9e3ef9b5e",
+    "pull_request": "https://github.com/flavio-fernandes/mgmt/pull/4"
+  },
+  "security": {
+    "go_version": "1.25.12",
+    "x_crypto": "v0.52.0",
+    "x_sys": "v0.45.0",
+    "dependabot_open_alerts_after_merge": 0,
+    "govulncheck_version": "v1.6.0",
+    "reachable_vulnerabilities": 0,
+    "imported_package_vulnerabilities": 0,
+    "triaged_unreachable_notice": "GO-2026-5932: unimported x/crypto/openpgp package; no fixed version"
+  },
+  "dependency_delta": {
+    "library_runtime_direct_before": 2,
+    "library_runtime_direct_after": 2,
+    "library_runtime_transitive_before": 2,
+    "library_runtime_transitive_after": 2,
+    "mgmt_added_modules": 0,
+    "mgmt_removed_modules": 0
+  },
+  "mcl_contract": {
+    "files": [
+      {
+        "path": "examples/lang/esphome0.mcl",
+        "sha256": "8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df",
+        "runtime": "pass"
+      },
+      {
+        "path": "examples/lang/esphome-blink.mcl",
+        "sha256": "359cedc5b3fd1e6793a0705fc4d7c7f844f5d3dc825a372fdf0c6769ef30c187",
+        "runtime": "pass"
+      },
+      {
+        "path": "examples/lang/esphome-conveyor.mcl",
+        "sha256": "38bb730a2897eeed1f8ed72e0299387ae2465e8b9b11b31c831f274e158868d6",
+        "runtime": "pass"
+      }
+    ],
+    "hosts_file_injection": false
+  },
+  "verification": [
+    "library repository policy, race, vet, fuzz smoke, and pinned govulncheck",
+    "MGMT targeted ESPHome race and resource tests plus vet",
+    "fresh MGMT build from the committed module pin with GOWORK disabled",
+    "both reviewed baseline MCL examples over Noise and multicast DNS",
+    "reviewed conveyor MCL over Noise and multicast DNS"
+  ],
+  "hardware_used_for_this_record": false
+}

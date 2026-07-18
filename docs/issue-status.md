@@ -6,9 +6,9 @@ features do not qualify. Future milestone epics stay open until that milestone
 is intentionally scheduled and completed.
 
 This snapshot was reconciled on 2026-07-18 against library `main` at
-`020179368d21ca57de78ff14aec3ab0cf30ad4f7` and MGMT `feat/esphome` at
-`90a172d09239925db5a527ee7b2a5edc383c08a3`. The append-only machine-readable
-record is [`compatibility/mgmt-feat-esphome-review.json`](../compatibility/mgmt-feat-esphome-review.json).
+`f1f9e3ef9b5efca161aa97cbe0040d278fdb4038` and MGMT `feat/esphome` at
+`ede1737219be106e2c5e06bb497af9a1ec9e17c8`. The append-only machine-readable
+record is [`compatibility/mgmt-feat-esphome-security.json`](../compatibility/mgmt-feat-esphome-security.json).
 
 ## Evidence-complete issues
 
