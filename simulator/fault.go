@@ -2,6 +2,7 @@ package simulator
 
 import (
 	"github.com/flavio-fernandes/go-aioesphomeapi/internal/wire"
+	"github.com/flavio-fernandes/go-aioesphomeapi/pb"
 )
 
 // FaultTrigger identifies the exact deterministic protocol point at which a
@@ -19,10 +20,11 @@ const (
 type FaultAction string
 
 const (
-	FaultDropConnection    FaultAction = "drop-connection"
-	FaultMalformedProtobuf FaultAction = "malformed-protobuf"
-	FaultUnknownMessage    FaultAction = "unknown-message"
-	FaultStall             FaultAction = "stall"
+	FaultDropConnection        FaultAction = "drop-connection"
+	FaultMalformedProtobuf     FaultAction = "malformed-protobuf"
+	FaultUnknownMessage        FaultAction = "unknown-message"
+	FaultDuplicateEntitiesDone FaultAction = "duplicate-entities-done"
+	FaultStall                 FaultAction = "stall"
 )
 
 // Fault combines one named action with one exact trigger. If several faults
@@ -47,9 +49,22 @@ func (d *Device) triggerFault(framer wire.Framer, trigger FaultTrigger) bool {
 			return true
 		case FaultUnknownMessage:
 			// 65000 is outside the pinned ESPHome message inventory but is
-			// valid in both the plaintext and Noise framing type fields.
-			_ = framer.WriteFrame(65000, nil)
-			return true
+			// valid in both framing type fields. A bounded unknown message is
+			// forward-compatible and must not terminate the connection.
+			if err := framer.WriteFrame(65000, nil); err != nil {
+				return true
+			}
+			continue
+		case FaultDuplicateEntitiesDone:
+			// A buggy peer may complete discovery more than once. Both frames
+			// traverse the real wire path; the normal completion follows too.
+			if send(framer, &pb.ListEntitiesDoneResponse{}) != nil {
+				return true
+			}
+			if send(framer, &pb.ListEntitiesDoneResponse{}) != nil {
+				return true
+			}
+			continue
 		case FaultStall:
 			// Use no timer here. The caller's operation deadline is the only
 			// real-time boundary, and Device.Close releases this peer.

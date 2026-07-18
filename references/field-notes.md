@@ -24,3 +24,21 @@ absolute paths, or camera/serial output here.
 
 See `docs/issue-status.md` for the current evidence ledger and exact remaining
 work. Update both files when future work changes the operational truth.
+
+## 2026-07-17 M1 hostile-peer and lifecycle review
+
+- The dial timeout covers TCP establishment, Noise, and Native API Hello as one
+  budget. Cancellation must close an in-progress Hello on both transports.
+- An injected `DialContext` follows `net.Dialer` semantics: its context bounds
+  establishment, not the lifetime of the returned connection. The client owns
+  the established connection until its session context or `Close` ends it.
+- A bounded unknown message ID is forward-compatible and is skipped. A
+  malformed payload for a known ID remains fatal and records `CloseReason`.
+- Duplicate or spurious entity-list completion is untrusted input and must be
+  harmless. Never close a completion channel twice.
+- ESPHome key-rejection text is pre-authentication input. Keep the broad Noise
+  handshake category, add a distinct rejected-key category, and sanitize and
+  cap the displayed reason.
+- `Ping(ctx)` is a caller-controlled liveness seam. A sent probe that times out
+  closes the ambiguous connection so its late response cannot satisfy a later
+  probe. Automatic keepalive policy remains separate work under issue #11.

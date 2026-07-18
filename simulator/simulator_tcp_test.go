@@ -58,8 +58,27 @@ func TestServeRejectsNonLoopback(t *testing.T) {
 	}
 }
 
-type stubListener struct{ address net.Addr }
+func TestServeWrapsAcceptError(t *testing.T) {
+	device := simulator.New(simulator.ConveyorScenario())
+	t.Cleanup(func() { _ = device.Close() })
+	underlying := errors.New("synthetic accept failure")
+	listener := &stubListener{address: &net.TCPAddr{IP: net.IPv4(127, 0, 0, 1), Port: 6053}, acceptErr: underlying}
+	err := device.Serve(listener)
+	if !errors.Is(err, underlying) {
+		t.Fatalf("accept cause was not preserved: %v", err)
+	}
+}
 
-func (s *stubListener) Accept() (net.Conn, error) { panic("Accept must not be called") }
-func (s *stubListener) Close() error              { return nil }
-func (s *stubListener) Addr() net.Addr            { return s.address }
+type stubListener struct {
+	address   net.Addr
+	acceptErr error
+}
+
+func (s *stubListener) Accept() (net.Conn, error) {
+	if s.acceptErr != nil {
+		return nil, s.acceptErr
+	}
+	panic("Accept must not be called")
+}
+func (s *stubListener) Close() error   { return nil }
+func (s *stubListener) Addr() net.Addr { return s.address }

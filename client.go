@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -31,12 +32,18 @@ var (
 	ErrPeerDisconnected = errors.New("ESPHome peer requested disconnect")
 	// ErrEventQueueFull means a slow consumer exhausted the bounded callback queue.
 	ErrEventQueueFull = errors.New("ESPHome callback queue is full")
+	// ErrPing identifies a failed caller-initiated liveness probe.
+	ErrPing = errors.New("ESPHome ping failed")
 	// ErrNoiseHandshake identifies a failed encrypted transport handshake.
 	ErrNoiseHandshake = wire.ErrNoiseHandshake
-	// ErrNoiseName identifies a configured peer-name mismatch.
-	ErrNoiseName = wire.ErrNoiseName
+	// ErrPeerName identifies a configured peer-name mismatch on either transport.
+	ErrPeerName = wire.ErrPeerName
+	// ErrNoiseName is retained as a compatibility alias for ErrPeerName.
+	ErrNoiseName = ErrPeerName
 	// ErrNoiseKey identifies invalid Noise key configuration.
 	ErrNoiseKey = wire.ErrNoiseKey
+	// ErrNoiseKeyRejected means the peer explicitly rejected the configured key.
+	ErrNoiseKeyRejected = wire.ErrNoiseKeyRejected
 )
 
 type callback func(proto.Message)
@@ -64,6 +71,7 @@ type Client struct {
 	events      chan proto.Message
 	listMu      sync.Mutex
 	list        *listResult
+	pingGate    chan struct{}
 }
 
 // Dial connects using a background context.
@@ -93,9 +101,27 @@ func DialWithContext(ctx context.Context, address string, timeout time.Duration,
 		cfg.callbackQueueSize = 256
 	}
 
-	conn, err := cfg.dialContext(ctx, "tcp", address)
+	establishCtx := ctx
+	cancelEstablish := func() {}
+	if timeout > 0 {
+		establishCtx, cancelEstablish = context.WithTimeout(ctx, timeout)
+	} else {
+		establishCtx, cancelEstablish = context.WithCancel(ctx)
+	}
+	defer cancelEstablish()
+
+	conn, err := cfg.dialContext(establishCtx, "tcp", address)
 	if err != nil {
 		return nil, fmt.Errorf("dial ESPHome target %q: %w", address, err)
+	}
+	stopEstablishmentClose := context.AfterFunc(establishCtx, func() { _ = conn.Close() })
+	defer stopEstablishmentClose()
+	establishmentDeadline, hasEstablishmentDeadline := establishCtx.Deadline()
+	if hasEstablishmentDeadline {
+		if err := conn.SetDeadline(establishmentDeadline); err != nil && !errors.Is(err, io.ErrClosedPipe) {
+			_ = conn.Close()
+			return nil, fmt.Errorf("set establishment deadline for ESPHome target %q: %w", address, err)
+		}
 	}
 	var framer wire.Framer
 	if cfg.encryptionKey != "" {
@@ -114,7 +140,11 @@ func DialWithContext(ctx context.Context, address string, timeout time.Duration,
 			conn.Close()
 			return nil, fmt.Errorf("configure Noise for ESPHome target %q: %w", address, ErrNoiseKey)
 		}
-		framer, err = wire.NewNoiseClientFramer(conn, key, cfg.expectedName, timeout, cfg.maxFrameSize)
+		handshakeTimeout := timeout
+		if hasEstablishmentDeadline {
+			handshakeTimeout = time.Until(establishmentDeadline)
+		}
+		framer, err = wire.NewNoiseClientFramer(conn, key, cfg.expectedName, handshakeTimeout, cfg.maxFrameSize)
 		for i := range key {
 			key[i] = 0
 		}
@@ -122,13 +152,38 @@ func DialWithContext(ctx context.Context, address string, timeout time.Duration,
 		framer = wire.NewPlainFramer(conn, cfg.maxFrameSize)
 	}
 	if err != nil {
-		conn.Close()
+		_ = conn.Close()
+		if cause := context.Cause(establishCtx); cause != nil {
+			return nil, fmt.Errorf("establish Noise session with ESPHome target %q: %w: establishment context: %w", address, err, cause)
+		}
 		return nil, fmt.Errorf("establish Noise session with ESPHome target %q: %w", address, err)
 	}
-	c := &Client{framer: framer, entities: newEntityRegistry(), done: make(chan struct{}), handlers: make(map[uint32]map[uint64]callback), events: make(chan proto.Message, cfg.callbackQueueSize)}
-	if err := c.hello(cfg.clientInfo); err != nil {
+	// The Noise framer clears its handshake deadline. Restore the single
+	// establishment deadline so Hello consumes only the original remaining budget.
+	if hasEstablishmentDeadline {
+		if err := conn.SetDeadline(establishmentDeadline); err != nil {
+			_ = conn.Close()
+			return nil, fmt.Errorf("restore hello deadline for ESPHome target %q: %w", address, err)
+		}
+	}
+	c := newClient(framer, cfg.callbackQueueSize)
+	if err := c.hello(cfg.clientInfo, cfg.expectedName); err != nil {
 		c.Close()
+		if cause := context.Cause(establishCtx); cause != nil {
+			return nil, fmt.Errorf("complete hello with ESPHome target %q: %w: establishment context: %w", address, err, cause)
+		}
 		return nil, fmt.Errorf("complete hello with ESPHome target %q: %w", address, err)
+	}
+	if err := conn.SetDeadline(time.Time{}); err != nil && !errors.Is(err, io.ErrClosedPipe) {
+		c.Close()
+		return nil, fmt.Errorf("clear establishment deadline for ESPHome target %q: %w", address, err)
+	}
+	if !stopEstablishmentClose() {
+		c.Close()
+		if cause := context.Cause(establishCtx); cause != nil {
+			return nil, fmt.Errorf("complete connection to ESPHome target %q: %w", address, cause)
+		}
+		return nil, fmt.Errorf("complete connection to ESPHome target %q: establishment ended", address)
 	}
 	c.connected.Store(true)
 	go c.dispatchLoop()
@@ -136,7 +191,20 @@ func DialWithContext(ctx context.Context, address string, timeout time.Duration,
 	return c, nil
 }
 
-func (c *Client) hello(clientInfo string) error {
+func newClient(framer wire.Framer, callbackQueueSize int) *Client {
+	client := &Client{
+		framer:   framer,
+		entities: newEntityRegistry(),
+		done:     make(chan struct{}),
+		handlers: make(map[uint32]map[uint64]callback),
+		events:   make(chan proto.Message, callbackQueueSize),
+		pingGate: make(chan struct{}, 1),
+	}
+	client.pingGate <- struct{}{}
+	return client
+}
+
+func (c *Client) hello(clientInfo, expectedName string) error {
 	if err := c.send(&pb.HelloRequest{ClientInfo: clientInfo, ApiVersionMajor: 1, ApiVersionMinor: 10}); err != nil {
 		return fmt.Errorf("%w: send request: %w", ErrHello, err)
 	}
@@ -158,6 +226,9 @@ func (c *Client) hello(clientInfo string) error {
 	if response.ApiVersionMajor != 1 {
 		return fmt.Errorf("%w: unsupported API major version %d", ErrHello, response.ApiVersionMajor)
 	}
+	if expectedName != "" && response.Name != expectedName {
+		return fmt.Errorf("%w: %w", ErrHello, ErrPeerName)
+	}
 	c.apiMajor, c.apiMinor, c.serverInfo, c.name = response.ApiVersionMajor, response.ApiVersionMinor, response.ServerInfo, response.Name
 	return nil
 }
@@ -178,6 +249,9 @@ func (c *Client) readLoop(ctx context.Context) {
 		}
 		message, err := wire.Decode(id, payload)
 		if err != nil {
+			if errors.Is(err, wire.ErrUnknownMessage) {
+				continue
+			}
 			c.shutdown(fmt.Errorf("decode ESPHome message ID %d: %w", id, err))
 			return
 		}
@@ -239,7 +313,9 @@ func (c *Client) handleList(message proto.Message) {
 		return
 	}
 	if _, ok := message.(*pb.ListEntitiesDoneResponse); ok {
-		close(c.list.done)
+		pending := c.list
+		c.list = nil
+		close(pending.done)
 		return
 	}
 	if isListEntity(message) {
@@ -326,7 +402,13 @@ func (c *Client) ListEntitiesWithTimeout(timeout time.Duration) ([]proto.Message
 	pending := &listResult{done: make(chan struct{})}
 	c.list = pending
 	c.listMu.Unlock()
-	defer func() { c.listMu.Lock(); c.list = nil; c.listMu.Unlock() }()
+	defer func() {
+		c.listMu.Lock()
+		if c.list == pending {
+			c.list = nil
+		}
+		c.listMu.Unlock()
+	}()
 	if err := c.send(&pb.ListEntitiesRequest{}); err != nil {
 		return nil, err
 	}
@@ -371,9 +453,58 @@ func (c *Client) SubscribeLogs(level pb.LogLevel, handler func(*pb.SubscribeLogs
 			handler(logMessage)
 		}
 	})
-	if err := c.send(&pb.SubscribeLogsRequest{Level: level, DumpConfig: true}); err != nil {
+	if err := c.send(&pb.SubscribeLogsRequest{Level: level}); err != nil {
 		remove()
 		return nil, err
 	}
 	return remove, nil
+}
+
+// Ping performs one context-bounded Native API liveness probe. Concurrent
+// probes are serialized so one response can never satisfy multiple callers.
+// A probe that times out after sending closes the ambiguous connection; a late
+// response can therefore never satisfy a later probe.
+func (c *Client) Ping(ctx context.Context) error {
+	if ctx == nil {
+		return fmt.Errorf("%w: nil context", ErrPing)
+	}
+	select {
+	case <-ctx.Done():
+		return fmt.Errorf("%w: wait to start: %w", ErrPing, context.Cause(ctx))
+	case <-c.done:
+		return c.pingClosedError()
+	case <-c.pingGate:
+	}
+	defer func() { c.pingGate <- struct{}{} }()
+
+	response := make(chan struct{}, 1)
+	remove := c.on(8, func(message proto.Message) {
+		if _, ok := message.(*pb.PingResponse); ok {
+			select {
+			case response <- struct{}{}:
+			default:
+			}
+		}
+	})
+	defer remove()
+	if err := c.send(&pb.PingRequest{}); err != nil {
+		return fmt.Errorf("%w: send request: %w", ErrPing, err)
+	}
+	select {
+	case <-response:
+		return nil
+	case <-ctx.Done():
+		reason := fmt.Errorf("%w: wait for response: %w", ErrPing, context.Cause(ctx))
+		c.shutdown(reason)
+		return reason
+	case <-c.done:
+		return c.pingClosedError()
+	}
+}
+
+func (c *Client) pingClosedError() error {
+	if reason := c.CloseReason(); reason != nil {
+		return fmt.Errorf("%w: connection closed: %w", ErrPing, reason)
+	}
+	return fmt.Errorf("%w: %w", ErrPing, ErrClientClosed)
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net"
+	"os"
 	"strings"
 	"sync"
 	"testing"
@@ -18,6 +19,8 @@ type fakePacketConn struct {
 	deadlineErr error
 	written     []byte
 	deadline    time.Time
+	source      *net.UDPAddr
+	writes      int
 	closed      bool
 	mutex       sync.Mutex
 }
@@ -28,6 +31,7 @@ func (c *fakePacketConn) SetDeadline(deadline time.Time) error {
 	return c.deadlineErr
 }
 func (c *fakePacketConn) WriteToUDP(message []byte, _ *net.UDPAddr) (int, error) {
+	c.writes++
 	c.written = append([]byte(nil), message...)
 	if c.writeErr != nil {
 		return 0, c.writeErr
@@ -43,8 +47,70 @@ func (c *fakePacketConn) ReadFromUDP(buffer []byte) (int, *net.UDPAddr, error) {
 	}
 	n := copy(buffer, c.response)
 	c.response = nil
-	return n, multicastAddress, nil
+	source := c.source
+	if source == nil {
+		source = multicastAddress
+	}
+	return n, source, nil
 }
+
+func TestLookupRetransmitsWithinOverallDeadline(t *testing.T) {
+	reply, err := response("retry-device.local", net.IPv4(192, 0, 2, 55))
+	if err != nil {
+		t.Fatal(err)
+	}
+	conn := &retryPacketConn{response: reply}
+	listen := func(string, *net.Interface, *net.UDPAddr) (packetConn, error) { return conn, nil }
+	ip, err := lookupWithSchedule(context.Background(), "retry-device.local", 100*time.Millisecond, listen, []time.Duration{5 * time.Millisecond, 10 * time.Millisecond})
+	if err != nil {
+		t.Fatalf("lookup after retransmits: %v", err)
+	}
+	if !ip.Equal(net.IPv4(192, 0, 2, 55)) {
+		t.Fatalf("resolved %v", ip)
+	}
+	if conn.writes != 3 {
+		t.Fatalf("query writes = %d, want initial plus two retries", conn.writes)
+	}
+}
+
+func TestLookupRejectsAnswerFromWrongSourcePort(t *testing.T) {
+	reply, err := response("wrong-port.local", net.IPv4(192, 0, 2, 56))
+	if err != nil {
+		t.Fatal(err)
+	}
+	conn := &fakePacketConn{response: reply, source: &net.UDPAddr{IP: net.IPv4(192, 0, 2, 1), Port: 9999}}
+	listen := func(string, *net.Interface, *net.UDPAddr) (packetConn, error) { return conn, nil }
+	_, err = lookup(context.Background(), "wrong-port.local", time.Second, listen)
+	if err == nil || !errors.Is(err, io.EOF) {
+		t.Fatalf("got %v, want ignored packet followed by EOF", err)
+	}
+}
+
+type retryPacketConn struct {
+	response []byte
+	deadline time.Time
+	writes   int
+}
+
+func (c *retryPacketConn) SetReadBuffer(int) error { return nil }
+func (c *retryPacketConn) SetDeadline(deadline time.Time) error {
+	c.deadline = deadline
+	return nil
+}
+func (c *retryPacketConn) WriteToUDP(message []byte, _ *net.UDPAddr) (int, error) {
+	c.writes++
+	return len(message), nil
+}
+func (c *retryPacketConn) ReadFromUDP(buffer []byte) (int, *net.UDPAddr, error) {
+	if c.writes < 3 {
+		if wait := time.Until(c.deadline); wait > 0 {
+			time.Sleep(wait)
+		}
+		return 0, nil, &net.OpError{Op: "read", Net: "udp4", Err: os.ErrDeadlineExceeded}
+	}
+	return copy(buffer, c.response), multicastAddress, nil
+}
+func (c *retryPacketConn) Close() error { return nil }
 func (c *fakePacketConn) Close() error {
 	c.mutex.Lock()
 	c.closed = true

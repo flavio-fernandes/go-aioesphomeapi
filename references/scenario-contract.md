@@ -18,8 +18,15 @@ side of the real framing and Native API path; it is never a mock client.
 ## Accepted current fault vocabulary
 
 Triggers occur after Hello, before entity-list completion, and after initial
-states. Actions drop the connection, send malformed protobuf, send an unknown
-message, or stall until caller cancellation or simulator close.
+states. Actions drop the connection, send malformed protobuf, send a bounded
+unknown message, duplicate entity-list completion, or stall until caller
+cancellation or simulator close. Malformed known messages close the client;
+unknown bounded message IDs are skipped and later known traffic continues;
+duplicate completion cannot panic the client or its embedding process.
+
+`DeviceStats.DroppedCommands` makes command-observation queue saturation
+explicit. Tests that send more commands than they consume must assert this
+counter instead of silently accepting lost observations.
 
 ## M1 contract gaps
 

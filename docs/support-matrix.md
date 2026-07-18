@@ -23,7 +23,7 @@ The pinned protocol inventory contains 148 unique message IDs. Generated presenc
 | Context-bound Noise dial | yes | hardware | M1 | MGMT completed Noise against ESPHome 2026.7.0 hardware; normal path fails closed without secure configuration. |
 | Explicit insecure plaintext | compatibility review | simulated | M1 | Requires `WithInsecurePlaintext`; never selected implicitly. |
 | `.local` mDNS resolution | yes | hardware | M1 | The unchanged blink MCL resolved a real device; simulator coverage also proves no `/etc/hosts` mapping or added module is needed. |
-| Diagnostic error chains and close reason | operational | simulated | M1 | Dial retains `*net.OpError`; mDNS, Noise, and hello are distinct; asynchronous read/decode/context/peer/queue termination is observable. |
+| Diagnostic error chains and close reason | operational | simulated | M1 | Dial retains `*net.OpError`; mDNS, Noise, rejected keys, and hello are distinct; peer rejection text is capped/sanitized; asynchronous read/decode/context/peer/queue termination is observable. |
 | Entity list and registry metadata | yes | hardware | M1 | A real blink switch and binary sensor were resolved by exact current name. |
 | Initial state snapshot and live push | yes | hardware | M1 | Real blink state repeatedly reached MCL; broader push/fault evidence is still pending. |
 | Binary sensor state | yes | hardware | M1 | Real blink state and three simulated conveyor binary sensors reached MCL. |
@@ -36,7 +36,7 @@ The pinned protocol inventory contains 148 unique message IDs. Generated presenc
 | RGB Light state and command | conveyor | mgmt | M1 | State, brightness, and blue RGB command passed. |
 | Device logs | yes | hardware | M1 | ESPHome 2026.7.0 logs reached the MGMT endpoint logger; only sanitized evidence was committed. |
 | Done signal and idempotent close | yes | simulated | M1 | Race tests cover clean termination. |
-| Hostile peer and stalled operation | security | simulated | M1 | Named drop, malformed-protobuf, unknown-message, incomplete-discovery, and stalled-discovery tests fail closed over the real framing/session path. |
+| Hostile peer and stalled operation | security | simulated | M1 | Named drop, malformed-protobuf, duplicate-completion, incomplete-discovery, and stalled-discovery tests are panic-free over the real framing/session path; bounded unknown IDs are skipped and subsequent known traffic succeeds. |
 | MGMT-owned reconnect and outage accounting | external contract | mgmt | M1 | Real encrypted driver test drops a persistent peer, reconnects through MGMT, records a positive outage, and observes no unrequested replay. |
 | Library-owned reconnect | no | none | M2 | MGMT owns reconnect; client option stays disabled. |
 | MGMT persistent and polling modes | external contract | mgmt / mgmt | M1 | Persistent MCL and conveyor runs pass; real-driver polling disconnects between cycles and wakes once for a queued command. |
@@ -76,7 +76,7 @@ The evidence is append-only: [`compatibility/mgmt-feat-esphome2.json`](../compat
 | `.local` A-record resolution | known | typed | simulated | mgmt | hardware | M1 |
 | Hello and API version | known | typed | simulated | mgmt | hardware | M1 |
 | Device information | known | none | none | none | none | M1 |
-| Ping, disconnect, close | known | typed | typed | none | none | M1 |
+| Ping, disconnect, close | known | typed | simulated | none | none | M1 |
 | Entity discovery | known | typed | simulated | mgmt | hardware | M1 |
 | State subscriptions | known | typed | simulated | mgmt | hardware | M1 |
 | Bounded device logs | known | typed | simulated | mgmt | hardware | M1 |

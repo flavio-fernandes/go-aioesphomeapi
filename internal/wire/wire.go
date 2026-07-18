@@ -21,14 +21,18 @@ const (
 )
 
 var (
-	ErrClosed          = errors.New("native API connection closed")
-	ErrMalformedFrame  = errors.New("malformed native API frame")
-	ErrFrameTooLarge   = errors.New("native API frame exceeds limit")
-	ErrUnknownMessage  = errors.New("unknown native API message")
-	ErrNoiseHandshake  = errors.New("Noise handshake failed")
-	ErrNoiseName       = errors.New("Noise peer name mismatch")
-	ErrNoiseKey        = errors.New("invalid Noise key")
-	ErrTransportPolicy = errors.New("secure transport configuration required")
+	ErrClosed         = errors.New("native API connection closed")
+	ErrMalformedFrame = errors.New("malformed native API frame")
+	ErrFrameTooLarge  = errors.New("native API frame exceeds limit")
+	ErrMessageType    = errors.New("native API message type exceeds transport range")
+	ErrUnknownMessage = errors.New("unknown native API message")
+	ErrNoiseHandshake = errors.New("Noise handshake failed")
+	ErrPeerName       = errors.New("ESPHome peer name mismatch")
+	// ErrNoiseName is retained as a compatibility alias for ErrPeerName.
+	ErrNoiseName        = ErrPeerName
+	ErrNoiseKey         = errors.New("invalid Noise key")
+	ErrNoiseKeyRejected = errors.New("Noise key rejected by peer")
+	ErrTransportPolicy  = errors.New("secure transport configuration required")
 )
 
 // Framer exchanges typed protobuf payloads over one connection.

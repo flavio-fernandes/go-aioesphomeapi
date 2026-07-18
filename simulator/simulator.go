@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"net"
 	"sync"
 	"time"
@@ -57,16 +58,17 @@ func WithEncryptionKey(base64Key string) Option {
 
 // Device accepts injected net.Pipe connections and records received commands.
 type Device struct {
-	scenario    Scenario
-	config      config
-	commands    chan proto.Message
-	done        chan struct{}
-	closeOnce   sync.Once
-	mu          sync.Mutex
-	accepted    uint64
-	connections map[net.Conn]struct{}
-	listeners   map[net.Listener]struct{}
-	wg          sync.WaitGroup
+	scenario        Scenario
+	config          config
+	commands        chan proto.Message
+	done            chan struct{}
+	closeOnce       sync.Once
+	mu              sync.Mutex
+	accepted        uint64
+	droppedCommands uint64
+	connections     map[net.Conn]struct{}
+	listeners       map[net.Listener]struct{}
+	wg              sync.WaitGroup
 }
 
 // New creates a stopped-port, in-process device. The default is Noise-encrypted
@@ -93,6 +95,9 @@ func New(scenario Scenario, options ...Option) *Device {
 
 // DialContext is passed to aioesphomeapi.WithDialContext.
 func (d *Device) DialContext(ctx context.Context, _, _ string) (net.Conn, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	select {
 	case <-d.done:
 		return nil, errors.New("simulator closed")
@@ -104,14 +109,8 @@ func (d *Device) DialContext(ctx context.Context, _, _ string) (net.Conn, error)
 		_ = server.Close()
 		return nil, errors.New("simulator closed")
 	}
-	go func() {
-		select {
-		case <-ctx.Done():
-			_ = client.Close()
-		case <-d.done:
-			_ = client.Close()
-		}
-	}()
+	// Like net.Dialer.DialContext, ctx bounds connection establishment only.
+	// The returned connection's lifetime belongs to the client and Device.Close.
 	return client, nil
 }
 
@@ -147,7 +146,7 @@ func (d *Device) Serve(listener net.Listener) error {
 			case <-d.done:
 				return nil
 			default:
-				return errors.New("simulator accept failed")
+				return fmt.Errorf("simulator accept failed: %w", err)
 			}
 		}
 		if !d.startConnection(connection) {
@@ -189,6 +188,7 @@ func (d *Device) Commands() <-chan proto.Message { return d.commands }
 type DeviceStats struct {
 	AcceptedConnections uint64
 	ActiveConnections   int
+	DroppedCommands     uint64
 }
 
 // Stats reports deterministic connection counts for cleanup, polling, and
@@ -196,7 +196,7 @@ type DeviceStats struct {
 func (d *Device) Stats() DeviceStats {
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	return DeviceStats{AcceptedConnections: d.accepted, ActiveConnections: len(d.connections)}
+	return DeviceStats{AcceptedConnections: d.accepted, ActiveConnections: len(d.connections), DroppedCommands: d.droppedCommands}
 }
 
 // Close terminates every active simulated connection.
@@ -347,6 +347,9 @@ func (d *Device) record(message proto.Message) {
 	select {
 	case d.commands <- proto.Clone(message):
 	default:
+		d.mu.Lock()
+		d.droppedCommands++
+		d.mu.Unlock()
 	}
 }
 

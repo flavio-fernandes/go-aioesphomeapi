@@ -19,7 +19,6 @@ func TestHostilePeerFaultsCloseClient(t *testing.T) {
 	}{
 		{name: "dropped connection", action: simulator.FaultDropConnection},
 		{name: "malformed protobuf", action: simulator.FaultMalformedProtobuf},
-		{name: "unknown message", action: simulator.FaultUnknownMessage},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -32,6 +31,53 @@ func TestHostilePeerFaultsCloseClient(t *testing.T) {
 			t.Cleanup(func() { _ = client.Close() })
 			waitForClientClose(t, client)
 		})
+	}
+}
+
+func TestUnknownMessageIsSkippedAndSubsequentTrafficContinues(t *testing.T) {
+	device := simulator.New(simulator.Scenario{
+		Name: "future-message-simulator",
+		Entities: []proto.Message{
+			&pb.ListEntitiesBinarySensorResponse{Key: 1, ObjectId: "synthetic_sensor", Name: "Synthetic Sensor"},
+		},
+		Faults: []simulator.Fault{{Trigger: simulator.FaultBeforeEntitiesDone, Action: simulator.FaultUnknownMessage}},
+	})
+	t.Cleanup(func() { _ = device.Close() })
+	client := dialSimulator(t, device)
+	t.Cleanup(func() { _ = client.Close() })
+	entities, err := client.ListEntitiesWithTimeout(time.Second)
+	if err != nil || len(entities) != 1 {
+		t.Fatalf("discovery after unknown frame: entities=%d err=%v", len(entities), err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	if err := client.Ping(ctx); err != nil {
+		t.Fatalf("subsequent ping after unknown frame: %v", err)
+	}
+	if !client.Connected() {
+		t.Fatal("bounded unknown frame closed the client")
+	}
+}
+
+func TestDuplicateEntityCompletionCannotPanicOrPoisonConnection(t *testing.T) {
+	device := simulator.New(simulator.Scenario{
+		Name: "duplicate-done-simulator",
+		Entities: []proto.Message{
+			&pb.ListEntitiesBinarySensorResponse{Key: 1, ObjectId: "synthetic_sensor", Name: "Synthetic Sensor"},
+		},
+		Faults: []simulator.Fault{{Trigger: simulator.FaultBeforeEntitiesDone, Action: simulator.FaultDuplicateEntitiesDone}},
+	})
+	t.Cleanup(func() { _ = device.Close() })
+	client := dialSimulator(t, device)
+	t.Cleanup(func() { _ = client.Close() })
+	entities, err := client.ListEntitiesWithTimeout(time.Second)
+	if err != nil || len(entities) != 1 {
+		t.Fatalf("duplicate completion: entities=%d err=%v", len(entities), err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	if err := client.Ping(ctx); err != nil {
+		t.Fatalf("ping after duplicate completion: %v", err)
 	}
 }
 
