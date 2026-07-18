@@ -106,6 +106,27 @@ sed -n '1,220p' docs/support-matrix.md
 
 `none` and `untracked` are honest current results, not setup failures.
 
+### 6a. Check the protocol compatibility map
+
+This no-network check proves the generated message-by-message map matches its
+reviewed annotations and pinned ESPHome protocol. It needs the same supported Go
+toolchain as the build step.
+
+```bash
+go run ./cmd/protocol-inventory -summary
+go run ./cmd/protocol-inventory -check protocol/inventory.json
+```
+
+Expected output:
+
+```text
+ESPHome 2026.7.0: 148 unique messages, 33 M1 accounted (31 implemented), 117 generated-only
+protocol inventory is current: 148 unique messages
+```
+
+See the [protocol inventory guide](docs/protocol-inventory.md) before changing
+an evidence level or synchronizing a new ESPHome release.
+
 ### 7. Prove the real MGMT integration without hardware
 
 This maintainer check runs the unchanged conveyor MCL against the encrypted

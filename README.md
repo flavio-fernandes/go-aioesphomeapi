@@ -21,6 +21,7 @@ This remains an independent greenfield implementation. The reference client is a
 - Maintainer-only real-device walkthrough: [MGMT hardware blink demo](docs/mgmt-hardware-blink.md)
 - Exact MGMT behavior we must preserve: [MGMT compatibility contract](docs/mgmt-integration.md)
 - What is implemented and evidenced: [support matrix](docs/support-matrix.md)
+- Message-by-message gates and evidence: [protocol compatibility inventory](docs/protocol-inventory.md)
 - Why dependencies face a high bar: [dependency policy](docs/dependency-policy.md)
 - Controlled delivery sequence: [roadmap](docs/roadmap.md)
 - Exact Milestone 1 build order: [implementation sequence](docs/m1-implementation-plan.md)
@@ -60,7 +61,7 @@ The conveyor demonstration is the first visible acceptance system, not the libra
 
 ## Repository status
 
-The repository is public and GPL-3.0-only licensed. The original immutable MGMT baseline is recorded in [`compatibility/mgmt-feat-esphome.json`](compatibility/mgmt-feat-esphome.json), the replacement candidate is recorded in [`compatibility/mgmt-feat-esphome2.json`](compatibility/mgmt-feat-esphome2.json), and append-only runtime proofs cover the [conveyor](compatibility/mgmt-feat-esphome2-runtime.json), [both original baseline examples plus polling/reconnect](compatibility/mgmt-feat-esphome2-baselines.json), the [post-merge `feat/esphome` branch](compatibility/mgmt-feat-esphome-postmerge.json), [real `.local` mDNS parity](compatibility/mgmt-feat-esphome-mdns.json), the [final MGMT diagnostics pin](compatibility/mgmt-feat-esphome-diagnostics.json), and the [first sanitized real-hardware blink run](compatibility/mgmt-feat-esphome-hardware-blink.json). The ESPHome 2026.7.0 wire surface is recorded in [`protocol/upstream.lock.json`](protocol/upstream.lock.json). Run the no-hardware quickstart in the [cheatsheet](CHEATSHEET.md).
+The repository is public and GPL-3.0-only licensed. The original immutable MGMT baseline is recorded in [`compatibility/mgmt-feat-esphome.json`](compatibility/mgmt-feat-esphome.json), the replacement candidate is recorded in [`compatibility/mgmt-feat-esphome2.json`](compatibility/mgmt-feat-esphome2.json), and append-only runtime proofs cover the [conveyor](compatibility/mgmt-feat-esphome2-runtime.json), [both original baseline examples plus polling/reconnect](compatibility/mgmt-feat-esphome2-baselines.json), the [post-merge `feat/esphome` branch](compatibility/mgmt-feat-esphome-postmerge.json), [real `.local` mDNS parity](compatibility/mgmt-feat-esphome-mdns.json), the [final MGMT diagnostics pin](compatibility/mgmt-feat-esphome-diagnostics.json), and the [first sanitized real-hardware blink run](compatibility/mgmt-feat-esphome-hardware-blink.json). The ESPHome 2026.7.0 wire surface is pinned in [`protocol/upstream.lock.json`](protocol/upstream.lock.json) and classified message by message in the [generated compatibility inventory](protocol/inventory.json). Run the no-hardware quickstart in the [cheatsheet](CHEATSHEET.md).
 
 ## License
 

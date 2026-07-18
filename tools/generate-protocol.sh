@@ -39,4 +39,4 @@ PATH="$(dirname "${plugin_bin}"):${PATH}" "${protoc_bin}" \
   protocol/upstream/api_options.proto \
   protocol/upstream/api.proto
 
-go run ./cmd/protocol-inventory > protocol/inventory.json
+go run ./cmd/protocol-inventory -output protocol/inventory.json

@@ -1,873 +1,4494 @@
-[
-  {
-    "id": 1,
-    "name": "HelloRequest",
-    "direction": "SOURCE_CLIENT"
-  },
-  {
-    "id": 2,
-    "name": "HelloResponse",
-    "direction": "SOURCE_SERVER"
-  },
-  {
-    "id": 3,
-    "name": "AuthenticationRequest",
-    "direction": "SOURCE_CLIENT"
-  },
-  {
-    "id": 4,
-    "name": "AuthenticationResponse",
-    "direction": "SOURCE_SERVER"
-  },
-  {
-    "id": 5,
-    "name": "DisconnectRequest",
-    "direction": "SOURCE_BOTH"
-  },
-  {
-    "id": 6,
-    "name": "DisconnectResponse",
-    "direction": "SOURCE_BOTH"
-  },
-  {
-    "id": 7,
-    "name": "PingRequest",
-    "direction": "SOURCE_BOTH"
-  },
-  {
-    "id": 8,
-    "name": "PingResponse",
-    "direction": "SOURCE_BOTH"
-  },
-  {
-    "id": 9,
-    "name": "DeviceInfoRequest",
-    "direction": "SOURCE_CLIENT"
-  },
-  {
-    "id": 10,
-    "name": "DeviceInfoResponse",
-    "direction": "SOURCE_SERVER"
-  },
-  {
-    "id": 11,
-    "name": "ListEntitiesRequest",
-    "direction": "SOURCE_CLIENT"
-  },
-  {
-    "id": 12,
-    "name": "ListEntitiesBinarySensorResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BINARY_SENSOR"
-  },
-  {
-    "id": 13,
-    "name": "ListEntitiesCoverResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_COVER"
-  },
-  {
-    "id": 14,
-    "name": "ListEntitiesFanResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_FAN"
-  },
-  {
-    "id": 15,
-    "name": "ListEntitiesLightResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_LIGHT"
-  },
-  {
-    "id": 16,
-    "name": "ListEntitiesSensorResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_SENSOR"
-  },
-  {
-    "id": 17,
-    "name": "ListEntitiesSwitchResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_SWITCH"
-  },
-  {
-    "id": 18,
-    "name": "ListEntitiesTextSensorResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_TEXT_SENSOR"
-  },
-  {
-    "id": 19,
-    "name": "ListEntitiesDoneResponse",
-    "direction": "SOURCE_SERVER"
-  },
-  {
-    "id": 20,
-    "name": "SubscribeStatesRequest",
-    "direction": "SOURCE_CLIENT"
-  },
-  {
-    "id": 21,
-    "name": "BinarySensorStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BINARY_SENSOR"
-  },
-  {
-    "id": 22,
-    "name": "CoverStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_COVER"
-  },
-  {
-    "id": 23,
-    "name": "FanStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_FAN"
-  },
-  {
-    "id": 24,
-    "name": "LightStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_LIGHT"
-  },
-  {
-    "id": 25,
-    "name": "SensorStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_SENSOR"
-  },
-  {
-    "id": 26,
-    "name": "SwitchStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_SWITCH"
-  },
-  {
-    "id": 27,
-    "name": "TextSensorStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_TEXT_SENSOR"
-  },
-  {
-    "id": 28,
-    "name": "SubscribeLogsRequest",
-    "direction": "SOURCE_CLIENT"
-  },
-  {
-    "id": 29,
-    "name": "SubscribeLogsResponse",
-    "direction": "SOURCE_SERVER"
-  },
-  {
-    "id": 30,
-    "name": "CoverCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_COVER"
-  },
-  {
-    "id": 31,
-    "name": "FanCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_FAN"
-  },
-  {
-    "id": 32,
-    "name": "LightCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_LIGHT"
-  },
-  {
-    "id": 33,
-    "name": "SwitchCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_SWITCH"
-  },
-  {
-    "id": 34,
-    "name": "SubscribeHomeassistantServicesRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_API_HOMEASSISTANT_SERVICES"
-  },
-  {
-    "id": 35,
-    "name": "HomeassistantActionRequest",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_API_HOMEASSISTANT_SERVICES"
-  },
-  {
-    "id": 36,
-    "name": "GetTimeRequest",
-    "direction": "SOURCE_SERVER"
-  },
-  {
-    "id": 37,
-    "name": "GetTimeResponse",
-    "direction": "SOURCE_CLIENT"
-  },
-  {
-    "id": 38,
-    "name": "SubscribeHomeAssistantStatesRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_API_HOMEASSISTANT_STATES"
-  },
-  {
-    "id": 39,
-    "name": "SubscribeHomeAssistantStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_API_HOMEASSISTANT_STATES"
-  },
-  {
-    "id": 40,
-    "name": "HomeAssistantStateResponse",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_API_HOMEASSISTANT_STATES"
-  },
-  {
-    "id": 41,
-    "name": "ListEntitiesServicesResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_API_USER_DEFINED_ACTIONS"
-  },
-  {
-    "id": 42,
-    "name": "ExecuteServiceRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_API_USER_DEFINED_ACTIONS"
-  },
-  {
-    "id": 43,
-    "name": "ListEntitiesCameraResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_CAMERA"
-  },
-  {
-    "id": 44,
-    "name": "CameraImageResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_CAMERA"
-  },
-  {
-    "id": 45,
-    "name": "CameraImageRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_CAMERA"
-  },
-  {
-    "id": 46,
-    "name": "ListEntitiesClimateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_CLIMATE"
-  },
-  {
-    "id": 47,
-    "name": "ClimateStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_CLIMATE"
-  },
-  {
-    "id": 48,
-    "name": "ClimateCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_CLIMATE"
-  },
-  {
-    "id": 49,
-    "name": "ListEntitiesNumberResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_NUMBER"
-  },
-  {
-    "id": 50,
-    "name": "NumberStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_NUMBER"
-  },
-  {
-    "id": 51,
-    "name": "NumberCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_NUMBER"
-  },
-  {
-    "id": 52,
-    "name": "ListEntitiesSelectResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_SELECT"
-  },
-  {
-    "id": 53,
-    "name": "SelectStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_SELECT"
-  },
-  {
-    "id": 54,
-    "name": "SelectCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_SELECT"
-  },
-  {
-    "id": 55,
-    "name": "ListEntitiesSirenResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_SIREN"
-  },
-  {
-    "id": 56,
-    "name": "SirenStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_SIREN"
-  },
-  {
-    "id": 57,
-    "name": "SirenCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_SIREN"
-  },
-  {
-    "id": 58,
-    "name": "ListEntitiesLockResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_LOCK"
-  },
-  {
-    "id": 59,
-    "name": "LockStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_LOCK"
-  },
-  {
-    "id": 60,
-    "name": "LockCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_LOCK"
-  },
-  {
-    "id": 61,
-    "name": "ListEntitiesButtonResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BUTTON"
-  },
-  {
-    "id": 62,
-    "name": "ButtonCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_BUTTON"
-  },
-  {
-    "id": 63,
-    "name": "ListEntitiesMediaPlayerResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_MEDIA_PLAYER"
-  },
-  {
-    "id": 64,
-    "name": "MediaPlayerStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_MEDIA_PLAYER"
-  },
-  {
-    "id": 65,
-    "name": "MediaPlayerCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_MEDIA_PLAYER"
-  },
-  {
-    "id": 66,
-    "name": "SubscribeBluetoothLEAdvertisementsRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 67,
-    "name": "BluetoothLEAdvertisementResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 68,
-    "name": "BluetoothDeviceRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 69,
-    "name": "BluetoothDeviceConnectionResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 70,
-    "name": "BluetoothGATTGetServicesRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 71,
-    "name": "BluetoothGATTGetServicesResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 72,
-    "name": "BluetoothGATTGetServicesDoneResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 73,
-    "name": "BluetoothGATTReadRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 74,
-    "name": "BluetoothGATTReadResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 75,
-    "name": "BluetoothGATTWriteRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 76,
-    "name": "BluetoothGATTReadDescriptorRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 77,
-    "name": "BluetoothGATTWriteDescriptorRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 78,
-    "name": "BluetoothGATTNotifyRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 79,
-    "name": "BluetoothGATTNotifyDataResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 80,
-    "name": "SubscribeBluetoothConnectionsFreeRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 81,
-    "name": "BluetoothConnectionsFreeResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 82,
-    "name": "BluetoothGATTErrorResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 83,
-    "name": "BluetoothGATTWriteResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 84,
-    "name": "BluetoothGATTNotifyResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 85,
-    "name": "BluetoothDevicePairingResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 86,
-    "name": "BluetoothDeviceUnpairingResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 87,
-    "name": "UnsubscribeBluetoothLEAdvertisementsRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 88,
-    "name": "BluetoothDeviceClearCacheResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 89,
-    "name": "SubscribeVoiceAssistantRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_VOICE_ASSISTANT"
-  },
-  {
-    "id": 90,
-    "name": "VoiceAssistantRequest",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_VOICE_ASSISTANT"
-  },
-  {
-    "id": 91,
-    "name": "VoiceAssistantResponse",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_VOICE_ASSISTANT"
-  },
-  {
-    "id": 92,
-    "name": "VoiceAssistantEventResponse",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_VOICE_ASSISTANT"
-  },
-  {
-    "id": 93,
-    "name": "BluetoothLERawAdvertisementsResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 94,
-    "name": "ListEntitiesAlarmControlPanelResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_ALARM_CONTROL_PANEL"
-  },
-  {
-    "id": 95,
-    "name": "AlarmControlPanelStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_ALARM_CONTROL_PANEL"
-  },
-  {
-    "id": 96,
-    "name": "AlarmControlPanelCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_ALARM_CONTROL_PANEL"
-  },
-  {
-    "id": 97,
-    "name": "ListEntitiesTextResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_TEXT"
-  },
-  {
-    "id": 98,
-    "name": "TextStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_TEXT"
-  },
-  {
-    "id": 99,
-    "name": "TextCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_TEXT"
-  },
-  {
-    "id": 100,
-    "name": "ListEntitiesDateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_DATETIME_DATE"
-  },
-  {
-    "id": 101,
-    "name": "DateStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_DATETIME_DATE"
-  },
-  {
-    "id": 102,
-    "name": "DateCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_DATETIME_DATE"
-  },
-  {
-    "id": 103,
-    "name": "ListEntitiesTimeResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_DATETIME_TIME"
-  },
-  {
-    "id": 104,
-    "name": "TimeStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_DATETIME_TIME"
-  },
-  {
-    "id": 105,
-    "name": "TimeCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_DATETIME_TIME"
-  },
-  {
-    "id": 106,
-    "name": "VoiceAssistantAudio",
-    "direction": "SOURCE_BOTH",
-    "ifdef": "USE_VOICE_ASSISTANT"
-  },
-  {
-    "id": 107,
-    "name": "ListEntitiesEventResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_EVENT"
-  },
-  {
-    "id": 108,
-    "name": "EventResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_EVENT"
-  },
-  {
-    "id": 109,
-    "name": "ListEntitiesValveResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_VALVE"
-  },
-  {
-    "id": 110,
-    "name": "ValveStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_VALVE"
-  },
-  {
-    "id": 111,
-    "name": "ValveCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_VALVE"
-  },
-  {
-    "id": 112,
-    "name": "ListEntitiesDateTimeResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_DATETIME_DATETIME"
-  },
-  {
-    "id": 113,
-    "name": "DateTimeStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_DATETIME_DATETIME"
-  },
-  {
-    "id": 114,
-    "name": "DateTimeCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_DATETIME_DATETIME"
-  },
-  {
-    "id": 115,
-    "name": "VoiceAssistantTimerEventResponse",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_VOICE_ASSISTANT"
-  },
-  {
-    "id": 116,
-    "name": "ListEntitiesUpdateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_UPDATE"
-  },
-  {
-    "id": 117,
-    "name": "UpdateStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_UPDATE"
-  },
-  {
-    "id": 118,
-    "name": "UpdateCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_UPDATE"
-  },
-  {
-    "id": 119,
-    "name": "VoiceAssistantAnnounceRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_VOICE_ASSISTANT"
-  },
-  {
-    "id": 120,
-    "name": "VoiceAssistantAnnounceFinished",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_VOICE_ASSISTANT"
-  },
-  {
-    "id": 121,
-    "name": "VoiceAssistantConfigurationRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_VOICE_ASSISTANT"
-  },
-  {
-    "id": 122,
-    "name": "VoiceAssistantConfigurationResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_VOICE_ASSISTANT"
-  },
-  {
-    "id": 123,
-    "name": "VoiceAssistantSetConfiguration",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_VOICE_ASSISTANT"
-  },
-  {
-    "id": 124,
-    "name": "NoiseEncryptionSetKeyRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_API_NOISE"
-  },
-  {
-    "id": 125,
-    "name": "NoiseEncryptionSetKeyResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_API_NOISE"
-  },
-  {
-    "id": 126,
-    "name": "BluetoothScannerStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 127,
-    "name": "BluetoothScannerSetModeRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 128,
-    "name": "ZWaveProxyFrame",
-    "direction": "SOURCE_BOTH",
-    "ifdef": "USE_ZWAVE_PROXY"
-  },
-  {
-    "id": 129,
-    "name": "ZWaveProxyRequest",
-    "direction": "SOURCE_BOTH",
-    "ifdef": "USE_ZWAVE_PROXY"
-  },
-  {
-    "id": 130,
-    "name": "HomeassistantActionResponse",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_API_HOMEASSISTANT_ACTION_RESPONSES"
-  },
-  {
-    "id": 131,
-    "name": "ExecuteServiceResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_API_USER_DEFINED_ACTION_RESPONSES"
-  },
-  {
-    "id": 132,
-    "name": "ListEntitiesWaterHeaterResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_WATER_HEATER"
-  },
-  {
-    "id": 133,
-    "name": "WaterHeaterStateResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_WATER_HEATER"
-  },
-  {
-    "id": 134,
-    "name": "WaterHeaterCommandRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_WATER_HEATER"
-  },
-  {
-    "id": 135,
-    "name": "ListEntitiesInfraredResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_INFRARED"
-  },
-  {
-    "id": 136,
-    "name": "InfraredRFTransmitRawTimingsRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_IR_RF || USE_RADIO_FREQUENCY"
-  },
-  {
-    "id": 137,
-    "name": "InfraredRFReceiveEvent",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_IR_RF || USE_RADIO_FREQUENCY"
-  },
-  {
-    "id": 138,
-    "name": "SerialProxyConfigureRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_SERIAL_PROXY"
-  },
-  {
-    "id": 139,
-    "name": "SerialProxyDataReceived",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_SERIAL_PROXY"
-  },
-  {
-    "id": 140,
-    "name": "SerialProxyWriteRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_SERIAL_PROXY"
-  },
-  {
-    "id": 141,
-    "name": "SerialProxySetModemPinsRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_SERIAL_PROXY"
-  },
-  {
-    "id": 142,
-    "name": "SerialProxyGetModemPinsRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_SERIAL_PROXY"
-  },
-  {
-    "id": 143,
-    "name": "SerialProxyGetModemPinsResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_SERIAL_PROXY"
-  },
-  {
-    "id": 144,
-    "name": "SerialProxyRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_SERIAL_PROXY"
-  },
-  {
-    "id": 145,
-    "name": "BluetoothSetConnectionParamsRequest",
-    "direction": "SOURCE_CLIENT",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 146,
-    "name": "BluetoothSetConnectionParamsResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_BLUETOOTH_PROXY"
-  },
-  {
-    "id": 147,
-    "name": "SerialProxyRequestResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_SERIAL_PROXY"
-  },
-  {
-    "id": 148,
-    "name": "ListEntitiesRadioFrequencyResponse",
-    "direction": "SOURCE_SERVER",
-    "ifdef": "USE_RADIO_FREQUENCY"
-  }
-]
+{
+  "schema_version": 2,
+  "upstream": {
+    "release": "2026.7.0",
+    "commit": "920a8b761b680d9864da2ef4b44b4af95c99dba8"
+  },
+  "unknown_values": {
+    "message_ids": {
+      "status": "verified",
+      "behavior": "Skip a bounded unknown message ID and continue processing later known traffic.",
+      "test_plan": "Send an unknown ID between discovery and Ping traffic over the real simulator wire path; require both operations to complete and CloseReason to remain nil.",
+      "evidence": [
+        "client_integration_test.go",
+        "simulator/fault_test.go"
+      ]
+    },
+    "enum_values": {
+      "status": "planned",
+      "behavior": "Preserve the numeric protobuf value at the generated wire boundary; handwritten behavior must reject or ignore an unrecognized value without panic.",
+      "test_plan": "Inject unknown values into each M1 enum-bearing state and command family, verify panic-free decode, and assert the documented typed behavior before raising evidence.",
+      "evidence": []
+    },
+    "fields": {
+      "status": "planned",
+      "behavior": "Let the protobuf runtime decode unknown fields without treating generated presence as handwritten support.",
+      "test_plan": "Append valid unknown fields to representative M1 messages and verify known fields and subsequent frames remain usable under race and fuzz checks.",
+      "evidence": []
+    }
+  },
+  "messages": [
+    {
+      "id": 1,
+      "name": "HelloRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "always",
+      "entity_family": "session",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "secure_session_hello",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [
+          "compatibility/mgmt-feat-esphome-hardware-blink.json"
+        ],
+        "production": []
+      },
+      "notes": "Starts the Native API session after the transport is established."
+    },
+    {
+      "id": 2,
+      "name": "HelloResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "always",
+      "entity_family": "session",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "secure_session_hello",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [
+          "compatibility/mgmt-feat-esphome-hardware-blink.json"
+        ],
+        "production": []
+      },
+      "notes": "Validates the peer hello and records the advertised API version and name."
+    },
+    {
+      "id": 3,
+      "name": "AuthenticationRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "always",
+      "entity_family": "protocol",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 4,
+      "name": "AuthenticationResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "always",
+      "entity_family": "protocol",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 5,
+      "name": "DisconnectRequest",
+      "direction": "SOURCE_BOTH",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "always",
+      "entity_family": "session",
+      "milestone": "M1",
+      "mgmt_required": false,
+      "reference_parity": "reference_behavior",
+      "public_behavior": "peer_disconnect",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Acknowledges a peer-requested disconnect and records the session close reason."
+    },
+    {
+      "id": 6,
+      "name": "DisconnectResponse",
+      "direction": "SOURCE_BOTH",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "always",
+      "entity_family": "session",
+      "milestone": "M1",
+      "mgmt_required": false,
+      "reference_parity": "reference_behavior",
+      "public_behavior": "peer_disconnect",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Completes the Native API disconnect exchange."
+    },
+    {
+      "id": 7,
+      "name": "PingRequest",
+      "direction": "SOURCE_BOTH",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "always",
+      "entity_family": "session",
+      "milestone": "M1",
+      "mgmt_required": false,
+      "reference_parity": "reference_behavior",
+      "public_behavior": "liveness_probe",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Receives and answers peer liveness probes."
+    },
+    {
+      "id": 8,
+      "name": "PingResponse",
+      "direction": "SOURCE_BOTH",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "always",
+      "entity_family": "session",
+      "milestone": "M1",
+      "mgmt_required": false,
+      "reference_parity": "reference_behavior",
+      "public_behavior": "liveness_probe",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Completes the caller-controlled Ping operation."
+    },
+    {
+      "id": 9,
+      "name": "DeviceInfoRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "always",
+      "entity_family": "device_info",
+      "milestone": "M1",
+      "mgmt_required": false,
+      "reference_parity": "reference_behavior_not_required_by_mgmt",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "M1 lifecycle target owned by issue #11; no handwritten request behavior is implemented yet."
+    },
+    {
+      "id": 10,
+      "name": "DeviceInfoResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "always",
+      "entity_family": "device_info",
+      "milestone": "M1",
+      "mgmt_required": false,
+      "reference_parity": "reference_behavior_not_required_by_mgmt",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "M1 lifecycle target owned by issue #11; generated fields are known but not exposed as typed behavior."
+    },
+    {
+      "id": 11,
+      "name": "ListEntitiesRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "always",
+      "entity_family": "discovery",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "entity_discovery",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [
+          "compatibility/mgmt-feat-esphome-hardware-blink.json"
+        ],
+        "production": []
+      },
+      "notes": "Starts bounded entity discovery for the registry exposed to MGMT."
+    },
+    {
+      "id": 12,
+      "name": "ListEntitiesBinarySensorResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BINARY_SENSOR",
+      "entity_family": "binary_sensor",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "entity_discovery",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [
+          "compatibility/mgmt-feat-esphome-hardware-blink.json"
+        ],
+        "production": []
+      },
+      "notes": "Adds binary-sensor metadata to the immutable registry snapshot."
+    },
+    {
+      "id": 13,
+      "name": "ListEntitiesCoverResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_COVER",
+      "entity_family": "cover",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 14,
+      "name": "ListEntitiesFanResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_FAN",
+      "entity_family": "fan",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "conveyor_extension",
+      "public_behavior": "entity_discovery",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Adds generic ESPHome Fan metadata for the conveyor profile."
+    },
+    {
+      "id": 15,
+      "name": "ListEntitiesLightResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_LIGHT",
+      "entity_family": "light",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "conveyor_extension",
+      "public_behavior": "entity_discovery",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Adds generic ESPHome Light metadata and supported color modes."
+    },
+    {
+      "id": 16,
+      "name": "ListEntitiesSensorResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SENSOR",
+      "entity_family": "sensor",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "entity_discovery",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Adds numeric sensor metadata to the immutable registry snapshot."
+    },
+    {
+      "id": 17,
+      "name": "ListEntitiesSwitchResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SWITCH",
+      "entity_family": "switch",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "entity_discovery",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [
+          "compatibility/mgmt-feat-esphome-hardware-blink.json"
+        ],
+        "production": []
+      },
+      "notes": "Adds switch metadata to the immutable registry snapshot."
+    },
+    {
+      "id": 18,
+      "name": "ListEntitiesTextSensorResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_TEXT_SENSOR",
+      "entity_family": "text_sensor",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "entity_discovery",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Adds text-sensor metadata; MGMT runtime evidence remains tracked by issue #9."
+    },
+    {
+      "id": 19,
+      "name": "ListEntitiesDoneResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "always",
+      "entity_family": "discovery",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "entity_discovery",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [
+          "compatibility/mgmt-feat-esphome-hardware-blink.json"
+        ],
+        "production": []
+      },
+      "notes": "Atomically completes discovery; duplicate completion is harmless."
+    },
+    {
+      "id": 20,
+      "name": "SubscribeStatesRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "always",
+      "entity_family": "state",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "state_subscription",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [
+          "compatibility/mgmt-feat-esphome-hardware-blink.json"
+        ],
+        "production": []
+      },
+      "notes": "Requests the initial state snapshot and later pushed state changes."
+    },
+    {
+      "id": 21,
+      "name": "BinarySensorStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BINARY_SENSOR",
+      "entity_family": "binary_sensor",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "state_subscription",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [
+          "compatibility/mgmt-feat-esphome-hardware-blink.json"
+        ],
+        "production": []
+      },
+      "notes": "Publishes binary-sensor state to subscribed callbacks and MGMT."
+    },
+    {
+      "id": 22,
+      "name": "CoverStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_COVER",
+      "entity_family": "cover",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 23,
+      "name": "FanStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_FAN",
+      "entity_family": "fan",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "conveyor_extension",
+      "public_behavior": "state_subscription",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Publishes Fan power, speed, oscillation, direction, and preset state."
+    },
+    {
+      "id": 24,
+      "name": "LightStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_LIGHT",
+      "entity_family": "light",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "conveyor_extension",
+      "public_behavior": "state_subscription",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Publishes Light power, brightness, and color state for the conveyor status light."
+    },
+    {
+      "id": 25,
+      "name": "SensorStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SENSOR",
+      "entity_family": "sensor",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "state_subscription",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Publishes numeric sensor state; missing and NaN policy remains tracked by issue #9."
+    },
+    {
+      "id": 26,
+      "name": "SwitchStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SWITCH",
+      "entity_family": "switch",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "state_subscription",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [
+          "compatibility/mgmt-feat-esphome-hardware-blink.json"
+        ],
+        "production": []
+      },
+      "notes": "Publishes observed switch state."
+    },
+    {
+      "id": 27,
+      "name": "TextSensorStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_TEXT_SENSOR",
+      "entity_family": "text_sensor",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "state_subscription",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Publishes text-sensor state; MGMT runtime evidence remains tracked by issue #9."
+    },
+    {
+      "id": 28,
+      "name": "SubscribeLogsRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "always",
+      "entity_family": "logs",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "bounded_log_subscription",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [
+          "compatibility/mgmt-feat-esphome-hardware-blink.json"
+        ],
+        "production": []
+      },
+      "notes": "Starts a bounded log subscription at the requested level."
+    },
+    {
+      "id": 29,
+      "name": "SubscribeLogsResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "always",
+      "entity_family": "logs",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "bounded_log_subscription",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [
+          "compatibility/mgmt-feat-esphome-hardware-blink.json"
+        ],
+        "production": []
+      },
+      "notes": "Dispatches device log records away from the network read loop."
+    },
+    {
+      "id": 30,
+      "name": "CoverCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_COVER",
+      "entity_family": "cover",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 31,
+      "name": "FanCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_FAN",
+      "entity_family": "fan",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "conveyor_extension",
+      "public_behavior": "typed_command",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Sends generic ESPHome Fan commands, including the conveyor cleanup stop."
+    },
+    {
+      "id": 32,
+      "name": "LightCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_LIGHT",
+      "entity_family": "light",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "conveyor_extension",
+      "public_behavior": "typed_command",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Sends generic ESPHome Light commands, including RGB status colors."
+    },
+    {
+      "id": 33,
+      "name": "SwitchCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SWITCH",
+      "entity_family": "switch",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "typed_command",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [
+          "compatibility/mgmt-feat-esphome-hardware-blink.json"
+        ],
+        "production": []
+      },
+      "notes": "Sends a serialized switch command without implicit replay."
+    },
+    {
+      "id": 34,
+      "name": "SubscribeHomeassistantServicesRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_API_HOMEASSISTANT_SERVICES",
+      "entity_family": "api_homeassistant_services",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 35,
+      "name": "HomeassistantActionRequest",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_API_HOMEASSISTANT_SERVICES",
+      "entity_family": "api_homeassistant_services",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 36,
+      "name": "GetTimeRequest",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "always",
+      "entity_family": "protocol",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 37,
+      "name": "GetTimeResponse",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "always",
+      "entity_family": "protocol",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 38,
+      "name": "SubscribeHomeAssistantStatesRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_API_HOMEASSISTANT_STATES",
+      "entity_family": "api_homeassistant_states",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 39,
+      "name": "SubscribeHomeAssistantStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_API_HOMEASSISTANT_STATES",
+      "entity_family": "api_homeassistant_states",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 40,
+      "name": "HomeAssistantStateResponse",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_API_HOMEASSISTANT_STATES",
+      "entity_family": "api_homeassistant_states",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 41,
+      "name": "ListEntitiesServicesResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_API_USER_DEFINED_ACTIONS",
+      "entity_family": "api_user_defined_actions",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 42,
+      "name": "ExecuteServiceRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_API_USER_DEFINED_ACTIONS",
+      "entity_family": "api_user_defined_actions",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 43,
+      "name": "ListEntitiesCameraResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_CAMERA",
+      "entity_family": "camera",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 44,
+      "name": "CameraImageResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_CAMERA",
+      "entity_family": "camera",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 45,
+      "name": "CameraImageRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_CAMERA",
+      "entity_family": "camera",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 46,
+      "name": "ListEntitiesClimateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_CLIMATE",
+      "entity_family": "climate",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 47,
+      "name": "ClimateStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_CLIMATE",
+      "entity_family": "climate",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 48,
+      "name": "ClimateCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_CLIMATE",
+      "entity_family": "climate",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 49,
+      "name": "ListEntitiesNumberResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_NUMBER",
+      "entity_family": "number",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "entity_discovery",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Adds number metadata and bounds to the registry snapshot."
+    },
+    {
+      "id": 50,
+      "name": "NumberStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_NUMBER",
+      "entity_family": "number",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "state_subscription",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Publishes observed number state."
+    },
+    {
+      "id": 51,
+      "name": "NumberCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_NUMBER",
+      "entity_family": "number",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "typed_command",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [
+          "compatibility/mgmt-feat-esphome-security.json"
+        ],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Sends a serialized number command without implicit replay."
+    },
+    {
+      "id": 52,
+      "name": "ListEntitiesSelectResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SELECT",
+      "entity_family": "select",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 53,
+      "name": "SelectStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SELECT",
+      "entity_family": "select",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 54,
+      "name": "SelectCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SELECT",
+      "entity_family": "select",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 55,
+      "name": "ListEntitiesSirenResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SIREN",
+      "entity_family": "siren",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 56,
+      "name": "SirenStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SIREN",
+      "entity_family": "siren",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 57,
+      "name": "SirenCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SIREN",
+      "entity_family": "siren",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 58,
+      "name": "ListEntitiesLockResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_LOCK",
+      "entity_family": "lock",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 59,
+      "name": "LockStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_LOCK",
+      "entity_family": "lock",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 60,
+      "name": "LockCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_LOCK",
+      "entity_family": "lock",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 61,
+      "name": "ListEntitiesButtonResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BUTTON",
+      "entity_family": "button",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "entity_discovery",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Adds button metadata; MGMT command evidence remains tracked by issue #9."
+    },
+    {
+      "id": 62,
+      "name": "ButtonCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BUTTON",
+      "entity_family": "button",
+      "milestone": "M1",
+      "mgmt_required": true,
+      "reference_parity": "mgmt_reference_subset",
+      "public_behavior": "typed_command",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Sends a non-idempotent button command without implicit replay; MGMT evidence remains tracked by issue #9."
+    },
+    {
+      "id": 63,
+      "name": "ListEntitiesMediaPlayerResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_MEDIA_PLAYER",
+      "entity_family": "media_player",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 64,
+      "name": "MediaPlayerStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_MEDIA_PLAYER",
+      "entity_family": "media_player",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 65,
+      "name": "MediaPlayerCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_MEDIA_PLAYER",
+      "entity_family": "media_player",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 66,
+      "name": "SubscribeBluetoothLEAdvertisementsRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 67,
+      "name": "BluetoothLEAdvertisementResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 68,
+      "name": "BluetoothDeviceRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 69,
+      "name": "BluetoothDeviceConnectionResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 70,
+      "name": "BluetoothGATTGetServicesRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 71,
+      "name": "BluetoothGATTGetServicesResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 72,
+      "name": "BluetoothGATTGetServicesDoneResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 73,
+      "name": "BluetoothGATTReadRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 74,
+      "name": "BluetoothGATTReadResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 75,
+      "name": "BluetoothGATTWriteRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 76,
+      "name": "BluetoothGATTReadDescriptorRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 77,
+      "name": "BluetoothGATTWriteDescriptorRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 78,
+      "name": "BluetoothGATTNotifyRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 79,
+      "name": "BluetoothGATTNotifyDataResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 80,
+      "name": "SubscribeBluetoothConnectionsFreeRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 81,
+      "name": "BluetoothConnectionsFreeResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 82,
+      "name": "BluetoothGATTErrorResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 83,
+      "name": "BluetoothGATTWriteResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 84,
+      "name": "BluetoothGATTNotifyResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 85,
+      "name": "BluetoothDevicePairingResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 86,
+      "name": "BluetoothDeviceUnpairingResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 87,
+      "name": "UnsubscribeBluetoothLEAdvertisementsRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 88,
+      "name": "BluetoothDeviceClearCacheResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 89,
+      "name": "SubscribeVoiceAssistantRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_VOICE_ASSISTANT",
+      "entity_family": "voice_assistant",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 90,
+      "name": "VoiceAssistantRequest",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_VOICE_ASSISTANT",
+      "entity_family": "voice_assistant",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 91,
+      "name": "VoiceAssistantResponse",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_VOICE_ASSISTANT",
+      "entity_family": "voice_assistant",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 92,
+      "name": "VoiceAssistantEventResponse",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_VOICE_ASSISTANT",
+      "entity_family": "voice_assistant",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 93,
+      "name": "BluetoothLERawAdvertisementsResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 94,
+      "name": "ListEntitiesAlarmControlPanelResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_ALARM_CONTROL_PANEL",
+      "entity_family": "alarm_control_panel",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 95,
+      "name": "AlarmControlPanelStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_ALARM_CONTROL_PANEL",
+      "entity_family": "alarm_control_panel",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 96,
+      "name": "AlarmControlPanelCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_ALARM_CONTROL_PANEL",
+      "entity_family": "alarm_control_panel",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 97,
+      "name": "ListEntitiesTextResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_TEXT",
+      "entity_family": "text",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 98,
+      "name": "TextStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_TEXT",
+      "entity_family": "text",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 99,
+      "name": "TextCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_TEXT",
+      "entity_family": "text",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 100,
+      "name": "ListEntitiesDateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_DATETIME_DATE",
+      "entity_family": "datetime_date",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 101,
+      "name": "DateStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_DATETIME_DATE",
+      "entity_family": "datetime_date",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 102,
+      "name": "DateCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_DATETIME_DATE",
+      "entity_family": "datetime_date",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 103,
+      "name": "ListEntitiesTimeResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_DATETIME_TIME",
+      "entity_family": "datetime_time",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 104,
+      "name": "TimeStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_DATETIME_TIME",
+      "entity_family": "datetime_time",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 105,
+      "name": "TimeCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_DATETIME_TIME",
+      "entity_family": "datetime_time",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 106,
+      "name": "VoiceAssistantAudio",
+      "direction": "SOURCE_BOTH",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_VOICE_ASSISTANT",
+      "entity_family": "voice_assistant",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 107,
+      "name": "ListEntitiesEventResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_EVENT",
+      "entity_family": "event",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 108,
+      "name": "EventResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_EVENT",
+      "entity_family": "event",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 109,
+      "name": "ListEntitiesValveResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_VALVE",
+      "entity_family": "valve",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 110,
+      "name": "ValveStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_VALVE",
+      "entity_family": "valve",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 111,
+      "name": "ValveCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_VALVE",
+      "entity_family": "valve",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 112,
+      "name": "ListEntitiesDateTimeResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_DATETIME_DATETIME",
+      "entity_family": "datetime_datetime",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 113,
+      "name": "DateTimeStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_DATETIME_DATETIME",
+      "entity_family": "datetime_datetime",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 114,
+      "name": "DateTimeCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_DATETIME_DATETIME",
+      "entity_family": "datetime_datetime",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 115,
+      "name": "VoiceAssistantTimerEventResponse",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_VOICE_ASSISTANT",
+      "entity_family": "voice_assistant",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 116,
+      "name": "ListEntitiesUpdateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_UPDATE",
+      "entity_family": "update",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 117,
+      "name": "UpdateStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_UPDATE",
+      "entity_family": "update",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 118,
+      "name": "UpdateCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_UPDATE",
+      "entity_family": "update",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 119,
+      "name": "VoiceAssistantAnnounceRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_VOICE_ASSISTANT",
+      "entity_family": "voice_assistant",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 120,
+      "name": "VoiceAssistantAnnounceFinished",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_VOICE_ASSISTANT",
+      "entity_family": "voice_assistant",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 121,
+      "name": "VoiceAssistantConfigurationRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_VOICE_ASSISTANT",
+      "entity_family": "voice_assistant",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 122,
+      "name": "VoiceAssistantConfigurationResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_VOICE_ASSISTANT",
+      "entity_family": "voice_assistant",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 123,
+      "name": "VoiceAssistantSetConfiguration",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_VOICE_ASSISTANT",
+      "entity_family": "voice_assistant",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 124,
+      "name": "NoiseEncryptionSetKeyRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_API_NOISE",
+      "entity_family": "api_noise",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 125,
+      "name": "NoiseEncryptionSetKeyResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_API_NOISE",
+      "entity_family": "api_noise",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 126,
+      "name": "BluetoothScannerStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 127,
+      "name": "BluetoothScannerSetModeRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 128,
+      "name": "ZWaveProxyFrame",
+      "direction": "SOURCE_BOTH",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_ZWAVE_PROXY",
+      "entity_family": "zwave_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 129,
+      "name": "ZWaveProxyRequest",
+      "direction": "SOURCE_BOTH",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_ZWAVE_PROXY",
+      "entity_family": "zwave_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 130,
+      "name": "HomeassistantActionResponse",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_API_HOMEASSISTANT_ACTION_RESPONSES",
+      "entity_family": "api_homeassistant_action_responses",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 131,
+      "name": "ExecuteServiceResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_API_USER_DEFINED_ACTION_RESPONSES",
+      "entity_family": "api_user_defined_action_responses",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 132,
+      "name": "ListEntitiesWaterHeaterResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_WATER_HEATER",
+      "entity_family": "water_heater",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 133,
+      "name": "WaterHeaterStateResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_WATER_HEATER",
+      "entity_family": "water_heater",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 134,
+      "name": "WaterHeaterCommandRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_WATER_HEATER",
+      "entity_family": "water_heater",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 135,
+      "name": "ListEntitiesInfraredResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_INFRARED",
+      "entity_family": "infrared",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 136,
+      "name": "InfraredRFTransmitRawTimingsRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_IR_RF || USE_RADIO_FREQUENCY",
+      "entity_family": "infrared_radio_frequency",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 137,
+      "name": "InfraredRFReceiveEvent",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_IR_RF || USE_RADIO_FREQUENCY",
+      "entity_family": "infrared_radio_frequency",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 138,
+      "name": "SerialProxyConfigureRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SERIAL_PROXY",
+      "entity_family": "serial_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 139,
+      "name": "SerialProxyDataReceived",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SERIAL_PROXY",
+      "entity_family": "serial_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 140,
+      "name": "SerialProxyWriteRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SERIAL_PROXY",
+      "entity_family": "serial_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 141,
+      "name": "SerialProxySetModemPinsRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SERIAL_PROXY",
+      "entity_family": "serial_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 142,
+      "name": "SerialProxyGetModemPinsRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SERIAL_PROXY",
+      "entity_family": "serial_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 143,
+      "name": "SerialProxyGetModemPinsResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SERIAL_PROXY",
+      "entity_family": "serial_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 144,
+      "name": "SerialProxyRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SERIAL_PROXY",
+      "entity_family": "serial_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 145,
+      "name": "BluetoothSetConnectionParamsRequest",
+      "direction": "SOURCE_CLIENT",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 146,
+      "name": "BluetoothSetConnectionParamsResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_BLUETOOTH_PROXY",
+      "entity_family": "bluetooth_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 147,
+      "name": "SerialProxyRequestResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_SERIAL_PROXY",
+      "entity_family": "serial_proxy",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    },
+    {
+      "id": 148,
+      "name": "ListEntitiesRadioFrequencyResponse",
+      "direction": "SOURCE_SERVER",
+      "version_gate": {
+        "status": "not_declared_upstream",
+        "known_at": "2026.7.0",
+        "minimum_api": null
+      },
+      "feature_gate": "USE_RADIO_FREQUENCY",
+      "entity_family": "radio_frequency",
+      "milestone": "not_scheduled",
+      "mgmt_required": false,
+      "reference_parity": "not_assessed",
+      "public_behavior": "generated_only",
+      "evidence": {
+        "known": [
+          "protocol/upstream.lock.json",
+          "protocol/upstream/api.proto"
+        ],
+        "typed": [],
+        "simulated": [],
+        "mgmt": [],
+        "hardware": [],
+        "production": []
+      },
+      "notes": "Generated wire type only; no support claim beyond known."
+    }
+  ]
+}

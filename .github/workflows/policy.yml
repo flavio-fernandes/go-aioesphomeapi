@@ -35,6 +35,8 @@ jobs:
           cache: true
       - name: Verify module files
         run: go mod tidy && git diff --exit-code -- go.mod go.sum
+      - name: Verify protocol compatibility inventory
+        run: go run ./cmd/protocol-inventory -check protocol/inventory.json
       - name: Check reachable vulnerabilities
         run: ./tools/run-govulncheck.sh
       - name: Test with race detector
