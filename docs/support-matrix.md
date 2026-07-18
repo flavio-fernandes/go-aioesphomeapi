@@ -114,6 +114,15 @@ The evidence is append-only: [`compatibility/mgmt-feat-esphome2.json`](../compat
 | Media player | no | yes | no | no | no | no | backlog |
 | Update | no | yes | no | no | no | no | backlog |
 
+## Simulator contract
+
+| Capability | Public API | Simulator evidence | MGMT evidence | Target | Notes |
+|---|---|---|---|---|---|
+| Typed scenario validation | typed | simulated | n/a | M1 | `Scenario.Validate` and deferred `DialContext`/`Serve` rejection preserve `New` compatibility; errors expose stable codes without scenario data. |
+| Defensive scenario creation | typed | simulated | n/a | M1 | Valid protobuf entities, states, and logs are cloned before the device can observe caller mutation. |
+| Conditional random seed | typed | simulated | n/a | M1 | Zero is valid without randomized actions; issue #10 must require non-zero only when such actions are introduced. |
+| Device-global latest-state reconnect snapshot | planned | none | none | M1 | Issue #10 owns implementation and ADR 0013 requires a reviewed before/after MGMT re-baseline. |
+
 ## Reference-client parity
 
 `v1.1.0` is a comparison baseline, not evidence for this library. M1 covers only its MGMT-consumed subset. Direct `.local` A-record resolution is supported; CLI, YAML configuration, mDNS service browsing, Bluetooth proxy, services, and broad complex-entity commands are explicitly unsupported here until separately scheduled and evidenced.

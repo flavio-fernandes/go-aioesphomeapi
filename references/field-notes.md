@@ -33,8 +33,9 @@ work. Update both files when future work changes the operational truth.
 - Deterministic scenario time is a device-global duration starting at zero.
   Acceptance tests advance an injected manual clock; equal-time state events
   retain declaration order, and reconnect snapshots expose the latest state.
-- Every scenario uses a non-zero explicit seed. Normal entity, state, log, and
-  command order never depends on randomness.
+- A non-zero explicit seed is required only when a scenario declares randomized
+  actions. Zero remains valid for deterministic raw literals; normal entity,
+  state, log, and command order never depends on randomness.
 - Network shaping belongs below plaintext or Noise framing on the simulator
   side of the real connection. Fragmentation and coalescing preserve bytes;
   delay and stall wait on virtual time or cancellation rather than sleeping.
@@ -43,6 +44,14 @@ work. Update both files when future work changes the operational truth.
   memory.
 - Cleanup evidence counts resources owned by the simulator. Do not use exact
   process-wide goroutine counts as a stable assertion.
+- `Scenario.Validate` is the public preflight. `New` remains source-compatible
+  and defers its typed, secret-safe error to `DialContext` or `Serve`; a valid
+  scenario is defensively copied before use.
+- When issue #10 lands the device-global latest-state store, capture MGMT's
+  reconnect command sequence before and after the change in a new append-only
+  compatibility record. A redundant correction may disappear; outage
+  accounting, no replay, unchanged MCL hashes, and all baseline/conveyor lanes
+  remain mandatory.
 
 ## 2026-07-18 mDNS retransmit deadlines
 

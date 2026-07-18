@@ -67,6 +67,13 @@ Run `esphome0.mcl` and `esphome-blink.mcl` unchanged against deterministic simul
 
 Raise relevant rows to `mgmt` evidence only after this slice passes.
 
+When device-global latest-state snapshots replace the current per-connection
+simulator state, follow ADR 0013: record the MGMT reconnect command sequence
+before and after, rerun the focused reconnect/outage test and every unchanged
+baseline/conveyor MCL lane, and add a new append-only compatibility record.
+Do not preserve a stale corrective-command count merely to keep an old test
+green.
+
 ## Slice 11 — conveyor extension
 
 Add the generic fan behavior and new conveyor MCL/firmware contracts without changing the two baseline examples. Run the complete simulator story before requesting any workbench action. Physical flashing or motion remains a separately authorized task.
