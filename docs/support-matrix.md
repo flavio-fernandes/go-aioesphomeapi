@@ -119,9 +119,10 @@ The evidence is append-only: [`compatibility/mgmt-feat-esphome2.json`](../compat
 | Capability | Public API | Simulator evidence | MGMT evidence | Target | Notes |
 |---|---|---|---|---|---|
 | Typed scenario validation | typed | simulated | n/a | M1 | `Scenario.Validate` and deferred `DialContext`/`Serve` rejection preserve `New` compatibility; errors expose stable codes without scenario data. |
-| Defensive scenario creation | typed | simulated | n/a | M1 | Valid protobuf entities, states, and logs are cloned before the device can observe caller mutation. |
+| Defensive scenario creation | typed | simulated | n/a | M1 | Valid protobuf entities, initial states, timeline events, and logs are cloned before the device can observe caller mutation. |
 | Conditional random seed | typed | simulated | n/a | M1 | Zero is valid without randomized actions; issue #10 must require non-zero only when such actions are introduced. |
-| Device-global latest-state reconnect snapshot | planned | none | none | M1 | Issue #10 owns implementation and ADR 0013 requires a reviewed before/after MGMT re-baseline. |
+| Manual virtual time and ordered state pushes | typed | simulated | candidate | M1 | Explicit synchronous advances apply absolute events; equal-time events retain declaration order. Final `mgmt` evidence requires the published pin and unchanged MCL lanes. |
+| Device-global latest-state reconnect snapshot | typed | simulated | candidate | M1 | Commands and timeline events share one store; a same-device reconnect receives one latest snapshot with no command or past-event replay. ADR 0013's final pinned re-baseline remains required. |
 
 ## Reference-client parity
 

@@ -228,8 +228,9 @@ correctly bypasses it.
 | generic basic-I/O, blink, and conveyor fixtures; initial states and logs | `simulator/basic.go`, `simulator/conveyor.go`, and acceptance scripts | complete for M1 contract |
 | command observation and visible overflow | `Commands`, `DeviceStats.DroppedCommands`, race tests | ordered expectation helpers in #10 |
 | named drop, malformed, unknown, duplicate-completion, and stall faults | ADR 0008 and real-wire fault tests | delay/fragment/coalesce in #10 |
-| validation surface and defensive scenario copy | `Scenario.Validate`, deferred `DialContext`/`Serve` rejection, and simulator tests | future fields extend validation in #10 |
-| virtual clock, conditional non-zero seed, pushed timelines, slow-subscriber proof | semantics accepted above | implementation and tests in #10 |
+| validation surface and defensive scenario copy | `Scenario.Validate`, deferred `DialContext`/`Serve` rejection, and simulator tests cover initial states and timeline events | future randomized/network/expectation fields extend validation in #10 |
+| manual clock and pushed latest-state timeline | `ManualClock`, `StateTimeline`, device-global snapshots, `DropConnections`, and repeated race tests | final pinned MGMT re-baseline required by ADR 0013 |
+| conditional non-zero seed and slow-subscriber proof | zero remains valid because no randomized action exists; semantics accepted above | randomized actions and queue-saturation scenario in #10 |
 | device information, keepalive, callback isolation, connection-state cleanup | lifecycle tests and MGMT acceptance are partial | #11, with budgets in #6/#12 |
 
 Closing architecture issue #2 accepts this contract; it does not claim the

@@ -33,6 +33,24 @@ acceptance scripts, or external-app examples.
   A single transient miss can be timing-sensitive; rerun once before treating
   it as a regression, then inspect MGMT cleanup ordering and simulator logs.
 
+## Virtual state and reconnect acceptance
+
+- Create a clock with `simulator.NewManualClock()` and pass it through
+  `simulator.WithManualClock(clock)`. `Device.Clock()` returns the same clock
+  when a one-device test prefers the default.
+- Put the first snapshot in `InitialStates`; legacy `States` remains supported,
+  but setting both is a validation error. Put absolute updates in
+  `StateTimeline` and call `Advance` or `AdvanceTo`; equal-time updates arrive
+  in declaration order.
+- Use `Device.DropConnections()` to test a reconnect without destroying the
+  listener, future timeline, or latest-state store. After a state-changing
+  command, the next subscriber must receive the changed value once and
+  `Commands()` must remain empty unless MGMT intentionally sends another
+  command.
+- For ADR 0013 evidence, record the command before the drop, the reconnect
+  snapshot, and the post-reconnect command count separately. A reconnect that
+  replays a command or old timeline burst fails the lane.
+
 ## Evidence hygiene
 
 - Expected outputs should be short deterministic text. Do not save traffic,

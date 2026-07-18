@@ -290,3 +290,31 @@ or `Serve` when preflight is skipped. Use `errors.Is(err,
 simulator.ErrInvalidScenario)` and `errors.As` to `*simulator.ValidationError`.
 The error reports a safe field/index/code, not entity data. A zero seed is valid
 unless the scenario declares a randomized action.
+
+**Drive a custom scenario without waiting in real time:** use one manual clock
+for the device and advance it only when your test is ready:
+
+```go
+clock := simulator.NewManualClock()
+device := simulator.New(simulator.Scenario{
+    Name: "friendly-demo",
+    InitialStates: []proto.Message{
+        &pb.SwitchStateResponse{Key: 1, State: false},
+    },
+    StateTimeline: []simulator.StateEvent{
+        {At: time.Second, State: &pb.SwitchStateResponse{Key: 1, State: true}},
+    },
+}, simulator.WithManualClock(clock))
+defer device.Close()
+
+// Subscribe with the normal client first. This applies and pushes the 1s
+// event immediately; the test does not sleep for a second.
+if err := clock.Advance(time.Second); err != nil {
+    panic(err)
+}
+```
+
+`device.DropConnections()` intentionally breaks current sessions while keeping
+the device and its latest state alive. It is the friendly way to test
+application-owned reconnect behavior. A reconnect gets one current snapshot;
+old timeline events and old commands are not replayed.

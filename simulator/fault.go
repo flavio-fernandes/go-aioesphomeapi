@@ -1,7 +1,6 @@
 package simulator
 
 import (
-	"github.com/flavio-fernandes/go-aioesphomeapi/internal/wire"
 	"github.com/flavio-fernandes/go-aioesphomeapi/pb"
 )
 
@@ -34,7 +33,7 @@ type Fault struct {
 	Action  FaultAction
 }
 
-func (d *Device) triggerFault(framer wire.Framer, trigger FaultTrigger) bool {
+func (d *Device) triggerFault(session *deviceSession, trigger FaultTrigger) bool {
 	for _, fault := range d.scenario.Faults {
 		if fault.Trigger != trigger {
 			continue
@@ -45,23 +44,23 @@ func (d *Device) triggerFault(framer wire.Framer, trigger FaultTrigger) bool {
 		case FaultMalformedProtobuf:
 			// PingResponse is a known message ID, while 0x80 is a truncated
 			// protobuf varint. The client must reject it without panicking.
-			_ = framer.WriteFrame(8, []byte{0x80})
+			_ = session.writeFrame(8, []byte{0x80})
 			return true
 		case FaultUnknownMessage:
 			// 65000 is outside the pinned ESPHome message inventory but is
 			// valid in both framing type fields. A bounded unknown message is
 			// forward-compatible and must not terminate the connection.
-			if err := framer.WriteFrame(65000, nil); err != nil {
+			if err := session.writeFrame(65000, nil); err != nil {
 				return true
 			}
 			continue
 		case FaultDuplicateEntitiesDone:
 			// A buggy peer may complete discovery more than once. Both frames
 			// traverse the real wire path; the normal completion follows too.
-			if send(framer, &pb.ListEntitiesDoneResponse{}) != nil {
+			if session.send(&pb.ListEntitiesDoneResponse{}) != nil {
 				return true
 			}
-			if send(framer, &pb.ListEntitiesDoneResponse{}) != nil {
+			if session.send(&pb.ListEntitiesDoneResponse{}) != nil {
 				return true
 			}
 			continue

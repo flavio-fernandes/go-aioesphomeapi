@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/flavio-fernandes/go-aioesphomeapi/pb"
 	"google.golang.org/protobuf/proto"
@@ -43,9 +44,9 @@ func (e *ValidationError) Error() string {
 // Unwrap preserves errors.Is(err, ErrInvalidScenario).
 func (e *ValidationError) Unwrap() error { return ErrInvalidScenario }
 
-// Validate checks the scenario model that is implemented today. Future state
-// timelines, randomized actions, and command expectations extend this same
-// method before their behavior is enabled.
+// Validate checks the scenario model that is implemented today. Future
+// randomized actions, network shaping, and command expectations extend this
+// same method before their behavior is enabled.
 func (s Scenario) Validate() error {
 	seen := make(map[string]map[uint32]int)
 	for index, message := range s.Entities {
@@ -63,10 +64,27 @@ func (s Scenario) Validate() error {
 		}
 		familyKeys[key] = index
 	}
-	for index, message := range s.States {
-		if !validState(message) {
-			return validationError("states", index, -1, ValidationInvalidType)
+	if len(s.States) > 0 && len(s.InitialStates) > 0 {
+		return validationError("initial_states", 0, -1, ValidationExpectation)
+	}
+	if err := validateInitialStates("states", s.States); err != nil {
+		return err
+	}
+	if err := validateInitialStates("initial_states", s.InitialStates); err != nil {
+		return err
+	}
+	previous := time.Duration(0)
+	for index, event := range s.StateTimeline {
+		if event.At < 0 {
+			return validationError("state_timeline", index, -1, ValidationNegativeTime)
 		}
+		if index > 0 && event.At < previous {
+			return validationError("state_timeline", index, index-1, ValidationDecreasingTime)
+		}
+		if !validState(event.State) {
+			return validationError("state_timeline", index, -1, ValidationInvalidType)
+		}
+		previous = event.At
 	}
 	for index, entry := range s.Logs {
 		if entry == nil {
@@ -76,20 +94,43 @@ func (s Scenario) Validate() error {
 	return nil
 }
 
+func validateInitialStates(field string, states []proto.Message) error {
+	seen := make(map[stateIdentity]int)
+	for index, message := range states {
+		if !validState(message) {
+			return validationError(field, index, -1, ValidationInvalidType)
+		}
+		identity, _ := stateIdentityOf(message)
+		if previous, exists := seen[identity]; exists {
+			return validationError(field, index, previous, ValidationDuplicateKey)
+		}
+		seen[identity] = index
+	}
+	return nil
+}
+
 func cloneScenario(s Scenario) Scenario {
 	clone := Scenario{
-		Name:     s.Name,
-		Seed:     s.Seed,
-		Entities: make([]proto.Message, len(s.Entities)),
-		States:   make([]proto.Message, len(s.States)),
-		Logs:     make([]*pb.SubscribeLogsResponse, len(s.Logs)),
-		Faults:   append([]Fault(nil), s.Faults...),
+		Name:          s.Name,
+		Seed:          s.Seed,
+		Entities:      make([]proto.Message, len(s.Entities)),
+		States:        make([]proto.Message, len(s.States)),
+		InitialStates: make([]proto.Message, len(s.InitialStates)),
+		StateTimeline: make([]StateEvent, len(s.StateTimeline)),
+		Logs:          make([]*pb.SubscribeLogsResponse, len(s.Logs)),
+		Faults:        append([]Fault(nil), s.Faults...),
 	}
 	for index, message := range s.Entities {
 		clone.Entities[index] = proto.Clone(message)
 	}
 	for index, message := range s.States {
 		clone.States[index] = proto.Clone(message)
+	}
+	for index, message := range s.InitialStates {
+		clone.InitialStates[index] = proto.Clone(message)
+	}
+	for index, event := range s.StateTimeline {
+		clone.StateTimeline[index] = StateEvent{At: event.At, State: proto.Clone(event.State)}
 	}
 	for index, entry := range s.Logs {
 		clone.Logs[index] = proto.Clone(entry).(*pb.SubscribeLogsResponse)
