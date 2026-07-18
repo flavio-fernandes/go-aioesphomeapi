@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -154,7 +155,7 @@ func DialWithContext(ctx context.Context, address string, timeout time.Duration,
 	}
 	if err != nil {
 		_ = conn.Close()
-		if cause := context.Cause(establishCtx); cause != nil {
+		if cause := establishmentCause(establishCtx, err); cause != nil {
 			return nil, fmt.Errorf("establish Noise session with ESPHome target %q: %w: establishment context: %w", address, err, cause)
 		}
 		return nil, fmt.Errorf("establish Noise session with ESPHome target %q: %w", address, err)
@@ -170,7 +171,7 @@ func DialWithContext(ctx context.Context, address string, timeout time.Duration,
 	c := newClient(framer, cfg.callbackQueueSize)
 	if err := c.hello(cfg.clientInfo, cfg.expectedName); err != nil {
 		c.Close()
-		if cause := context.Cause(establishCtx); cause != nil {
+		if cause := establishmentCause(establishCtx, err); cause != nil {
 			return nil, fmt.Errorf("complete hello with ESPHome target %q: %w: establishment context: %w", address, err, cause)
 		}
 		return nil, fmt.Errorf("complete hello with ESPHome target %q: %w", address, err)
@@ -190,6 +191,19 @@ func DialWithContext(ctx context.Context, address string, timeout time.Duration,
 	go c.dispatchLoop()
 	go c.readLoop(ctx)
 	return c, nil
+}
+
+func establishmentCause(ctx context.Context, err error) error {
+	if cause := context.Cause(ctx); cause != nil {
+		return cause
+	}
+	// DialWithContext installs the context's deadline on the connection. The
+	// socket deadline can wake a few scheduler ticks before the context timer;
+	// retain the caller-visible deadline category in that equivalent race.
+	if _, hasDeadline := ctx.Deadline(); hasDeadline && errors.Is(err, os.ErrDeadlineExceeded) {
+		return context.DeadlineExceeded
+	}
+	return nil
 }
 
 func newClient(framer wire.Framer, callbackQueueSize int) *Client {
