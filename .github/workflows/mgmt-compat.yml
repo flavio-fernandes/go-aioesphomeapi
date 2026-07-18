@@ -108,8 +108,8 @@ jobs:
       - name: Converge both reviewed baseline MCL scenarios over Noise
         run: |
           cd library
-          sudo env "PATH=$PATH" ./tools/test-mgmt-baselines.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt"
+          sudo env "PATH=$PATH" ./tools/test-mgmt-baselines.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt" 2>&1
       - name: Converge the reviewed conveyor MCL scenario over Noise
         run: |
           cd library
-          sudo env "PATH=$PATH" ./tools/test-mgmt-conveyor.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt"
+          sudo env "PATH=$PATH" ./tools/test-mgmt-conveyor.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt" 2>&1
