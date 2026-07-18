@@ -51,7 +51,7 @@ messages. `planned` is roadmap intent, not evidence.
 
 ## Current MGMT migration proof
 
-The evidence is append-only: [`compatibility/mgmt-feat-esphome2.json`](../compatibility/mgmt-feat-esphome2.json) records the first candidate, while [`compatibility/mgmt-feat-esphome-review.json`](../compatibility/mgmt-feat-esphome-review.json) records the final reviewed branches. Historical rows remain so a successful build is never mistaken for later runtime or hardware evidence.
+The evidence is append-only: [`compatibility/mgmt-feat-esphome2.json`](../compatibility/mgmt-feat-esphome2.json) records the first candidate, while [`compatibility/mgmt-feat-esphome-review.json`](../compatibility/mgmt-feat-esphome-review.json) records the final reviewed branches. The [timeline candidate record](../compatibility/mgmt-feat-esphome-simulator-timeline-candidate.json) preserves ADR 0013's measured before/after reconnect behavior. Historical rows remain so a successful build is never mistaken for later runtime or hardware evidence.
 
 | Check | Result | Evidence level impact |
 |---|---|---|
@@ -72,6 +72,7 @@ The evidence is append-only: [`compatibility/mgmt-feat-esphome2.json`](../compat
 | Physical ESPHome blink device | pass on ESPHome 2026.7.0 with MGMT `d6259199` | Noise, `.local`, hello, discovery, binary-state push, switch command, and logs reach `hardware`. |
 | Final reviewed MGMT branch | pass on `feat/esphome` at `90a172d0`, pinning merged library `main` at `6f954bc9` | Targeted race/vet, both reviewed baseline MCL examples, and the reviewed conveyor MCL pass without `/etc/hosts`; issue reconciliation may close only evidence-complete work. |
 | Security-updated MGMT pin | pass on `feat/esphome` at `ede17372`, pinning library `main` at `f1f9e3ef` | Go 1.25.12, `x/crypto` v0.52.0, zero open Dependabot alerts, targeted race/vet/build, and all reviewed MCL simulator lanes pass without module-count or MCL changes. |
+| Latest-state timeline candidate | pass with library `62c6962b` and MGMT `8e8b1599` | Manual-clock pushes retain equal-time order; one switch command survives a same-device reconnect as the latest snapshot, with positive outage accounting and zero command-count delta. All unchanged MCL lanes remain green. |
 | Firmware flash and physical conveyor actuation | not performed | Conveyor, Fan, Light, and firmware-provisioning hardware cells remain `no`. |
 
 ## Protocol and transport
