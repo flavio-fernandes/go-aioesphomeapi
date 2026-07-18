@@ -65,6 +65,9 @@ go test ./internal/mdns -run=^$ -fuzz=FuzzAnswerIP -fuzztime=5s
 Each command should end with `PASS`. A crash, panic, excessive allocation, or
 unexpected decoded frame is a security bug; keep the generated fuzz input
 private until it is reviewed for sensitive data, then follow `SECURITY.md`.
+Never commit a generated failure file as-is: after review, minimize it, make
+sure it is fully synthetic, and only then add it deliberately under
+`testdata/fuzz/` as regression corpus. CI never commits fuzz output.
 
 ### 4b. Check for reachable vulnerabilities
 

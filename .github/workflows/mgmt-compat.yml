@@ -86,13 +86,16 @@ jobs:
           cd mgmt
           test "$(git status --porcelain -- ':!go.mod' ':!go.sum' | tee /dev/stderr | wc -l)" = "0"
           git diff --name-only -- examples/lang | tee /dev/stderr | wc -l | grep -qx 0
-      - name: Allow user network namespaces for the loopback lanes
-        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+      # The lane scripts isolate their loopback network with
+      # `unshare --user --map-root-user --net`. Ubuntu 24.04 may restrict
+      # *unprivileged* user namespaces (kernel.apparmor_restrict_unprivileged_userns),
+      # so run only these two invocations under sudo: privileged namespace
+      # creation is exempt, and the runner-wide hardening knob stays untouched.
       - name: Converge both reviewed baseline MCL scenarios over Noise
         run: |
           cd library
-          ./tools/test-mgmt-baselines.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt"
+          sudo -E env "PATH=$PATH" ./tools/test-mgmt-baselines.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt"
       - name: Converge the reviewed conveyor MCL scenario over Noise
         run: |
           cd library
-          ./tools/test-mgmt-conveyor.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt"
+          sudo -E env "PATH=$PATH" ./tools/test-mgmt-conveyor.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt"
