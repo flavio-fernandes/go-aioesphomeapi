@@ -86,6 +86,34 @@ func TestScenarioValidateCurrentModel(t *testing.T) {
 			scenario: simulator.Scenario{Logs: []*pb.SubscribeLogsResponse{nil}},
 			code:     simulator.ValidationInvalidType,
 		},
+		{
+			name: "invalid command type",
+			scenario: simulator.Scenario{Commands: []simulator.CommandExpectation{{
+				Command: &pb.SwitchStateResponse{Key: 1}, Count: 1,
+			}}},
+			code: simulator.ValidationInvalidType,
+		},
+		{
+			name: "typed nil command",
+			scenario: simulator.Scenario{Commands: []simulator.CommandExpectation{{
+				Command: (*pb.SwitchCommandRequest)(nil), Count: 1,
+			}}},
+			code: simulator.ValidationInvalidType,
+		},
+		{
+			name: "zero command count",
+			scenario: simulator.Scenario{Commands: []simulator.CommandExpectation{{
+				Command: &pb.SwitchCommandRequest{Key: 1}, Count: 0,
+			}}},
+			code: simulator.ValidationExpectation,
+		},
+		{
+			name: "excessive command count",
+			scenario: simulator.Scenario{Commands: []simulator.CommandExpectation{{
+				Command: &pb.SwitchCommandRequest{Key: 1}, Count: simulator.MaxCommandExpectationCount + 1,
+			}}},
+			code: simulator.ValidationExpectation,
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

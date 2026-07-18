@@ -125,6 +125,7 @@ The evidence is append-only: [`compatibility/mgmt-feat-esphome2.json`](../compat
 | Conditional random seed | typed | simulated | n/a | M1 | Zero is valid without randomized actions; issue #10 must require non-zero only when such actions are introduced. |
 | Manual virtual time and ordered state pushes | typed | simulated | n/a | M1 | Explicit synchronous advances apply absolute events; equal-time events retain declaration order. The MGMT reconnect lane exercises the same latest-state store but does not advance timeline events. |
 | Device-global latest-state reconnect snapshot | typed | simulated | mgmt | M1 | Commands and timeline events share one store; exact merged MGMT receives one latest snapshot after reconnect with no command or past-event replay. ADR 0013's pinned re-baseline is complete. |
+| Ordered command expectations | typed | simulated | n/a | M1 | Exact protobuf values and counts are defensively copied; context-bounded waits distinguish missing, unexpected, out-of-order, and observation-overflow outcomes without exposing command payloads. The exploratory `Commands()` stream remains compatible. |
 
 ## Reference-client parity
 
