@@ -19,7 +19,7 @@ var multicastAddress = &net.UDPAddr{IP: net.IPv4(224, 0, 0, 251), Port: 5353}
 
 type packetConn interface {
 	SetReadBuffer(int) error
-	SetDeadline(time.Time) error
+	SetReadDeadline(time.Time) error
 	WriteToUDP([]byte, *net.UDPAddr) (int, error)
 	ReadFromUDP([]byte) (int, *net.UDPAddr, error)
 	Close() error
@@ -78,8 +78,8 @@ func lookupWithSchedule(ctx context.Context, host string, timeout time.Duration,
 				readDeadline = candidate
 			}
 		}
-		if err := conn.SetDeadline(readDeadline); err != nil {
-			return nil, fmt.Errorf("set mDNS deadline for %q: %w", host, err)
+		if err := conn.SetReadDeadline(readDeadline); err != nil {
+			return nil, fmt.Errorf("set mDNS read deadline for %q: %w", host, err)
 		}
 		n, source, err := conn.ReadFromUDP(buffer)
 		if err != nil {

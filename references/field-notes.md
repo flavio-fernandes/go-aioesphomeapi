@@ -44,6 +44,18 @@ work. Update both files when future work changes the operational truth.
 - Cleanup evidence counts resources owned by the simulator. Do not use exact
   process-wide goroutine counts as a stable assertion.
 
+## 2026-07-18 mDNS retransmit deadlines
+
+- `net.UDPConn.SetDeadline` arms both reads and writes. If a read deadline is
+  used as a retransmit timer, the timeout is already expired when the retry is
+  sent and the UDP write fails immediately.
+- Use `SetReadDeadline` for bounded mDNS retry scheduling. Keep a real UDP
+  loopback regression because simple packet-connection fakes commonly record
+  deadlines without enforcing the write-side behavior of a real socket.
+- The full lookup budget, caller cancellation, hostname-bearing error chain,
+  multicast source validation, and injected-dialer bypass remain part of the
+  MGMT `.local` compatibility proof.
+
 ## 2026-07-17 M1 hostile-peer and lifecycle review
 
 - The dial timeout covers TCP establishment, Noise, and Native API Hello as one

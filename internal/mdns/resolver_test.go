@@ -26,7 +26,7 @@ type fakePacketConn struct {
 }
 
 func (c *fakePacketConn) SetReadBuffer(int) error { return nil }
-func (c *fakePacketConn) SetDeadline(deadline time.Time) error {
+func (c *fakePacketConn) SetReadDeadline(deadline time.Time) error {
 	c.deadline = deadline
 	return c.deadlineErr
 }
@@ -93,7 +93,7 @@ type retryPacketConn struct {
 }
 
 func (c *retryPacketConn) SetReadBuffer(int) error { return nil }
-func (c *retryPacketConn) SetDeadline(deadline time.Time) error {
+func (c *retryPacketConn) SetReadDeadline(deadline time.Time) error {
 	c.deadline = deadline
 	return nil
 }
@@ -116,6 +116,38 @@ func (c *fakePacketConn) Close() error {
 	c.closed = true
 	c.mutex.Unlock()
 	return nil
+}
+
+func TestLookupRetransmitDoesNotInheritExpiredReadDeadline(t *testing.T) {
+	sink, err := net.ListenUDP("udp4", &net.UDPAddr{IP: net.IPv4(127, 0, 0, 1)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sink.Close()
+
+	listen := func(string, *net.Interface, *net.UDPAddr) (packetConn, error) {
+		return net.ListenUDP("udp4", &net.UDPAddr{IP: net.IPv4(127, 0, 0, 1)})
+	}
+	originalAddress := multicastAddress
+	multicastAddress = sink.LocalAddr().(*net.UDPAddr)
+	t.Cleanup(func() { multicastAddress = originalAddress })
+
+	const timeout = 80 * time.Millisecond
+	started := time.Now()
+	_, err = lookupWithSchedule(context.Background(), "silent.local", timeout, listen, []time.Duration{10 * time.Millisecond, 25 * time.Millisecond})
+	elapsed := time.Since(started)
+	if err == nil {
+		t.Fatal("lookup unexpectedly succeeded")
+	}
+	if strings.Contains(err.Error(), "send mDNS query") {
+		t.Fatalf("retransmit inherited an expired read deadline after %v: %v", elapsed, err)
+	}
+	if !strings.Contains(err.Error(), "read mDNS answer") {
+		t.Fatalf("lookup ended for an unexpected reason after %v: %v", elapsed, err)
+	}
+	if elapsed < timeout/2 {
+		t.Fatalf("lookup ended at the first retry after %v, want the overall %v budget", elapsed, timeout)
+	}
 }
 
 func TestLookupUsesInjectedMulticastTransport(t *testing.T) {
