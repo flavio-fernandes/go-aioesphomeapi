@@ -109,6 +109,24 @@ checkout. It needs the pinned generators from `tools/generate-protocol.sh`
 
 A clean run ends with `generated protocol files match their pinned inputs`.
 
+### 4e. Run the extended fuzz lane on demand
+
+The hosted `fuzz-extended` job runs every fuzz target for a finite ten minutes
+inside the "Repository policy" workflow. It runs automatically on the weekly
+schedule; a maintainer can also start it manually from `main` or any branch.
+A pull-request comment cannot trigger it: GitHub only starts
+`workflow_dispatch` runs from the Actions page ("Repository policy" → "Run
+workflow"), the CLI, or the REST API.
+
+```bash
+gh workflow run policy.yml --repo flavio-fernandes/go-aioesphomeapi --ref main
+gh run list --repo flavio-fernandes/go-aioesphomeapi --workflow=policy.yml --limit 3
+```
+
+The dispatched run executes the validate, Go, generated-drift, and
+fuzz-extended jobs; each fuzz step must end with `PASS`. The same coverage runs
+locally by raising `-fuzztime` in the section 4a commands to `10m`.
+
 ### 5. Run the safe first example
 
 This uses a real Noise handshake over an in-process connection. It opens no port, needs no hardware, and contains only a public test key.
