@@ -25,6 +25,10 @@ MGMT evidence precise and reproducible.
 6. Run the relevant MGMT unit, race, vet, `mgmt check`, and no-hardware
    simulator acceptance lanes. Use `$run-device-simulator` when creating or
    changing simulator scenarios or scripts.
+   For `.local` resolver changes, include a real UDP loopback regression:
+   multicast fakes do not reproduce `net.UDPConn`'s shared read/write deadline
+   behavior. Use read-only deadlines for retry scheduling so an expired read
+   deadline cannot poison a retransmit write.
 7. Update append-only compatibility records and support-matrix evidence only
    for behavior proven by checked-in tests or recorded acceptance scripts.
 8. Keep GitHub branch operations explicit: inspect PR base/head, preserve old
