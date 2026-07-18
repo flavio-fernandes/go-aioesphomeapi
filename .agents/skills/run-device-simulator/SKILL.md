@@ -46,7 +46,9 @@ Use the simulator as a real device-side protocol peer, not as a mock of the publ
   `Scenario.Commands`, uses `WaitForCommandExpectations(ctx)` after the producer
   is quiescent, and classifies its typed ordered outcomes.
 - `Device.Close` must release accepted connections, listeners, virtual waits,
-  and simulator-owned goroutines even when a callback remains blocked.
+  and simulator-owned goroutines even when a callback remains blocked. After
+  releasing the caller gate, use `Client.WaitCallbacks(ctx)` before asserting
+  the exact final callback count.
 - Keep implementation claims aligned with the ledger in
   `references/scenario-contract.md`; issue #2 accepts the design and issue #10
   owns the remaining simulator machinery.
