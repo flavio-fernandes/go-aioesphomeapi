@@ -53,6 +53,8 @@ acceptance scripts, or external-app examples.
 
 ## Ordered command expectations
 
+- The implementation merged through PR #58 at
+  `f789731bc9f460a92ef3a3db159387101a2066ab`.
 - Put exact protobuf commands and consecutive counts in `Scenario.Commands`.
   `Scenario.Validate` rejects nil/unsupported messages, zero counts, and counts
   above `MaxCommandExpectationCount`; `New` clones every command before use.
