@@ -56,6 +56,18 @@ work. Update both files when future work changes the operational truth.
   multicast source validation, and injected-dialer bypass remain part of the
   MGMT `.local` compatibility proof.
 
+## 2026-07-18 dependency vulnerability response
+
+- Dependabot and `govulncheck` answer different questions. Dependabot reports a
+  vulnerable selected module version; source-mode `govulncheck` determines
+  whether known vulnerable symbols are reachable from the current packages.
+- Upgrade a compatible patched release even when the affected API appears
+  unreachable. Here one `x/crypto` update closed 13 advisories without adding a
+  module or raising the Go directive.
+- Keep the official scanner version in one executable repository script. Run
+  it on pull requests, `main` pushes, and a schedule; do not add its module to
+  the library graph or automatically merge dependency updates.
+
 ## 2026-07-17 M1 hostile-peer and lifecycle review
 
 - The dial timeout covers TCP establishment, Noise, and Native API Hello as one

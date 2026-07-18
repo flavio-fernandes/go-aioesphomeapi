@@ -16,6 +16,7 @@ required=(
   protocol/upstream.lock.json protocol/inventory.json
   protocol/upstream/api.proto protocol/upstream/api_options.proto protocol/upstream/LICENSE
   pb/api.pb.go pb/api_options.pb.go tools/sync-protocol.sh tools/generate-protocol.sh
+  tools/run-govulncheck.sh
 )
 
 for path in "${required[@]}"; do
@@ -32,6 +33,14 @@ fi
 
 if ! grep -Fq '**Current phase: usable development branch; no tagged release yet.**' CHEATSHEET.md; then
   echo "CHEATSHEET.md must state the current implementation phase" >&2
+  exit 1
+fi
+
+if [[ ! -x tools/run-govulncheck.sh ]] ||
+  ! grep -Fq 'govulncheck_version="v1.6.0"' tools/run-govulncheck.sh ||
+  ! grep -Fq 'run: ./tools/run-govulncheck.sh' .github/workflows/policy.yml ||
+  ! grep -Fq 'cron: "17 9 * * 1"' .github/workflows/policy.yml; then
+  echo "vulnerability monitoring must be executable, version-pinned, and scheduled in policy CI" >&2
   exit 1
 fi
 

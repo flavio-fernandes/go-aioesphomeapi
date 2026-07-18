@@ -115,4 +115,11 @@ The evidence is append-only: [`compatibility/mgmt-feat-esphome2.json`](../compat
 
 Each release reports Go version, OS/architecture, ESPHome oldest/current/development versions, transport mode, entity direction, simulator evidence, MGMT revision, reference-client migration surface, and hardware evidence separately.
 
-The supported toolchain starts at **Go 1.25.10**. MGMT's inspected default was 1.25.7, but `govulncheck` found reachable GO-2026-4971 in that standard library; 1.25.10 is the fixed patch without a language-version jump. The experimental MGMT branch moved to Go 1.26.1 with the reference client.
+The supported toolchain starts at **Go 1.25.12**. Earlier review raised the
+floor from MGMT's Go 1.25.7 to 1.25.10 for reachable GO-2026-4971. Continuous
+scanning then found imported-package GO-2026-4970 plus four module-level
+standard-library findings in 1.25.10; 1.25.12 fixes all five without a language
+version jump. `x/crypto`'s GO-2026-5932 remains an unreachable module-level
+notice for the unimported `openpgp` package, which has no fixed release; this
+library uses only Noise-required crypto packages and records the non-exposure
+in ADR 0007.

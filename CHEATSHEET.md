@@ -42,7 +42,7 @@ repository policy validation passed
 
 ### 4. Build and test
 
-Install Go 1.25.10 or a later compatible Go 1.25 patch, then run:
+Install Go 1.25.12 or a later compatible Go 1.25 patch, then run:
 
 ```bash
 go version
@@ -65,6 +65,20 @@ go test ./internal/mdns -run=^$ -fuzz=FuzzAnswerIP -fuzztime=5s
 Each command should end with `PASS`. A crash, panic, excessive allocation, or
 unexpected decoded frame is a security bug; keep the generated fuzz input
 private until it is reviewed for sensitive data, then follow `SECURITY.md`.
+
+### 4b. Check for reachable vulnerabilities
+
+This contributor check runs the official Go vulnerability scanner at the exact
+version used by CI. The first run downloads the pinned tool through the Go
+module checksum system; it does not add anything to this library's `go.mod`.
+
+```bash
+./tools/run-govulncheck.sh
+```
+
+A clean run ends with `No vulnerabilities found.` A reachable finding fails the
+command and must be fixed before merge. Required-but-unreachable module findings
+still need maintainer triage under the [dependency policy](docs/dependency-policy.md).
 
 ### 5. Run the safe first example
 
@@ -244,6 +258,6 @@ preserving cancellation, connection, or protocol causes. A sent probe that
 times out closes the ambiguous connection so a late reply cannot satisfy a
 later probe. Automatic periodic keepalive remains application policy for now.
 
-**A fuzz command cannot start:** confirm `go version` reports Go 1.25.10 or a
+**A fuzz command cannot start:** confirm `go version` reports Go 1.25.12 or a
 later compatible Go 1.25 patch and that the repository dependencies have been
 downloaded by `go test ./...`.

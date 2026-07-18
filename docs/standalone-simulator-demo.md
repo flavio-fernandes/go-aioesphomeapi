@@ -21,7 +21,7 @@ Run these commands from the `go-aioesphomeapi` repository root.
 
 Required tools:
 
-- Go 1.25.10 or a later compatible Go 1.25 patch
+- Go 1.25.12 or a later compatible Go 1.25 patch
 - `git`
 
 ## 1. Build the built-in standalone example
