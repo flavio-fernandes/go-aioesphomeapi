@@ -12,6 +12,7 @@ from typing import Any
 
 TRUSTED_CODEX_LOGINS = frozenset({"chatgpt-codex-connector"})
 TRUSTED_REVIEW_REQUEST_LOGINS = frozenset({"flavio-fernandes"})
+ACCEPTED_CODEX_REVIEW_STATES = frozenset({"APPROVED", "COMMENTED"})
 
 
 QUERY = """
@@ -91,9 +92,23 @@ def exact_head_review(review: dict[str, Any], head: str) -> bool:
     """Return whether trusted Codex submitted a live review for head."""
     return (
         trusted_codex((review.get("author") or {}).get("login"))
-        and review.get("state") != "DISMISSED"
+        and review.get("state") in ACCEPTED_CODEX_REVIEW_STATES
         and (review.get("commit") or {}).get("oid") == head
     )
+
+
+def latest_codex_head_review(
+    reviews: list[dict[str, Any]], head: str
+) -> dict[str, Any] | None:
+    """Return the latest trusted Codex review attached to head."""
+    candidates = [
+        review
+        for review in reviews
+        if trusted_codex((review.get("author") or {}).get("login"))
+        and (review.get("commit") or {}).get("oid") == head
+        and isinstance(review.get("submittedAt"), str)
+    ]
+    return max(candidates, key=lambda review: review["submittedAt"], default=None)
 
 
 def audit(repository: str, number: int) -> dict[str, Any]:
@@ -127,10 +142,8 @@ def audit(repository: str, number: int) -> dict[str, Any]:
 
     assert metadata is not None
     head = metadata["headRefOid"]
-    reviewed = any(
-        exact_head_review(review, head)
-        for review in metadata["reviews"]["nodes"]
-    )
+    latest_review = latest_codex_head_review(metadata["reviews"]["nodes"], head)
+    reviewed = latest_review is not None and exact_head_review(latest_review, head)
     reacted = any(
         exact_head_reaction(comment, head)
         for comment in metadata["comments"]["nodes"]

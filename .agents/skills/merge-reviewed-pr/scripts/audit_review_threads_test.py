@@ -111,11 +111,13 @@ class ExactHeadReviewTest(unittest.TestCase):
         author: str = "chatgpt-codex-connector",
         state: str = "COMMENTED",
         commit: str | None = None,
+        submitted_at: str = "2026-07-18T22:42:18Z",
     ) -> dict[str, object]:
         return {
             "author": {"login": author},
             "state": state,
             "commit": {"oid": commit or self.head},
+            "submittedAt": submitted_at,
         }
 
     def test_accepts_live_trusted_exact_head_review(self) -> None:
@@ -123,8 +125,9 @@ class ExactHeadReviewTest(unittest.TestCase):
             audit_review_threads.exact_head_review(self.review(), self.head)
         )
 
-    def test_rejects_dismissed_old_head_and_untrusted_reviews(self) -> None:
+    def test_rejects_negative_dismissed_old_head_and_untrusted_reviews(self) -> None:
         for review in (
+            self.review(state="CHANGES_REQUESTED"),
             self.review(state="DISMISSED"),
             self.review(commit="f" * 40),
             self.review(author="codex-fan"),
@@ -133,6 +136,17 @@ class ExactHeadReviewTest(unittest.TestCase):
                 self.assertFalse(
                     audit_review_threads.exact_head_review(review, self.head)
                 )
+
+    def test_latest_exact_head_review_controls_outcome(self) -> None:
+        older_approval = self.review(
+            state="APPROVED", submitted_at="2026-07-18T22:42:17Z"
+        )
+        newer_rejection = self.review(state="CHANGES_REQUESTED")
+        latest = audit_review_threads.latest_codex_head_review(
+            [newer_rejection, older_approval], self.head
+        )
+        self.assertIs(latest, newer_rejection)
+        self.assertFalse(audit_review_threads.exact_head_review(latest, self.head))
 
 
 if __name__ == "__main__":
