@@ -106,6 +106,13 @@ acceptance scripts, or external-app examples.
 - Wait for `DeviceStats.NetworkPendingDelays` before asserting or advancing a
   delayed operation. The counter is an observation barrier, not scenario data.
   After release or cleanup it must return to zero.
+- Delayed complete frames use the connection's ordered, fixed-size writer
+  queue. `ManualClock.Advance` still commits every due state synchronously, but
+  does not wait for a future virtual network deadline. Later frames remain
+  behind the delayed frame and cannot overtake it.
+- Never replace the fixed 64-frame queue with an unbounded slice or a goroutine
+  per frame. Queue overflow closes the connection; tests must prove cleanup as
+  well as the expected failure.
 - Keep the real client, Noise handshake, and shared framer in the test path.
   Successful exact protobuf decoding plus subsequent `Ping` proves shaping did
   not rewrite bytes or poison the session.

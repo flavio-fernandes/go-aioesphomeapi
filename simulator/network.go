@@ -1,6 +1,7 @@
 package simulator
 
 import (
+	"errors"
 	"net"
 	"sync"
 	"time"
@@ -22,7 +23,13 @@ const (
 
 	// MaxNetworkDelay bounds one declared virtual network delay.
 	MaxNetworkDelay = 24 * time.Hour
+
+	// networkFrameQueueSize bounds complete frames waiting behind a delayed
+	// response. At the protocol maximum this caps queued ciphertext near 4 MiB.
+	networkFrameQueueSize = 64
 )
+
+var errNetworkFrameQueueFull = errors.New("simulator network frame queue is full")
 
 // NetworkFault applies one named network action at an exact protocol trigger.
 // Delay is required only for NetworkDelayReply. Unknown actions have no effect,
@@ -35,29 +42,47 @@ type NetworkFault struct {
 
 type networkConn struct {
 	net.Conn
-	device    *Device
-	clock     *ManualClock
-	closed    chan struct{}
-	closeOnce sync.Once
+	device     *Device
+	clock      *ManualClock
+	closed     chan struct{}
+	closeOnce  sync.Once
+	closeErr   error
+	frames     chan networkFrame
+	writerDone sync.WaitGroup
 
 	mu              sync.Mutex
+	stopped         bool
 	fragmentNext    bool
 	coalesceNext    bool
 	delayNextTarget time.Duration
+	frameActive     bool
 	fragmentActive  bool
 	coalesceActive  bool
 	delayActive     time.Duration
-	coalesced       []byte
-	coalescedWrites uint64
+	segments        [][]byte
+	asyncFrames     uint64
+}
+
+type networkFrame struct {
+	segments     [][]byte
+	fragment     bool
+	coalesce     bool
+	delayTarget  time.Duration
+	asynchronous bool
+	done         chan error
 }
 
 func newNetworkConn(connection net.Conn, device *Device) *networkConn {
-	return &networkConn{
+	result := &networkConn{
 		Conn:   connection,
 		device: device,
 		clock:  device.clock,
 		closed: make(chan struct{}),
+		frames: make(chan networkFrame, networkFrameQueueSize),
 	}
+	result.writerDone.Add(1)
+	go result.writeLoop()
+	return result
 }
 
 func (c *networkConn) arm(action NetworkAction, delay time.Duration) {
@@ -75,14 +100,14 @@ func (c *networkConn) arm(action NetworkAction, delay time.Duration) {
 
 func (c *networkConn) beginFrame() {
 	c.mu.Lock()
+	c.frameActive = true
 	c.fragmentActive = c.fragmentNext
 	c.fragmentNext = false
 	c.coalesceActive = c.coalesceNext
 	c.coalesceNext = false
 	c.delayActive = c.delayNextTarget
 	c.delayNextTarget = 0
-	c.coalesced = c.coalesced[:0]
-	c.coalescedWrites = 0
+	c.segments = c.segments[:0]
 	fragmented := c.fragmentActive
 	coalesced := c.coalesceActive
 	delayed := c.delayActive > 0
@@ -101,65 +126,147 @@ func (c *networkConn) beginFrame() {
 
 func (c *networkConn) endFrame(frameErr error) error {
 	c.mu.Lock()
-	coalesced := c.coalesceActive
-	buffer := append([]byte(nil), c.coalesced...)
-	segments := c.coalescedWrites
+	frame := networkFrame{
+		segments:    c.segments,
+		fragment:    c.fragmentActive,
+		coalesce:    c.coalesceActive,
+		delayTarget: c.delayActive,
+	}
+	frame.asynchronous = frame.delayTarget > 0 || c.asyncFrames > 0
+	if frame.asynchronous {
+		c.asyncFrames++
+	} else {
+		frame.done = make(chan error, 1)
+	}
+	c.frameActive = false
 	c.fragmentActive = false
 	c.coalesceActive = false
 	c.delayActive = 0
-	c.coalesced = c.coalesced[:0]
-	c.coalescedWrites = 0
+	c.segments = nil
 	c.mu.Unlock()
 
 	if frameErr != nil {
+		c.finishAsyncFrame(frame)
 		return frameErr
 	}
-	if !coalesced {
+	if frame.coalesce {
+		c.device.recordCoalescedSegments(uint64(len(frame.segments)))
+	}
+	if err := c.enqueue(frame); err != nil {
+		c.finishAsyncFrame(frame)
+		if errors.Is(err, errNetworkFrameQueueFull) {
+			_ = c.stop()
+		}
+		return err
+	}
+	if frame.asynchronous {
 		return nil
 	}
-	c.device.recordCoalescedSegments(segments)
-	return c.writeAll(buffer)
+	select {
+	case err := <-frame.done:
+		return err
+	case <-c.closed:
+		return net.ErrClosed
+	}
 }
 
 func (c *networkConn) Write(payload []byte) (int, error) {
+	c.mu.Lock()
+	if c.stopped {
+		c.mu.Unlock()
+		return 0, net.ErrClosed
+	}
+	if c.frameActive {
+		c.segments = append(c.segments, append([]byte(nil), payload...))
+		c.mu.Unlock()
+		return len(payload), nil
+	}
+	c.mu.Unlock()
+	return c.Conn.Write(payload)
+}
+
+func (c *networkConn) enqueue(frame networkFrame) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.stopped {
+		return net.ErrClosed
+	}
+	select {
+	case c.frames <- frame:
+		return nil
+	default:
+		return errNetworkFrameQueueFull
+	}
+}
+
+func (c *networkConn) writeLoop() {
+	defer c.writerDone.Done()
 	for {
 		select {
 		case <-c.closed:
-			return 0, net.ErrClosed
-		default:
-		}
-
-		c.mu.Lock()
-		if c.delayActive > 0 {
-			target := c.delayActive
-			c.delayActive = 0
-			c.mu.Unlock()
-			c.device.recordDelayedWait(1)
-			err := c.clock.waitUntil(target, c.closed)
-			c.device.recordDelayedWait(-1)
-			if err != nil {
-				return 0, err
+			return
+		case frame := <-c.frames:
+			err := c.writeFrame(frame)
+			if frame.done != nil {
+				frame.done <- err
 			}
-			continue
+			c.finishAsyncFrame(frame)
+			if err != nil {
+				_ = c.stop()
+				return
+			}
 		}
-		if c.coalesceActive {
-			c.coalesced = append(c.coalesced, payload...)
-			c.coalescedWrites++
-			c.mu.Unlock()
-			return len(payload), nil
-		}
-		fragmented := c.fragmentActive
-		c.mu.Unlock()
-
-		writePayload := payload
-		if fragmented && len(writePayload) > 1 {
-			writePayload = writePayload[:1]
-		}
-		if fragmented {
-			c.device.recordFragmentedSegment()
-		}
-		return c.Conn.Write(writePayload)
 	}
+}
+
+func (c *networkConn) writeFrame(frame networkFrame) error {
+	if frame.delayTarget > 0 {
+		c.device.recordDelayedWait(1)
+		err := c.clock.waitUntil(frame.delayTarget, c.closed)
+		c.device.recordDelayedWait(-1)
+		if err != nil {
+			return err
+		}
+	}
+	if frame.coalesce {
+		var size int
+		for _, segment := range frame.segments {
+			size += len(segment)
+		}
+		payload := make([]byte, 0, size)
+		for _, segment := range frame.segments {
+			payload = append(payload, segment...)
+		}
+		return c.writeAll(payload)
+	}
+	if frame.fragment {
+		for _, segment := range frame.segments {
+			for index := range segment {
+				if err := c.writeAll(segment[index : index+1]); err != nil {
+					return err
+				}
+				c.device.recordFragmentedSegment()
+			}
+		}
+		return nil
+	}
+	for _, segment := range frame.segments {
+		if err := c.writeAll(segment); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *networkConn) finishAsyncFrame(frame networkFrame) {
+	if !frame.asynchronous {
+		return
+	}
+	c.mu.Lock()
+	if c.asyncFrames > 0 {
+		c.asyncFrames--
+	}
+	c.mu.Unlock()
 }
 
 func (c *networkConn) writeAll(payload []byte) error {
@@ -182,8 +289,20 @@ func (c *networkConn) writeAll(payload []byte) error {
 }
 
 func (c *networkConn) Close() error {
-	c.closeOnce.Do(func() { close(c.closed) })
-	return c.Conn.Close()
+	err := c.stop()
+	c.writerDone.Wait()
+	return err
+}
+
+func (c *networkConn) stop() error {
+	c.closeOnce.Do(func() {
+		c.mu.Lock()
+		c.stopped = true
+		close(c.closed)
+		c.mu.Unlock()
+		c.closeErr = c.Conn.Close()
+	})
+	return c.closeErr
 }
 
 func (d *Device) triggerNetwork(session *deviceSession, trigger FaultTrigger) {

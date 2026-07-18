@@ -45,6 +45,13 @@ without exposing scenario data. Scenario validation rejects missing,
 non-positive, excessive, or inapplicable durations before any connection or
 listener work.
 
+Complete server frames pass through one ordered writer per connection. A
+delayed timeline frame therefore does not block `ManualClock.Advance` while it
+waits for a later virtual deadline, and following frames cannot overtake it.
+The queue behind a delayed frame is fixed at 64 protocol-bounded frames; an
+overflow fails the connection closed instead of growing memory or dropping a
+frame silently. Closing the connection cancels the writer and its virtual wait.
+
 This slice does not add random timing, packet capture, fixed ports, automatic
 reconnect, or domain-specific conveyor policy. Conditional seed validation and
 broader owned-resource budgets remain tracked by issue #10.
@@ -55,6 +62,7 @@ Tests can name hostile protocol and transport behavior at an exact point while
 remaining deterministic, synthetic, dependency-free, and safe to run without
 hardware. Real encrypted-client tests prove fragmented and coalesced bytes
 decode exactly, virtual delays release only at their deadline, subsequent
-traffic remains usable, and shutdown cancels a pending delay. A passing
-scenario is simulator evidence only; it is not ESPHome firmware, MGMT,
-hardware, or production evidence.
+traffic remains usable, delayed timeline updates retain declaration order
+without blocking clock advancement, bounded queue overflow fails closed, and
+shutdown cancels a pending delay. A passing scenario is simulator evidence
+only; it is not ESPHome firmware, MGMT, hardware, or production evidence.

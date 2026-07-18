@@ -349,7 +349,10 @@ pass a `ManualClock` through `WithManualClock`. Start the client operation,
 wait until `device.Stats().NetworkPendingDelays == 1`, then call
 `clock.Advance(delay)`. No real-time sleep is required. Every action affects
 only the next server response frame at its trigger; `Device.Close` or
-`Device.DropConnections` releases a pending delay during cleanup.
+`Device.DropConnections` releases a pending delay during cleanup. A delayed
+timeline response does not block `clock.Advance`: the due state is committed
+synchronously, while its complete wire frame waits in order for the later
+virtual deadline.
 
 **Check exact commands without sleeps or channel peeking:** declare the ordered
 commands and counts before creating the device. After your client operation is
