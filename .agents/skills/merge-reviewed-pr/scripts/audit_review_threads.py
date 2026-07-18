@@ -10,6 +10,9 @@ import sys
 from typing import Any
 
 
+TRUSTED_CODEX_LOGINS = frozenset({"chatgpt-codex-connector"})
+
+
 QUERY = """
 query($owner: String!, $repo: String!, $number: Int!, $cursor: String) {
   repository(owner: $owner, name: $repo) {
@@ -51,8 +54,9 @@ def graphql(owner: str, repo: str, number: int, cursor: str | None) -> dict[str,
     return payload
 
 
-def codex(login: str | None) -> bool:
-    return bool(login and "codex" in login.lower())
+def trusted_codex(login: str | None) -> bool:
+    """Return whether login is an explicitly trusted Codex reviewer identity."""
+    return login in TRUSTED_CODEX_LOGINS
 
 
 def audit(repository: str, number: int) -> dict[str, Any]:
@@ -88,12 +92,12 @@ def audit(repository: str, number: int) -> dict[str, Any]:
     head = metadata["headRefOid"]
     committed = metadata["commits"]["nodes"][0]["commit"]["committedDate"]
     reviewed = any(
-        codex((review.get("author") or {}).get("login"))
+        trusted_codex((review.get("author") or {}).get("login"))
         and (review.get("commit") or {}).get("oid") == head
         for review in metadata["reviews"]["nodes"]
     )
     reacted = any(
-        codex((reaction.get("user") or {}).get("login"))
+        trusted_codex((reaction.get("user") or {}).get("login"))
         and reaction["createdAt"] >= committed
         for reaction in metadata["reactions"]["nodes"]
     )

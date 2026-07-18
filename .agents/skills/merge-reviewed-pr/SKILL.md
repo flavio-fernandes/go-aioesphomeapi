@@ -20,9 +20,11 @@ Fail closed: a green workflow is necessary but never sufficient to merge.
      flavio-fernandes/go-aioesphomeapi PR_NUMBER --require-codex
    ```
 
-   This must prove Codex reviewed the exact head commit (or reacted positively
-   after it) and that zero unresolved review threads remain. Flat PR comments
-   are not a substitute for thread-aware GraphQL data.
+   This must prove the explicitly trusted `chatgpt-codex-connector` identity
+   reviewed the exact head commit (or reacted positively after it) and that
+   zero unresolved review threads remain. Similar-looking usernames are not
+   trusted. Flat PR comments are not a substitute for thread-aware GraphQL
+   data.
 4. Treat every unresolved thread as blocking. Implement actionable feedback
    with a focused regression. For an intentional tradeoff or superseded
    finding, record the exact rationale or correcting PR. Never resolve a thread
