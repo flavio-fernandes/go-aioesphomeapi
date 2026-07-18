@@ -6,7 +6,7 @@ features do not qualify. Future milestone epics stay open until that milestone
 is intentionally scheduled and completed.
 
 This snapshot was reconciled on 2026-07-18 against library `main` at
-`5a1042b9aed467fb995bb1f9a84aadc8e7d9609d` and MGMT `feat/esphome` at
+`020179368d21ca57de78ff14aec3ab0cf30ad4f7` and MGMT `feat/esphome` at
 `90a172d09239925db5a527ee7b2a5edc383c08a3`. The append-only machine-readable
 record is [`compatibility/mgmt-feat-esphome-review.json`](../compatibility/mgmt-feat-esphome-review.json).
 
@@ -24,6 +24,8 @@ record is [`compatibility/mgmt-feat-esphome-review.json`](../compatibility/mgmt-
 | [#34](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/34) unknown-message compatibility | close | ADR 0008 now requires bounded unknown IDs to be skipped; a real-wire simulator test proves discovery and Ping continue, while malformed known protobuf remains fatal. |
 | [#35](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/35) Noise key rejection diagnostics | close | `ErrNoiseKeyRejected` remains within the broad handshake category; wire and public-client tests prove target-aware, capped, printable diagnostics with no key material. |
 | [#36](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/36) robustness batch | close | Tests cover the corrected Noise limit and message-type category, bounded mDNS retransmission/response validation, Hello name checks on plaintext, no forced log dump, context-bound Ping, observable simulator overflow, and wrapped accept errors. Automatic keepalive remains correctly tracked by #11. |
+| [#39](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/39) continuous vulnerability monitoring | close | The official scanner is version-pinned in one repository script, runs for pull requests, `main` pushes, and weekly schedules, and has documented fail-closed reachable findings plus explicit module-level triage. The workflow path and clean result are tested in CI. |
+| [#44](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/44) mDNS retransmit deadline | close | Retry scheduling now uses read-only UDP deadlines; a real loopback socket regression proves retransmit writes survive the first timeout and the lookup consumes its overall budget. All unchanged MGMT MCL acceptance lanes pass through multicast `.local` resolution. |
 
 ## Active Milestone 1 work
 
@@ -45,7 +47,6 @@ record is [`compatibility/mgmt-feat-esphome-review.json`](../compatibility/mgmt-
 
 | Issue | Required outcome |
 |---|---|
-| [#39](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/39) continuous vulnerability monitoring | Add pinned `govulncheck` to pull-request/push CI and a scheduled workflow; document a fail-closed reachable-finding policy and an explicit triage policy for other findings. |
 | [#40](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/40) MGMT disconnect attribution | Extend the MGMT driver boundary to surface the library's sanitized `CloseReason`; prove persistent and applicable polling paths report asynchronous encrypted connection loss and queue overflow without misreporting deliberate shutdown. Closing #13 remains valid because its original replacement acceptance criteria are complete; this is newly identified operability work. |
 
 ## Deliberately open roadmap
@@ -63,7 +64,7 @@ open until their milestone is active.
 2. Complete the accepted simulator and lifecycle contract in #10 and #11, and surface #40
    so MGMT can attribute asynchronous connection loss without coupling its
    session layer to the concrete library client.
-3. Close the security and release-candidate gates in #6, #8, #12, and #39.
+3. Close the remaining security and release-candidate gates in #6, #8, and #12.
 4. Enforce repository controls and durable fallback automation in #7 and #23.
 5. Finish the interactive and workbench deliverables in #14 and #15.
 

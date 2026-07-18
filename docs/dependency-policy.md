@@ -58,6 +58,25 @@ Go directive: unchanged / changed with approved reason
 
 CI will eventually generate and compare this report. Unexpected additions fail closed.
 
+## Continuous vulnerability monitoring
+
+`./tools/run-govulncheck.sh` runs the official `golang.org/x/vuln` scanner at
+the exact tool version recorded in that script. The tool is downloaded through
+the checksum-verified Go module path and does not enter this module's runtime or
+tool dependency graph. Repository policy runs it for every pull request, every
+push to `main`, and on a weekly schedule.
+
+A reachable finding exits nonzero and fails closed. Findings in required
+modules that the source analysis cannot reach remain visible in the verbose
+scan output and, when GitHub has a matching advisory, Dependabot. CI may pass,
+but a maintainer must triage them. An available compatible security patch is
+upgraded and tested. If no safe patch exists, an
+issue records exposure and mitigations, and the finding blocks a public release
+until a maintainer accepts a concrete non-exposure or mitigation decision. An
+“unreachable” result is never a reason to dismiss a Dependabot alert without
+that review. Dependency upgrades remain reviewed pull requests, not automatic
+merges.
+
 ## Reference-client observation
 
 The pinned reference release brings protobuf and Noise plus mDNS, CLI, YAML, and their transitive modules, and it raises the Go directive used by the current MGMT branch. Some are useful for its bundled CLI but are not required by MGMT's native API driver. Our compatibility goal is behavioral parity for MGMT without inheriting those unrelated costs.
