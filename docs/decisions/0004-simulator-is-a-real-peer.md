@@ -20,6 +20,11 @@ fidelity limits are defined in
 Architecture issue #2 accepts that document as the fixed input for simulator
 implementation issue #10 and lifecycle issue #11.
 
+ADR 0013 refines this decision without changing the real-peer architecture: it
+defines the compatible validation surface, makes a non-zero seed conditional on
+randomized actions, and requires an explicit MGMT reconnect evidence re-baseline
+when the device-global latest-state store is implemented.
+
 Network shaping occurs below framing on the simulator side of the real
 connection. Deterministic tests use a caller-advanced clock; no fault depends
 on hidden sleeps or package-global randomness. MGMT continues to own polling,

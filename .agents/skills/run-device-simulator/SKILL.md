@@ -12,13 +12,17 @@ Use the simulator as a real device-side protocol peer, not as a mock of the publ
 1. Read ADR 0004 and `references/scenario-contract.md`.
 2. For documented demos, acceptance scripts, or external-app examples, also read `references/field-notes.md`.
 3. Choose the smallest existing scenario that proves the requested behavior. Prefer generic entity fixtures; the conveyor is a composed example.
-4. Use synthetic identifiers, test-only keys, a caller-advanced manual clock,
-   and an explicit non-zero random seed. Scenario time is device-global and
-   starts at zero; equal-time events retain declaration order. Bind to loopback
-   unless a task requires an isolated test network.
+4. Use synthetic identifiers, test-only keys, and a caller-advanced manual
+   clock. Call `Scenario.Validate` for custom scenarios. A non-zero seed is
+   required only when the scenario declares randomized actions; zero is valid
+   for deterministic raw literals. Scenario time is device-global and starts
+   at zero; equal-time events retain declaration order. Bind to loopback unless
+   a task requires an isolated test network.
 5. Run the documented simulator command and the real client or MGMT adapter
    against it. A reconnect receives the latest state snapshot and only future
-   timeline events; past events are not replayed as a burst.
+   timeline events; past events are not replayed as a burst. When introducing
+   that global-store behavior, follow ADR 0013's before/after MGMT re-baseline
+   and append-only evidence gate.
 6. Assert handshake, discovered capabilities, ordered state events, ordered
    command expectations, cancellation, queue outcomes, cleanup, and final
    simulator-owned goroutine/resource state. Do not rely on exact process-wide

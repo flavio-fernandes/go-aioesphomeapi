@@ -31,7 +31,10 @@ var (
 
 // Scenario is the complete initial state advertised by a simulated device.
 type Scenario struct {
-	Name     string
+	Name string
+	// Seed controls only explicitly randomized actions. Zero is valid while a
+	// scenario contains no randomized actions.
+	Seed     uint64
 	Entities []proto.Message
 	States   []proto.Message
 	Logs     []*pb.SubscribeLogsResponse
@@ -59,6 +62,7 @@ func WithEncryptionKey(base64Key string) Option {
 // Device accepts injected net.Pipe connections and records received commands.
 type Device struct {
 	scenario        Scenario
+	validationErr   error
 	config          config
 	commands        chan proto.Message
 	done            chan struct{}
@@ -77,6 +81,14 @@ func New(scenario Scenario, options ...Option) *Device {
 	if scenario.Name == "" {
 		scenario.Name = "simulated-esphome"
 	}
+	validationErr := scenario.Validate()
+	if validationErr == nil {
+		scenario = cloneScenario(scenario)
+	} else {
+		// Invalid payloads are never served, so retain only the fields needed to
+		// build safe client options while the typed error is deferred.
+		scenario = Scenario{Name: scenario.Name, Seed: scenario.Seed}
+	}
 	cfg := config{key: append([]byte(nil), defaultTestKey...)}
 	for _, option := range options {
 		if option != nil {
@@ -84,12 +96,13 @@ func New(scenario Scenario, options ...Option) *Device {
 		}
 	}
 	return &Device{
-		scenario:    scenario,
-		config:      cfg,
-		commands:    make(chan proto.Message, 64),
-		done:        make(chan struct{}),
-		connections: make(map[net.Conn]struct{}),
-		listeners:   make(map[net.Listener]struct{}),
+		scenario:      scenario,
+		validationErr: validationErr,
+		config:        cfg,
+		commands:      make(chan proto.Message, 64),
+		done:          make(chan struct{}),
+		connections:   make(map[net.Conn]struct{}),
+		listeners:     make(map[net.Listener]struct{}),
 	}
 }
 
@@ -97,6 +110,9 @@ func New(scenario Scenario, options ...Option) *Device {
 func (d *Device) DialContext(ctx context.Context, _, _ string) (net.Conn, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
+	}
+	if d.validationErr != nil {
+		return nil, d.validationErr
 	}
 	select {
 	case <-d.done:
@@ -119,6 +135,9 @@ func (d *Device) DialContext(ctx context.Context, _, _ string) (net.Conn, error)
 // key cannot accidentally expose the simulator to a network. Close stops the
 // listener and all accepted sessions.
 func (d *Device) Serve(listener net.Listener) error {
+	if d.validationErr != nil {
+		return d.validationErr
+	}
 	address, ok := listener.Addr().(*net.TCPAddr)
 	if !ok || address.IP == nil || !address.IP.IsLoopback() {
 		return ErrNonLoopbackOnly

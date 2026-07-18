@@ -53,9 +53,23 @@ The current compatibility field named `States` represents `InitialStates` and
 must remain supported while the clearer name is introduced. Scenario creation
 must defensively copy mutable protobuf values before another goroutine can
 observe them. Invalid entity/state types, duplicate keys within one entity
-family, negative times, decreasing timelines, zero seeds, and impossible
-expectations must fail with a typed, secret-safe validation error. They must not
-silently change the scenario.
+family, negative times, decreasing timelines, a randomized scenario without a
+seed, and impossible expectations must fail with a typed, secret-safe
+validation error. They must not silently change the scenario.
+
+### Validation surface
+
+`Scenario.Validate() error` is the explicit preflight. Failures are
+`*ValidationError` values that unwrap to `ErrInvalidScenario` and contain only a
+field, index, related index, and stable validation code. They never contain
+scenario/entity names, keys, values, addresses, or credentials.
+
+`New(Scenario, ...Option) *Device` retains its compatible return signature. It
+validates and defensively copies a valid scenario. An invalid scenario creates
+an inert device; `DialContext` and `Serve` return the stored typed validation
+error before opening a connection, inspecting a listener, or starting a
+goroutine. Every future scenario field extends `Validate` before the field can
+affect runtime behavior.
 
 Built-in scenarios remain generic device fixtures:
 
@@ -75,10 +89,12 @@ Built-in scenarios remain generic device fixtures:
   backwards must fail.
 - Production-style TCP demos may opt into a real clock, but their timing is not
   deterministic evidence and every wait must still be context-bounded.
-- Every scenario must declare a non-zero `uint64` seed. No package-global
-  random source is allowed. A randomized helper must derive all choices from
-  that seed and include the seed in a sanitized failure so the run is
-  repeatable.
+- A scenario that declares one or more randomized actions must declare a
+  non-zero `uint64` seed. Zero is valid when no randomized action exists, so
+  adding the `Seed` field does not break existing raw literals. No
+  package-global random source is allowed. A randomized helper must derive all
+  choices from that seed and include the seed in a sanitized failure so the run
+  is repeatable.
 - Default scenarios use named constants for their seed. A seed controls only
   explicitly randomized actions; it must not reorder normal entities, initial
   states, logs, commands, or equal-time events.
@@ -100,6 +116,13 @@ Built-in scenarios remain generic device fixtures:
   an already received command is applied first.
 - Timeline events are data, not arbitrary callbacks. They cannot run user code,
   sleep, dial a network, or bypass framing.
+
+Implementing the device-global latest-state store changes the current
+per-connection simulator baseline. Issue #10 must record the pre-change MGMT
+reconnect command sequence, then rerun the focused reconnect/outage test and
+all unchanged baseline/conveyor MCL lanes. A new append-only compatibility
+record must pin both revisions, unchanged MCL hashes, latest-state snapshot,
+and any corrective-command count delta. Historical records are not rewritten.
 
 ## Commands and logs
 
@@ -177,7 +200,7 @@ known traffic continues.
 |---|---|
 | persistent MGMT | One endpoint connection, initial snapshot, ordered commands/logs, clean close. |
 | polling MGMT | Caller-owned repeated connections with no simulator-owned reconnect. |
-| reconnect/outage | Named drop, MGMT-owned retry, latest-state snapshot, no command replay. |
+| reconnect/outage | Named drop, MGMT-owned retry, latest-state snapshot, no command replay, and reviewed before/after MGMT command evidence. |
 | slow callback | Virtual state burst, `ErrEventQueueFull`, bounded cleanup. |
 | malformed peer | One named malformed action, typed close reason, no panic. |
 | transport shaping | Deterministic delay, fragmentation, and coalescing through plaintext and Noise paths. |
@@ -205,9 +228,11 @@ correctly bypasses it.
 | generic basic-I/O, blink, and conveyor fixtures; initial states and logs | `simulator/basic.go`, `simulator/conveyor.go`, and acceptance scripts | complete for M1 contract |
 | command observation and visible overflow | `Commands`, `DeviceStats.DroppedCommands`, race tests | ordered expectation helpers in #10 |
 | named drop, malformed, unknown, duplicate-completion, and stall faults | ADR 0008 and real-wire fault tests | delay/fragment/coalesce in #10 |
-| virtual clock, non-zero seed, pushed timelines, slow-subscriber proof | semantics accepted above | implementation and tests in #10 |
+| validation surface and defensive scenario copy | `Scenario.Validate`, deferred `DialContext`/`Serve` rejection, and simulator tests | future fields extend validation in #10 |
+| virtual clock, conditional non-zero seed, pushed timelines, slow-subscriber proof | semantics accepted above | implementation and tests in #10 |
 | device information, keepalive, callback isolation, connection-state cleanup | lifecycle tests and MGMT acceptance are partial | #11, with budgets in #6/#12 |
 
 Closing architecture issue #2 accepts this contract; it does not claim the
-open #10 or #11 implementation rows are complete. Any change to the normative
-rules requires a reviewed ADR update before implementation.
+open #10 or #11 implementation rows are complete. ADR 0013 resolves validation,
+conditional seed, and reconnect re-baselining details. Any later change to the
+normative rules requires another reviewed ADR update before implementation.

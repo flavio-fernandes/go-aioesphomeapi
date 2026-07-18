@@ -283,3 +283,10 @@ later probe. Automatic periodic keepalive remains application policy for now.
 **A fuzz command cannot start:** confirm `go version` reports Go 1.25.12 or a
 later compatible Go 1.25 patch and that the repository dependencies have been
 downloaded by `go test ./...`.
+
+**A custom simulator scenario is rejected:** call `scenario.Validate()` before
+`simulator.New(scenario)`. The same typed error is returned from `DialContext`
+or `Serve` when preflight is skipped. Use `errors.Is(err,
+simulator.ErrInvalidScenario)` and `errors.As` to `*simulator.ValidationError`.
+The error reports a safe field/index/code, not entity data. A zero seed is valid
+unless the scenario declares a randomized action.
