@@ -22,11 +22,28 @@ import (
 // example. It must never be reused by a real device.
 const DefaultTestEncryptionKey = "kJ7hc0lJ0Zw9N3DcJzXn1kJ7hc0lJ0Zw9N3DcJzXn1k="
 
+const (
+	// MaxDeviceConnections bounds concurrent Native API sessions owned by one
+	// Device, including sessions still completing teardown.
+	MaxDeviceConnections = 64
+	// MaxDeviceListeners bounds concurrent loopback Serve calls owned by one
+	// Device.
+	MaxDeviceListeners = 8
+)
+
 var (
 	defaultTestKey, _ = base64.StdEncoding.DecodeString(DefaultTestEncryptionKey)
 	// ErrNonLoopbackOnly is returned before accepting a simulator listener
 	// that could expose the public test key outside the local host.
 	ErrNonLoopbackOnly = errors.New("simulator listener must use a loopback TCP address")
+	// ErrConnectionLimit classifies a rejected in-process dial when all bounded
+	// session slots are occupied.
+	ErrConnectionLimit = errors.New("simulator connection limit reached")
+	// ErrListenerLimit classifies a Serve call rejected before accepting work.
+	ErrListenerLimit = errors.New("simulator listener limit reached")
+	// ErrSimulatorBusy classifies WaitForIdle cancellation while owned work
+	// remains active.
+	ErrSimulatorBusy = errors.New("simulator still has active work")
 )
 
 // Scenario is the complete initial state advertised by a simulated device.
@@ -124,6 +141,8 @@ type Device struct {
 	droppedSessions      uint64
 	connections          map[net.Conn]*deviceSession
 	listeners            map[net.Listener]struct{}
+	sessionTasks         int
+	resourceNotify       chan struct{}
 	wg                   sync.WaitGroup
 	stateSerial          sync.Mutex
 	stateMu              sync.Mutex
@@ -163,16 +182,17 @@ func New(scenario Scenario, options ...Option) *Device {
 		cfg.clock = NewManualClock()
 	}
 	device := &Device{
-		scenario:      scenario,
-		validationErr: validationErr,
-		config:        cfg,
-		clock:         cfg.clock,
-		commands:      make(chan proto.Message, 64),
-		commandNotify: make(chan struct{}),
-		done:          make(chan struct{}),
-		connections:   make(map[net.Conn]*deviceSession),
-		listeners:     make(map[net.Listener]struct{}),
-		currentStates: make(map[stateIdentity]proto.Message),
+		scenario:       scenario,
+		validationErr:  validationErr,
+		config:         cfg,
+		clock:          cfg.clock,
+		commands:       make(chan proto.Message, 64),
+		commandNotify:  make(chan struct{}),
+		done:           make(chan struct{}),
+		connections:    make(map[net.Conn]*deviceSession),
+		listeners:      make(map[net.Listener]struct{}),
+		resourceNotify: make(chan struct{}, 1),
+		currentStates:  make(map[stateIdentity]proto.Message),
 	}
 	if validationErr == nil {
 		for _, state := range device.initialStates() {
@@ -196,14 +216,14 @@ func (d *Device) DialContext(ctx context.Context, _, _ string) (net.Conn, error)
 	}
 	select {
 	case <-d.done:
-		return nil, errors.New("simulator closed")
+		return nil, errSimulatorClosed
 	default:
 	}
 	client, server := net.Pipe()
-	if !d.startConnection(server) {
+	if err := d.startConnection(server); err != nil {
 		_ = client.Close()
 		_ = server.Close()
-		return nil, errors.New("simulator closed")
+		return nil, err
 	}
 	// Like net.Dialer.DialContext, ctx bounds connection establishment only.
 	// The returned connection's lifetime belongs to the client and Device.Close.
@@ -226,16 +246,22 @@ func (d *Device) Serve(listener net.Listener) error {
 	select {
 	case <-d.done:
 		d.mu.Unlock()
-		return errors.New("simulator closed")
+		return errSimulatorClosed
 	default:
+	}
+	if len(d.listeners) >= MaxDeviceListeners {
+		d.mu.Unlock()
+		return ErrListenerLimit
 	}
 	d.listeners[listener] = struct{}{}
 	d.mu.Unlock()
+	d.notifyResourceChange()
 	defer func() {
 		_ = listener.Close()
 		d.mu.Lock()
 		delete(d.listeners, listener)
 		d.mu.Unlock()
+		d.notifyResourceChange()
 	}()
 
 	for {
@@ -248,28 +274,39 @@ func (d *Device) Serve(listener net.Listener) error {
 				return fmt.Errorf("simulator accept failed: %w", err)
 			}
 		}
-		if !d.startConnection(connection) {
+		if err := d.startConnection(connection); err != nil {
 			_ = connection.Close()
-			return nil
+			if errors.Is(err, errSimulatorClosed) {
+				return nil
+			}
+			if errors.Is(err, ErrConnectionLimit) {
+				continue
+			}
+			return err
 		}
 	}
 }
 
-func (d *Device) startConnection(connection net.Conn) bool {
+func (d *Device) startConnection(connection net.Conn) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	select {
 	case <-d.done:
-		return false
+		return errSimulatorClosed
 	default:
+	}
+	if d.sessionTasks >= MaxDeviceConnections {
+		return ErrConnectionLimit
 	}
 	d.accepted++
 	shaped := newNetworkConn(connection, d)
 	session := &deviceSession{connection: shaped, network: shaped}
 	d.connections[shaped] = session
+	d.sessionTasks++
 	d.wg.Add(1)
 	go d.serve(session)
-	return true
+	d.notifyResourceChange()
+	return nil
 }
 
 // ClientOptions returns all options required to connect to this Device.
@@ -293,6 +330,8 @@ func (d *Device) Commands() <-chan proto.Message { return d.commands }
 type DeviceStats struct {
 	AcceptedConnections       uint64
 	ActiveConnections         int
+	ActiveListeners           int
+	ActiveSessionTasks        int
 	DroppedCommands           uint64
 	DroppedConnections        uint64
 	NetworkFragmentedFrames   uint64
@@ -310,6 +349,8 @@ func (d *Device) Stats() DeviceStats {
 	result := DeviceStats{
 		AcceptedConnections: d.accepted,
 		ActiveConnections:   len(d.connections),
+		ActiveListeners:     len(d.listeners),
+		ActiveSessionTasks:  d.sessionTasks,
 		DroppedCommands:     d.droppedCommands,
 		DroppedConnections:  d.droppedSessions,
 	}
@@ -323,6 +364,31 @@ func (d *Device) Stats() DeviceStats {
 	result.NetworkPendingDelays = d.pendingDelayedFrames
 	d.networkMu.Unlock()
 	return result
+}
+
+// WaitForIdle waits until the Device owns no active connections, listener
+// loops, session teardown tasks, or virtual network-delay waits. Cancellation
+// preserves both ErrSimulatorBusy and the context cause.
+func (d *Device) WaitForIdle(ctx context.Context) error {
+	for {
+		stats := d.Stats()
+		if stats.ActiveConnections == 0 && stats.ActiveListeners == 0 &&
+			stats.ActiveSessionTasks == 0 && stats.NetworkPendingDelays == 0 {
+			return nil
+		}
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("%w: wait canceled: %w", ErrSimulatorBusy, context.Cause(ctx))
+		case <-d.resourceNotify:
+		}
+	}
+}
+
+func (d *Device) notifyResourceChange() {
+	select {
+	case d.resourceNotify <- struct{}{}:
+	default:
+	}
 }
 
 // DropConnections terminates all current sessions without closing the Device
@@ -339,6 +405,7 @@ func (d *Device) DropConnections() int {
 		d.droppedSessions += uint64(len(connections))
 	}
 	d.mu.Unlock()
+	d.notifyResourceChange()
 	for _, connection := range connections {
 		_ = connection.Close()
 	}
@@ -366,9 +433,15 @@ func (d *Device) Close() error {
 
 func (d *Device) serve(session *deviceSession) {
 	connection := session.connection
-	defer d.wg.Done()
-	defer connection.Close()
-	defer func() { d.mu.Lock(); delete(d.connections, connection); d.mu.Unlock() }()
+	defer func() {
+		_ = connection.Close()
+		d.mu.Lock()
+		delete(d.connections, connection)
+		d.sessionTasks--
+		d.mu.Unlock()
+		d.notifyResourceChange()
+		d.wg.Done()
+	}()
 	var framer wire.Framer
 	var err error
 	if d.config.plaintext {

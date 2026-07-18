@@ -81,6 +81,13 @@ work. Update both files when future work changes the operational truth.
   `ErrEventQueueFull`; `Device.Close` must not wait for the application
   callback, and `WaitCallbacks(ctx)` makes the final callback count observable
   after the caller releases its own gate.
+- Validate scenario counts before allocating identity maps or cloning data.
+  Current fixed ceilings are 4,096 items per repeated field, 64 KiB per
+  encoded protobuf message, and 4 MiB aggregate encoded protobuf data.
+- Bound one device to 64 active-or-closing session tasks and 8 concurrent
+  loopback listener loops. Track owned tasks rather than process goroutines;
+  `WaitForIdle(ctx)` is the cleanup barrier and covers active connections,
+  listeners, session teardown, and pending manual-clock delays.
 
 ## 2026-07-18 mDNS retransmit deadlines
 

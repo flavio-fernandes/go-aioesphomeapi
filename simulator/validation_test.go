@@ -248,6 +248,59 @@ func TestScenarioValidateAllowsCompatibleZeroValues(t *testing.T) {
 	}
 }
 
+func TestScenarioValidateRejectsResourceBudgets(t *testing.T) {
+	tests := []struct {
+		name     string
+		scenario simulator.Scenario
+		field    string
+		index    int
+	}{
+		{
+			name:     "name bytes",
+			scenario: simulator.Scenario{Name: strings.Repeat("n", simulator.MaxScenarioMessageBytes+1)},
+			field:    "name",
+		},
+		{
+			name: "items before identity allocation",
+			scenario: simulator.Scenario{Entities: make(
+				[]proto.Message, simulator.MaxScenarioItemsPerField+1,
+			)},
+			field: "entities",
+			index: simulator.MaxScenarioItemsPerField,
+		},
+		{
+			name: "single encoded message",
+			scenario: simulator.Scenario{Logs: []*pb.SubscribeLogsResponse{{
+				Message: make([]byte, simulator.MaxScenarioMessageBytes),
+			}}},
+			field: "logs",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := test.scenario.Validate()
+			var validationErr *simulator.ValidationError
+			if !errors.Is(err, simulator.ErrInvalidScenario) || !errors.As(err, &validationErr) ||
+				validationErr.Code != simulator.ValidationResourceLimit ||
+				validationErr.Field != test.field || validationErr.Index != test.index {
+				t.Fatalf("validation error = %#v", err)
+			}
+		})
+	}
+
+	logs := make([]*pb.SubscribeLogsResponse, 65)
+	for index := range logs {
+		logs[index] = &pb.SubscribeLogsResponse{Message: make([]byte, 65_500)}
+	}
+	err := (simulator.Scenario{Logs: logs}).Validate()
+	var validationErr *simulator.ValidationError
+	if !errors.Is(err, simulator.ErrInvalidScenario) || !errors.As(err, &validationErr) ||
+		validationErr.Code != simulator.ValidationResourceLimit || validationErr.Field != "logs" ||
+		validationErr.Index < 1 || validationErr.Index >= len(logs) {
+		t.Fatalf("aggregate validation error = %#v", err)
+	}
+}
+
 func TestScenarioValidateRejectsDuplicateInitialStateKeys(t *testing.T) {
 	tests := []struct {
 		name     string

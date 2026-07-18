@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/flavio-fernandes/go-aioesphomeapi/internal/wire"
 	"github.com/flavio-fernandes/go-aioesphomeapi/pb"
 	"google.golang.org/protobuf/proto"
 )
@@ -22,13 +23,25 @@ const (
 	ValidationNegativeTime    ValidationCode = "negative_time"
 	ValidationDecreasingTime  ValidationCode = "decreasing_time"
 	ValidationInvalidDuration ValidationCode = "invalid_duration"
+	ValidationResourceLimit   ValidationCode = "resource_limit"
 	ValidationSeedRequired    ValidationCode = "seed_required"
 	ValidationExpectation     ValidationCode = "impossible_expectation"
 )
 
-// MaxCommandExpectationCount bounds one declared repeated command so invalid
-// scenarios cannot request impractical counters or work.
-const MaxCommandExpectationCount uint32 = 1_000_000
+const (
+	// MaxCommandExpectationCount bounds one declared repeated command so invalid
+	// scenarios cannot request impractical counters or work.
+	MaxCommandExpectationCount uint32 = 1_000_000
+	// MaxScenarioItemsPerField bounds every repeated Scenario field before
+	// validation allocates identity maps or construction clones its contents.
+	MaxScenarioItemsPerField = 4_096
+	// MaxScenarioMessageBytes matches the maximum payload accepted by the shared
+	// simulator framing path.
+	MaxScenarioMessageBytes = wire.DefaultMaxFrameSize
+	// MaxScenarioEncodedBytes bounds the sum of protobuf data cloned and retained
+	// from one Scenario. Current-state snapshots may retain one additional copy.
+	MaxScenarioEncodedBytes = 4 * 1024 * 1024
+)
 
 // ValidationError identifies one invalid scenario field without retaining or
 // displaying entity names, state values, keys, credentials, or network data.
@@ -49,10 +62,16 @@ func (e *ValidationError) Error() string {
 // Unwrap preserves errors.Is(err, ErrInvalidScenario).
 func (e *ValidationError) Unwrap() error { return ErrInvalidScenario }
 
-// Validate checks the scenario model that is implemented today. Future
-// randomized actions, network shaping, and command expectations extend this
-// same method before their behavior is enabled.
+// Validate checks the scenario model and its fixed construction budgets.
+// Future randomized actions extend this method before their behavior is enabled.
 func (s Scenario) Validate() error {
+	if err := validateScenarioCounts(s); err != nil {
+		return err
+	}
+	if len(s.Name) > MaxScenarioMessageBytes {
+		return validationError("name", 0, -1, ValidationResourceLimit)
+	}
+	budget := scenarioProtoBudget{remaining: MaxScenarioEncodedBytes}
 	seen := make(map[string]map[uint32]int)
 	for index, message := range s.Entities {
 		family, key, ok := entityIdentity(message)
@@ -68,14 +87,17 @@ func (s Scenario) Validate() error {
 			return validationError("entities", index, previous, ValidationDuplicateKey)
 		}
 		familyKeys[key] = index
+		if err := budget.add("entities", index, message); err != nil {
+			return err
+		}
 	}
 	if len(s.States) > 0 && len(s.InitialStates) > 0 {
 		return validationError("initial_states", 0, -1, ValidationExpectation)
 	}
-	if err := validateInitialStates("states", s.States); err != nil {
+	if err := validateInitialStates("states", s.States, &budget); err != nil {
 		return err
 	}
-	if err := validateInitialStates("initial_states", s.InitialStates); err != nil {
+	if err := validateInitialStates("initial_states", s.InitialStates, &budget); err != nil {
 		return err
 	}
 	previous := time.Duration(0)
@@ -89,11 +111,17 @@ func (s Scenario) Validate() error {
 		if !validState(event.State) {
 			return validationError("state_timeline", index, -1, ValidationInvalidType)
 		}
+		if err := budget.add("state_timeline", index, event.State); err != nil {
+			return err
+		}
 		previous = event.At
 	}
 	for index, entry := range s.Logs {
 		if entry == nil {
 			return validationError("logs", index, -1, ValidationInvalidType)
+		}
+		if err := budget.add("logs", index, entry); err != nil {
+			return err
 		}
 	}
 	for index, expectation := range s.Commands {
@@ -102,6 +130,9 @@ func (s Scenario) Validate() error {
 		}
 		if expectation.Count == 0 || expectation.Count > MaxCommandExpectationCount {
 			return validationError("commands", index, -1, ValidationExpectation)
+		}
+		if err := budget.add("commands", index, expectation.Command); err != nil {
+			return err
 		}
 	}
 	for index, fault := range s.Network {
@@ -119,7 +150,40 @@ func (s Scenario) Validate() error {
 	return nil
 }
 
-func validateInitialStates(field string, states []proto.Message) error {
+type scenarioProtoBudget struct{ remaining int }
+
+func (b *scenarioProtoBudget) add(field string, index int, message proto.Message) error {
+	size := proto.Size(message)
+	if size > MaxScenarioMessageBytes || size > b.remaining {
+		return validationError(field, index, -1, ValidationResourceLimit)
+	}
+	b.remaining -= size
+	return nil
+}
+
+func validateScenarioCounts(s Scenario) error {
+	fields := []struct {
+		name  string
+		count int
+	}{
+		{name: "entities", count: len(s.Entities)},
+		{name: "states", count: len(s.States)},
+		{name: "initial_states", count: len(s.InitialStates)},
+		{name: "state_timeline", count: len(s.StateTimeline)},
+		{name: "logs", count: len(s.Logs)},
+		{name: "commands", count: len(s.Commands)},
+		{name: "faults", count: len(s.Faults)},
+		{name: "network", count: len(s.Network)},
+	}
+	for _, field := range fields {
+		if field.count > MaxScenarioItemsPerField {
+			return validationError(field.name, MaxScenarioItemsPerField, -1, ValidationResourceLimit)
+		}
+	}
+	return nil
+}
+
+func validateInitialStates(field string, states []proto.Message, budget *scenarioProtoBudget) error {
 	seen := make(map[stateIdentity]int)
 	for index, message := range states {
 		if !validState(message) {
@@ -130,6 +194,9 @@ func validateInitialStates(field string, states []proto.Message) error {
 			return validationError(field, index, previous, ValidationDuplicateKey)
 		}
 		seen[identity] = index
+		if err := budget.add(field, index, message); err != nil {
+			return err
+		}
 	}
 	return nil
 }

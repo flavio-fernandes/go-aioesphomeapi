@@ -185,10 +185,10 @@ known traffic continues.
 - `Device.Close` is idempotent and owns shutdown of accepted connections,
   simulator goroutines, virtual waits, and registered listeners. It must not
   wait for user callbacks to return.
-- Tests must use a context-bounded `WaitIdle`-style helper and assert zero active
-  connections, zero owned goroutines, resolved command expectations, and the
-  expected overflow counters. Raw `runtime.NumGoroutine` equality is not a
-  stable ownership assertion.
+- Tests must use context-bounded `Device.WaitForIdle` and assert zero active
+  connections, listener loops, session teardown tasks, and pending virtual
+  delays, plus resolved command expectations and expected overflow counters.
+  Raw `runtime.NumGoroutine` equality is not a stable ownership assertion.
 - Every blocking helper accepts `context.Context`. Cancellation preserves
   `errors.Is` access to `context.Canceled` or `context.DeadlineExceeded`.
 - Allocation and queue limits are tested separately under issues #6, #10, and
@@ -227,14 +227,17 @@ correctly bypasses it.
 | real Noise/framing/session peer; secure default; injected and loopback dialing | simulator unit tests and reviewed MGMT baseline/conveyor lanes | complete for M1 contract |
 | generic basic-I/O, blink, and conveyor fixtures; initial states and logs | `simulator/basic.go`, `simulator/conveyor.go`, and acceptance scripts | complete for M1 contract |
 | command observation and visible overflow | `Commands`, `DeviceStats.DroppedCommands`, `Scenario.Commands`, typed context-bounded expectation outcomes, and race tests | complete for M1 contract |
-| named drop, malformed, unknown, duplicate-completion, and stall faults | ADR 0008 and real-wire fault tests | delay/fragment/coalesce in #10 |
-| validation surface and defensive scenario copy | `Scenario.Validate`, deferred `DialContext`/`Serve` rejection, and simulator tests cover initial states, timeline events, and command expectations | future randomized/network fields extend validation in #10 |
-| manual clock and pushed latest-state timeline | `ManualClock`, `StateTimeline`, device-global snapshots, `DropConnections`, and repeated race tests | final pinned MGMT re-baseline required by ADR 0013 |
-| conditional non-zero seed | zero remains valid because no randomized action exists; semantics accepted above | randomized actions in #10 |
+| named drop, malformed, unknown, duplicate-completion, stall, delay, fragment, and coalesce faults | ADR 0008 plus real-wire and manual-clock fault tests | complete for M1 contract |
+| validation surface and defensive scenario copy | `Scenario.Validate`, deferred `DialContext`/`Serve` rejection, scenario tests, 4,096-item field caps, 64 KiB message caps, and a 4 MiB aggregate encoded-data cap | complete for current M1 fields; every future field extends validation first |
+| manual clock and pushed latest-state timeline | `ManualClock`, `StateTimeline`, device-global snapshots, `DropConnections`, repeated race tests, and the pinned ADR 0013 MGMT re-baseline | complete for M1 contract |
+| conditional non-zero seed | zero remains valid because no randomized action exists; every future randomized field must add non-zero validation before runtime use | complete for current M1 fields |
 | slow-subscriber proof | manual-clock real-wire burst, caller-controlled callback gate, `ErrEventQueueFull`, exact final callback count, and bounded device/dispatcher cleanup | complete for M1 contract |
+| owned-resource saturation and cleanup | 64 session-task cap, 8 listener cap, typed saturation errors, `Device.WaitForIdle`, and repeated race tests | complete for M1 contract |
 | device information, keepalive, callback isolation, connection-state cleanup | lifecycle tests and MGMT acceptance are partial | #11, with budgets in #6/#12 |
 
-Closing architecture issue #2 accepts this contract; it does not claim the
-open #10 or #11 implementation rows are complete. ADR 0013 resolves validation,
-conditional seed, and reconnect re-baselining details. Any later change to the
-normative rules requires another reviewed ADR update before implementation.
+Closing architecture issue #2 accepted this contract; implementation issue #10
+may close only with every M1-owned row above complete and unchanged MGMT lanes
+green. Issue #11 retains broader client lifecycle work. ADR 0013 resolves
+validation, conditional seed, and reconnect re-baselining details. Any later
+change to the normative rules requires another reviewed ADR update before
+implementation.
