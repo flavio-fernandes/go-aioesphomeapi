@@ -130,7 +130,7 @@ graph remains two direct and two transitive runtime modules on Go 1.25.12.
 | Capability | Public API | Simulator evidence | MGMT evidence | Target | Notes |
 |---|---|---|---|---|---|
 | Typed scenario validation | typed | simulated | n/a | M1 | `Scenario.Validate` rejects ambiguous same-family initial-state keys, while allowing cross-family key reuse; deferred `DialContext`/`Serve` rejection preserves `New` compatibility and errors expose stable codes plus safe indexes without scenario data. |
-| Defensive scenario creation | typed | simulated | n/a | M1 | Valid protobuf entities, initial states, timeline events, and logs are cloned before the device can observe caller mutation. |
+| Defensive scenario creation | typed | simulated | n/a | M1 | Valid protobuf entities, initial states, timeline events, logs, commands, and faults are cloned before the device can observe caller mutation. An exact reflected field inventory fails when `Scenario` grows until validation and cloning receive explicit review. |
 | Conditional random seed | typed | simulated | n/a | M1 | Zero is valid without randomized actions; issue #10 must require non-zero only when such actions are introduced. |
 | Manual virtual time and ordered state pushes | typed | simulated | n/a | M1 | Explicit synchronous advances apply absolute events; equal-time events retain declaration order. The MGMT reconnect lane exercises the same latest-state store but does not advance timeline events. |
 | Device-global latest-state reconnect snapshot | typed | simulated | mgmt | M1 | Commands and timeline events share one store; exact merged MGMT receives one latest snapshot after reconnect with no command or past-event replay. ADR 0013's pinned re-baseline is complete. |
