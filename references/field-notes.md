@@ -52,6 +52,11 @@ work. Update both files when future work changes the operational truth.
   compatibility record. A redundant correction may disappear; outage
   accounting, no replay, unchanged MCL hashes, and all baseline/conveyor lanes
   remain mandatory.
+- Ordered command acceptance now belongs in `Scenario.Commands`. Wait only
+  through `WaitForCommandExpectations(ctx)` after the producer is quiescent;
+  use a client Ping as a wire-ordering barrier when exact-count rejection of
+  trailing commands matters. Missing, unexpected, out-of-order, and legacy
+  observation-stream overflow remain separate secret-safe error categories.
 
 ## 2026-07-18 mDNS retransmit deadlines
 

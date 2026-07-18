@@ -25,6 +25,10 @@ const (
 	ValidationExpectation    ValidationCode = "impossible_expectation"
 )
 
+// MaxCommandExpectationCount bounds one declared repeated command so invalid
+// scenarios cannot request impractical counters or work.
+const MaxCommandExpectationCount uint32 = 1_000_000
+
 // ValidationError identifies one invalid scenario field without retaining or
 // displaying entity names, state values, keys, credentials, or network data.
 type ValidationError struct {
@@ -91,6 +95,14 @@ func (s Scenario) Validate() error {
 			return validationError("logs", index, -1, ValidationInvalidType)
 		}
 	}
+	for index, expectation := range s.Commands {
+		if !validCommand(expectation.Command) {
+			return validationError("commands", index, -1, ValidationInvalidType)
+		}
+		if expectation.Count == 0 || expectation.Count > MaxCommandExpectationCount {
+			return validationError("commands", index, -1, ValidationExpectation)
+		}
+	}
 	return nil
 }
 
@@ -118,6 +130,7 @@ func cloneScenario(s Scenario) Scenario {
 		InitialStates: make([]proto.Message, len(s.InitialStates)),
 		StateTimeline: make([]StateEvent, len(s.StateTimeline)),
 		Logs:          make([]*pb.SubscribeLogsResponse, len(s.Logs)),
+		Commands:      make([]CommandExpectation, len(s.Commands)),
 		Faults:        append([]Fault(nil), s.Faults...),
 	}
 	for index, message := range s.Entities {
@@ -134,6 +147,12 @@ func cloneScenario(s Scenario) Scenario {
 	}
 	for index, entry := range s.Logs {
 		clone.Logs[index] = proto.Clone(entry).(*pb.SubscribeLogsResponse)
+	}
+	for index, expectation := range s.Commands {
+		clone.Commands[index] = CommandExpectation{
+			Command: proto.Clone(expectation.Command),
+			Count:   expectation.Count,
+		}
 	}
 	return clone
 }
@@ -192,6 +211,22 @@ func validState(message proto.Message) bool {
 		*pb.NumberStateResponse,
 		*pb.FanStateResponse,
 		*pb.LightStateResponse:
+		return true
+	default:
+		return false
+	}
+}
+
+func validCommand(message proto.Message) bool {
+	if nilMessage(message) {
+		return false
+	}
+	switch message.(type) {
+	case *pb.SwitchCommandRequest,
+		*pb.NumberCommandRequest,
+		*pb.ButtonCommandRequest,
+		*pb.FanCommandRequest,
+		*pb.LightCommandRequest:
 		return true
 	default:
 		return false

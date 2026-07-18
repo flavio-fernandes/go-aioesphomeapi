@@ -318,3 +318,38 @@ if err := clock.Advance(time.Second); err != nil {
 the device and its latest state alive. It is the friendly way to test
 application-owned reconnect behavior. A reconnect gets one current snapshot;
 old timeline events and old commands are not replayed.
+
+**Check exact commands without sleeps or channel peeking:** declare the ordered
+commands and counts before creating the device. After your client operation is
+quiescent, wait with your own deadline:
+
+```go
+scenario := simulator.Scenario{
+    Name: "friendly-command-demo",
+    Commands: []simulator.CommandExpectation{
+        {
+            Command: &pb.SwitchCommandRequest{Key: 1, State: true},
+            Count:   1,
+        },
+    },
+}
+device := simulator.New(scenario)
+defer device.Close()
+
+// Connect through device.ClientOptions(), then make the client send the
+// command. Ping is a useful real-protocol barrier when the producer has
+// finished and the test must reject trailing commands too.
+if err := client.Ping(ctx); err != nil {
+    panic(err)
+}
+if err := device.WaitForCommandExpectations(ctx); err != nil {
+    panic(err)
+}
+```
+
+Failures work with `errors.Is`: use `ErrCommandMissing`,
+`ErrCommandUnexpected`, `ErrCommandOutOfOrder`, and `ErrCommandOverflow`.
+Missing-command errors also retain `context.Canceled` or
+`context.DeadlineExceeded`. Error text contains only counters and indexes, not
+command payloads. The original `Commands()` stream remains available for
+interactive exploration.

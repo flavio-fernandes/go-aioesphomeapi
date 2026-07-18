@@ -45,7 +45,11 @@ type Scenario struct {
 	// order. Events at the same time retain that order.
 	StateTimeline []StateEvent
 	Logs          []*pb.SubscribeLogsResponse
-	Faults        []Fault
+	// Commands declares the exact ordered commands a deterministic test expects
+	// the device to receive. An empty slice leaves command observation in the
+	// exploratory Commands-only mode.
+	Commands []CommandExpectation
+	Faults   []Fault
 }
 
 // StateEvent changes one entity state at an absolute ManualClock time.
@@ -102,6 +106,12 @@ type Device struct {
 	config          config
 	clock           *ManualClock
 	commands        chan proto.Message
+	commandMu       sync.Mutex
+	commandNotify   chan struct{}
+	commandIndex    int
+	commandMatched  uint32
+	commandObserved uint64
+	commandErr      error
 	done            chan struct{}
 	closeOnce       sync.Once
 	mu              sync.Mutex
@@ -147,6 +157,7 @@ func New(scenario Scenario, options ...Option) *Device {
 		config:        cfg,
 		clock:         cfg.clock,
 		commands:      make(chan proto.Message, 64),
+		commandNotify: make(chan struct{}),
 		done:          make(chan struct{}),
 		connections:   make(map[net.Conn]*deviceSession),
 		listeners:     make(map[net.Listener]struct{}),
@@ -528,13 +539,21 @@ func (d *Device) stateSnapshotLocked() []proto.Message {
 }
 
 func (d *Device) record(message proto.Message) {
+	command := proto.Clone(message)
+	d.commandMu.Lock()
+	d.observeCommandLocked(command)
 	select {
-	case d.commands <- proto.Clone(message):
+	case d.commands <- proto.Clone(command):
 	default:
 		d.mu.Lock()
 		d.droppedCommands++
 		d.mu.Unlock()
+		if len(d.scenario.Commands) > 0 && d.commandErr == nil {
+			d.setCommandErrorLocked(CommandOverflow)
+		}
 	}
+	d.notifyCommandWaitersLocked()
+	d.commandMu.Unlock()
 }
 
 func (s *deviceSession) send(message proto.Message) error {

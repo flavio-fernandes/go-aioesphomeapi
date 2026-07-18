@@ -51,6 +51,22 @@ acceptance scripts, or external-app examples.
   snapshot, and the post-reconnect command count separately. A reconnect that
   replays a command or old timeline burst fails the lane.
 
+## Ordered command expectations
+
+- Put exact protobuf commands and consecutive counts in `Scenario.Commands`.
+  `Scenario.Validate` rejects nil/unsupported messages, zero counts, and counts
+  above `MaxCommandExpectationCount`; `New` clones every command before use.
+- Call `WaitForCommandExpectations(ctx)` after the command producer is
+  quiescent. A client `Ping(ctx)` is a useful real-protocol ordering barrier
+  before the wait when trailing commands must be rejected deterministically.
+- Classify failures with `errors.Is`: missing, unexpected, out-of-order, and
+  observation overflow are separate sentinels. Missing also preserves the
+  caller's cancellation or deadline cause. Typed errors expose only indexes
+  and counts; never add a command payload to them.
+- `Commands()` remains the exploratory compatibility stream. A full stream
+  increments `DeviceStats.DroppedCommands` and also fails an active declared
+  expectation with overflow, even when that same command completed the count.
+
 ## Evidence hygiene
 
 - Expected outputs should be short deterministic text. Do not save traffic,

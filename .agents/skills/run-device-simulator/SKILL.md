@@ -42,8 +42,9 @@ Use the simulator as a real device-side protocol peer, not as a mock of the publ
   state burst fills the finite client queue; saturation must close the session
   with `ErrEventQueueFull`, never silently drop or grow memory.
 - Command observation overflow is asserted through
-  `DeviceStats.DroppedCommands`. Deterministic acceptance uses context-bounded
-  ordered expectation helpers once issue #10 implements them.
+  `DeviceStats.DroppedCommands`. Deterministic acceptance declares
+  `Scenario.Commands`, uses `WaitForCommandExpectations(ctx)` after the producer
+  is quiescent, and classifies its typed ordered outcomes.
 - `Device.Close` must release accepted connections, listeners, virtual waits,
   and simulator-owned goroutines even when a callback remains blocked.
 - Keep implementation claims aligned with the ledger in

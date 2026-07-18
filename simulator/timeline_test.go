@@ -1,6 +1,7 @@
 package simulator_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -76,6 +77,10 @@ func TestLatestStateSurvivesReconnectWithoutCommandReplay(t *testing.T) {
 		InitialStates: []proto.Message{
 			&pb.SwitchStateResponse{Key: 9, State: true},
 		},
+		Commands: []simulator.CommandExpectation{{
+			Command: &pb.SwitchCommandRequest{Key: 9, State: false},
+			Count:   1,
+		}},
 	})
 	t.Cleanup(func() { _ = device.Close() })
 
@@ -90,13 +95,13 @@ func TestLatestStateSurvivesReconnectWithoutCommandReplay(t *testing.T) {
 		t.Fatal(err)
 	}
 	assertSwitchStates(t, firstStates, false)
-	select {
-	case command := <-device.Commands():
-		if got, ok := command.(*pb.SwitchCommandRequest); !ok || got.Key != 9 || got.State {
-			t.Fatalf("unexpected recorded command: %#v", command)
-		}
-	case <-time.After(time.Second):
-		t.Fatal("command was not recorded")
+	commandCtx, cancelCommands := context.WithTimeout(context.Background(), time.Second)
+	defer cancelCommands()
+	if err := first.Ping(commandCtx); err != nil {
+		t.Fatalf("Ping command barrier: %v", err)
+	}
+	if err := device.WaitForCommandExpectations(commandCtx); err != nil {
+		t.Fatalf("command expectation: %v", err)
 	}
 	if dropped := device.DropConnections(); dropped != 1 {
 		t.Fatalf("DropConnections = %d, want 1", dropped)
@@ -113,10 +118,11 @@ func TestLatestStateSurvivesReconnectWithoutCommandReplay(t *testing.T) {
 	}
 	t.Cleanup(unsubscribeSecond)
 	assertSwitchStates(t, secondStates, false)
-	select {
-	case command := <-device.Commands():
-		t.Fatalf("reconnect replayed an unrequested command: %#v", command)
-	case <-time.After(25 * time.Millisecond):
+	if err := second.Ping(commandCtx); err != nil {
+		t.Fatalf("Ping reconnect barrier: %v", err)
+	}
+	if err := device.WaitForCommandExpectations(commandCtx); err != nil {
+		t.Fatalf("reconnect command expectation: %v", err)
 	}
 	stats := device.Stats()
 	if stats.AcceptedConnections != 2 || stats.DroppedConnections != 1 {
