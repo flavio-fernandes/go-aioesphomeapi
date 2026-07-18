@@ -48,6 +48,7 @@ was in progress. They are Milestone 1 work, not optional roadmap breadth.
 | [#34](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/34) unknown-message compatibility | Decide and document forward-compatible unknown-ID handling. The recommended behavior skips bounded unknown frames, continues subsequent traffic, and keeps malformed known messages fatal. |
 | [#35](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/35) Noise key rejection diagnostics | Preserve the broad handshake category while exposing a distinct server-rejected-key cause; sanitize and cap the unauthenticated reason and never include key material. |
 | [#36](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/36) robustness batch | Address or split all nine findings: Noise bound/type errors, mDNS retransmit/response validation, expected-name/plaintext behavior, log dump policy, liveness probe, simulator command overflow, and wrapped accept errors. |
+| [#39](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/39) continuous vulnerability monitoring | Add pinned `govulncheck` to pull-request/push CI and a scheduled workflow; document a fail-closed reachable-finding policy and an explicit triage policy for other findings. |
 
 ## Deliberately open roadmap
 
@@ -67,7 +68,7 @@ open until their milestone is active.
 3. Finish #2 so later simulator evidence has one accepted deterministic contract.
 4. Enrich #5 while adding the missing MGMT entity evidence in #9.
 5. Complete the simulator and lifecycle gaps in #10 and #11.
-6. Close the security and release-candidate gates in #6, #8, and #12.
+6. Close the security and release-candidate gates in #6, #8, #12, and #39.
 7. Enforce repository controls and durable fallback automation in #7 and #23.
 8. Finish the interactive and workbench deliverables in #14 and #15.
 
