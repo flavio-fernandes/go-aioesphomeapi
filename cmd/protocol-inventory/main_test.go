@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -119,5 +121,46 @@ func TestInventoryIsCompleteAndCurrent(t *testing.T) {
 	}
 	if !bytes.Equal(generated, committed) {
 		t.Fatal("protocol/inventory.json is stale")
+	}
+}
+
+func TestFeatureFamilyAcceptsKnownGates(t *testing.T) {
+	for _, test := range []struct {
+		ifdef string
+		want  string
+	}{
+		{"", "protocol"},
+		{"USE_FAN", "fan"},
+		{"USE_BLUETOOTH_PROXY", "bluetooth_proxy"},
+		{"USE_IR_RF || USE_RADIO_FREQUENCY", "infrared_radio_frequency"},
+	} {
+		got, err := featureFamily(test.ifdef)
+		if err != nil {
+			t.Fatalf("featureFamily(%q): %v", test.ifdef, err)
+		}
+		if got != test.want {
+			t.Fatalf("featureFamily(%q) = %q, want %q", test.ifdef, got, test.want)
+		}
+	}
+}
+
+func TestFeatureFamilyRejectsUnmappedExpressions(t *testing.T) {
+	for _, ifdef := range []string{
+		"USE_A || USE_B",
+		"USE_A && USE_B",
+		"defined(USE_A)",
+		"USE_",
+	} {
+		family, err := featureFamily(ifdef)
+		if err == nil {
+			t.Fatalf("featureFamily(%q) = %q, want a validation error", ifdef, family)
+		}
+		if !strings.Contains(err.Error(), strconv.Quote(ifdef)) {
+			t.Fatalf("error for %q does not identify the offending expression: %v", ifdef, err)
+		}
+	}
+	_, err := featureFamily("USE_A || USE_B")
+	if err == nil || !strings.Contains(err.Error(), strconv.Quote("a || use_b")) {
+		t.Fatalf("error does not report the invalid derived value: %v", err)
 	}
 }
