@@ -105,11 +105,14 @@ jobs:
         run: |
           sudo git config --global --add safe.directory "$GITHUB_WORKSPACE/library"
           sudo git config --global --add safe.directory "$GITHUB_WORKSPACE/mgmt"
+      - name: Probe namespace creation under sudo
+        run: |
+          sudo unshare --user --map-root-user --net --fork ip link set lo up 2>&1 && echo namespace-probe-ok
       - name: Converge both reviewed baseline MCL scenarios over Noise
         run: |
           cd library
-          sudo env "PATH=$PATH" ./tools/test-mgmt-baselines.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt" 2>&1
+          sudo env "PATH=$PATH" bash -x ./tools/test-mgmt-baselines.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt" 2>&1
       - name: Converge the reviewed conveyor MCL scenario over Noise
         run: |
           cd library
-          sudo env "PATH=$PATH" ./tools/test-mgmt-conveyor.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt" 2>&1
+          sudo env "PATH=$PATH" bash -x ./tools/test-mgmt-conveyor.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt" 2>&1
