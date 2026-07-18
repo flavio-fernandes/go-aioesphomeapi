@@ -248,6 +248,130 @@ func TestScenarioValidateAllowsCompatibleZeroValues(t *testing.T) {
 	}
 }
 
+func TestScenarioValidateRejectsDuplicateInitialStateKeys(t *testing.T) {
+	tests := []struct {
+		name     string
+		field    string
+		scenario simulator.Scenario
+	}{
+		{
+			name:  "legacy states",
+			field: "states",
+			scenario: simulator.Scenario{States: []proto.Message{
+				&pb.SwitchStateResponse{Key: 41, State: false},
+				&pb.SwitchStateResponse{Key: 41, State: true},
+			}},
+		},
+		{
+			name:  "initial states",
+			field: "initial_states",
+			scenario: simulator.Scenario{InitialStates: []proto.Message{
+				&pb.TextSensorStateResponse{Key: 73, State: "first-private-value"},
+				&pb.TextSensorStateResponse{Key: 73, State: "second-private-value"},
+			}},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := test.scenario.Validate()
+			if !errors.Is(err, simulator.ErrInvalidScenario) {
+				t.Fatalf("error = %v, want ErrInvalidScenario", err)
+			}
+			var validationErr *simulator.ValidationError
+			if !errors.As(err, &validationErr) {
+				t.Fatalf("error = %T, want *ValidationError", err)
+			}
+			if validationErr.Field != test.field || validationErr.Index != 1 ||
+				validationErr.RelatedIndex == nil || *validationErr.RelatedIndex != 0 ||
+				validationErr.Code != simulator.ValidationDuplicateKey {
+				t.Fatalf("validation error = %#v", validationErr)
+			}
+			for _, privateValue := range []string{"41", "73", "first-private-value", "second-private-value"} {
+				if strings.Contains(err.Error(), privateValue) {
+					t.Fatalf("validation error leaked scenario data %q: %v", privateValue, err)
+				}
+			}
+		})
+	}
+}
+
+func TestScenarioValidateAllowsSameInitialStateKeyAcrossFamilies(t *testing.T) {
+	scenario := simulator.Scenario{States: []proto.Message{
+		&pb.BinarySensorStateResponse{Key: 29},
+		&pb.SensorStateResponse{Key: 29},
+		&pb.TextSensorStateResponse{Key: 29},
+		&pb.SwitchStateResponse{Key: 29},
+		&pb.NumberStateResponse{Key: 29},
+		&pb.FanStateResponse{Key: 29},
+		&pb.LightStateResponse{Key: 29},
+	}}
+	if err := scenario.Validate(); err != nil {
+		t.Fatalf("same key in distinct state families was rejected: %v", err)
+	}
+}
+
+func TestScenarioValidateKeepsInvalidInitialStateClassification(t *testing.T) {
+	tests := []struct {
+		name  string
+		state proto.Message
+	}{
+		{name: "nil", state: nil},
+		{name: "typed nil", state: (*pb.SwitchStateResponse)(nil)},
+		{name: "entity response", state: &pb.ListEntitiesSwitchResponse{Key: 1}},
+		{name: "unsupported message", state: &pb.PingRequest{}},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := (simulator.Scenario{States: []proto.Message{test.state}}).Validate()
+			var validationErr *simulator.ValidationError
+			if !errors.Is(err, simulator.ErrInvalidScenario) || !errors.As(err, &validationErr) ||
+				validationErr.Field != "states" || validationErr.Index != 0 ||
+				validationErr.RelatedIndex != nil || validationErr.Code != simulator.ValidationInvalidType {
+				t.Fatalf("validation error = %#v", err)
+			}
+		})
+	}
+}
+
+func TestDuplicateInitialStateValidationPrecedesConnectionWork(t *testing.T) {
+	device := simulator.New(simulator.Scenario{
+		Name: "private-device.local:6053",
+		States: []proto.Message{
+			&pb.TextSensorStateResponse{Key: 424242, State: "private-first-value"},
+			&pb.TextSensorStateResponse{Key: 424242, State: "private-second-value"},
+		},
+	})
+	t.Cleanup(func() { _ = device.Close() })
+
+	connection, err := device.DialContext(context.Background(), "tcp", "private-network-target:6053")
+	if connection != nil || !errors.Is(err, simulator.ErrInvalidScenario) {
+		t.Fatalf("DialContext = (%v, %v), want typed validation failure", connection, err)
+	}
+	var validationErr *simulator.ValidationError
+	if !errors.As(err, &validationErr) || validationErr.Field != "states" ||
+		validationErr.Index != 1 || validationErr.RelatedIndex == nil ||
+		*validationErr.RelatedIndex != 0 || validationErr.Code != simulator.ValidationDuplicateKey {
+		t.Fatalf("DialContext error = %#v", err)
+	}
+	if stats := device.Stats(); stats.AcceptedConnections != 0 || stats.ActiveConnections != 0 {
+		t.Fatalf("invalid scenario started a connection: %+v", stats)
+	}
+
+	listener := &validationPanicListener{}
+	err = device.Serve(listener)
+	if !errors.Is(err, simulator.ErrInvalidScenario) || listener.addressRead {
+		t.Fatalf("Serve = %v, addressRead=%t; want validation before listener use", err, listener.addressRead)
+	}
+	for _, privateValue := range []string{
+		"private-device.local", "private-network-target", "424242",
+		"private-first-value", "private-second-value", simulator.DefaultTestEncryptionKey,
+	} {
+		if strings.Contains(err.Error(), privateValue) {
+			t.Fatalf("validation error leaked scenario data %q: %v", privateValue, err)
+		}
+	}
+}
+
 func TestScenarioValidationErrorIsSecretSafe(t *testing.T) {
 	scenario := simulator.Scenario{
 		Name: "private-device-name",
