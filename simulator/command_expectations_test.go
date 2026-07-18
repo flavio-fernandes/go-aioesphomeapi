@@ -108,6 +108,32 @@ func TestCommandExpectationDetectsTrailingCommand(t *testing.T) {
 	assertCommandExpectationError(t, err, simulator.ErrCommandUnexpected, simulator.CommandUnexpected)
 }
 
+func TestCommandExpectationDetectsUnhandledTrailingCommandType(t *testing.T) {
+	device := simulator.New(simulator.Scenario{
+		Name: "unhandled-trailing-command-simulator",
+		Commands: []simulator.CommandExpectation{{
+			Command: &pb.ButtonCommandRequest{Key: 1},
+			Count:   1,
+		}},
+	})
+	t.Cleanup(func() { _ = device.Close() })
+	client := dialSimulator(t, device)
+	t.Cleanup(func() { _ = client.Close() })
+	if err := client.SendCommand(&pb.ButtonCommandRequest{Key: 1}); err != nil {
+		t.Fatal(err)
+	}
+	if err := client.SendCommand(&pb.CoverCommandRequest{Key: 2}); err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	if err := client.Ping(ctx); err != nil {
+		t.Fatalf("Ping command barrier: %v", err)
+	}
+	err := device.WaitForCommandExpectations(ctx)
+	assertCommandExpectationError(t, err, simulator.ErrCommandUnexpected, simulator.CommandUnexpected)
+}
+
 func TestCommandExpectationMissingPreservesContextCause(t *testing.T) {
 	device := simulator.New(simulator.Scenario{
 		Commands: []simulator.CommandExpectation{{

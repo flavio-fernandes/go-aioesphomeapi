@@ -66,8 +66,12 @@ func (d *Device) triggerFault(session *deviceSession, trigger FaultTrigger) bool
 			continue
 		case FaultStall:
 			// Use no timer here. The caller's operation deadline is the only
-			// real-time boundary, and Device.Close releases this peer.
-			<-d.done
+			// real-time boundary. Device.Close or dropping this individual
+			// connection releases the owned session task.
+			select {
+			case <-d.done:
+			case <-session.network.closed:
+			}
 			return true
 		}
 	}

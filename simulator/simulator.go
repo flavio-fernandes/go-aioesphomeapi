@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"strings"
 	"sync"
 	"time"
 
@@ -47,6 +48,9 @@ var (
 )
 
 // Scenario is the complete initial state advertised by a simulated device.
+// Construct it with keyed fields. This pre-v1 extensible test API adds fields
+// as simulator capabilities grow; unkeyed external literals are deliberately
+// not a source-compatibility surface.
 type Scenario struct {
 	Name string
 	// Seed controls only explicitly randomized actions. Zero is valid while a
@@ -477,6 +481,9 @@ func (d *Device) serve(session *deviceSession) {
 		if decodeErr != nil {
 			return
 		}
+		if isCommandRequest(message) {
+			d.record(message)
+		}
 		switch m := message.(type) {
 		case *pb.ListEntitiesRequest:
 			for _, entity := range d.scenario.Entities {
@@ -524,19 +531,15 @@ func (d *Device) serve(session *deviceSession) {
 			_ = session.send(&pb.DisconnectResponse{})
 			return
 		case *pb.SwitchCommandRequest:
-			d.record(m)
 			if d.storeAndSend(session, &pb.SwitchStateResponse{Key: m.Key, State: m.State}) != nil {
 				return
 			}
 		case *pb.NumberCommandRequest:
-			d.record(m)
 			if d.storeAndSend(session, &pb.NumberStateResponse{Key: m.Key, State: m.State}) != nil {
 				return
 			}
 		case *pb.ButtonCommandRequest:
-			d.record(m)
 		case *pb.FanCommandRequest:
-			d.record(m)
 			d.stateSerial.Lock()
 			d.stateMu.Lock()
 			state, _ := d.currentStates[stateIdentity{family: "fan", key: m.Key}].(*pb.FanStateResponse)
@@ -554,7 +557,6 @@ func (d *Device) serve(session *deviceSession) {
 				return
 			}
 		case *pb.LightCommandRequest:
-			d.record(m)
 			d.stateSerial.Lock()
 			d.stateMu.Lock()
 			state, _ := d.currentStates[stateIdentity{family: "light", key: m.Key}].(*pb.LightStateResponse)
@@ -573,6 +575,10 @@ func (d *Device) serve(session *deviceSession) {
 			}
 		}
 	}
+}
+
+func isCommandRequest(message proto.Message) bool {
+	return strings.HasSuffix(string(message.ProtoReflect().Descriptor().Name()), "CommandRequest")
 }
 
 func (d *Device) storeAndSend(session *deviceSession, state proto.Message) error {

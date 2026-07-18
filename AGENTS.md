@@ -16,6 +16,9 @@ Read `README.md`, `CHEATSHEET.md`, `docs/architecture.md`, `docs/mgmt-integratio
 - Make the simulator the default first-use path. Never make real hardware, secrets, flashing, cameras, motors, or actuators a beginner default.
 - Do not flash hardware, energize a motor, move an actuator, or use a camera unless the current task explicitly authorizes it and the `operate-esp-workbench` skill's preflight passes.
 - Use small pull requests tied to one issue and milestone. Preserve generated/handwritten boundaries.
+- Never merge on checks alone. Require a Codex review or positive reaction for
+  the exact head commit and zero unresolved review conversations immediately
+  before merging; use `$merge-reviewed-pr` and the expected head SHA.
 
 ## Required checks
 
@@ -28,3 +31,4 @@ Run `./tools/validate-repo.sh`. Once Go packages exist, also run the repository'
 - `$maintain-mgmt-compatibility` for MGMT branch, PR, module-pin, MCL, and cross-repository evidence work.
 - `$operate-esp-workbench` for firmware, flash, serial, and camera work.
 - `$prepare-public-release` before changing repository visibility or publishing a release.
+- `$merge-reviewed-pr` before merging or finalizing any pull request.
