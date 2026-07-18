@@ -105,19 +105,11 @@ jobs:
         run: |
           sudo git config --global --add safe.directory "$GITHUB_WORKSPACE/library"
           sudo git config --global --add safe.directory "$GITHUB_WORKSPACE/mgmt"
-      - name: Probe namespace creation under sudo
-        run: |
-          sudo unshare --user --map-root-user --net --fork ip link set lo up 2>&1 && echo binary-probe-ok
-          cd library
-          sudo env "PATH=$PATH" unshare --user --map-root-user --net --fork bash -c 'echo inside-bash-ok; id -u; git rev-parse --show-toplevel; ip link set lo up; echo inside-chain-ok' 2>&1 || echo "bash-probe-exit: $?"
-          sudo env "PATH=$PATH" unshare --user --map-root-user --net --fork ./tools/test-mgmt-baselines.sh --inside 2>&1 || echo "script-probe-exit: $?"
-      - name: Show kernel denials so far
-        run: sudo dmesg 2>&1 | grep -i -e apparmor -e 'audit' | tail -20 || true
       - name: Converge both reviewed baseline MCL scenarios over Noise
         run: |
           cd library
-          sudo env "PATH=$PATH" bash -x ./tools/test-mgmt-baselines.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt" 2>&1
+          sudo env "PATH=$PATH" ./tools/test-mgmt-baselines.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt" 2>&1
       - name: Converge the reviewed conveyor MCL scenario over Noise
         run: |
           cd library
-          sudo env "PATH=$PATH" bash -x ./tools/test-mgmt-conveyor.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt" 2>&1
+          sudo env "PATH=$PATH" ./tools/test-mgmt-conveyor.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt" 2>&1
