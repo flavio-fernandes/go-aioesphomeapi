@@ -97,7 +97,7 @@ compatibility evidence.
 
 Later MGMT revisions get new manifest records; history is append-only so old compatibility remains reproducible.
 
-## Current rebased replacement candidate
+## Historical candidate and current merged lane
 
 The append-only [`mgmt-feat-esphome2.json`](../compatibility/mgmt-feat-esphome2.json) record captures the current proof:
 
@@ -115,6 +115,15 @@ This qualifies only the conveyor-exercised cells for `mgmt` evidence. Polling, f
 The next append-only [`mgmt-feat-esphome2-baselines.json`](../compatibility/mgmt-feat-esphome2-baselines.json) record pins MGMT `a29ebe1e` and library `ef838682`. A real MGMT process converged both original MCL examples byte-for-byte over Noise. Real-driver tests additionally prove polling cleanup and command wakeup plus MGMT-owned reconnect and positive outage accounting. Those tests exposed and fixed a stale `Configure` wake race that could truncate polling's initial snapshot-settle window.
 
 MGMT PR #1 has since merged into active branch `feat/esphome`, while the original Richard87 implementation is preserved at `feat/esphome-richard87`. The append-only [`mgmt-feat-esphome-postmerge.json`](../compatibility/mgmt-feat-esphome-postmerge.json) record pins post-merge MGMT `c60c22eb`. It confirms both original MCL examples and the unchanged conveyor MCL still pass over Noise. It also records a post-merge cleanup race fix: conveyor fan cleanup now uses a one-shot command with the last known endpoint info instead of racing the shared endpoint bridge unpublish. Later pushed-state timelines, text-sensor runtime evidence, and hardware remain pending.
+
+The current append-only [`mgmt-feat-esphome-review.json`](../compatibility/mgmt-feat-esphome-review.json)
+record pins the final reviewed branch after MGMT issue #2: MGMT `feat/esphome`
+at `90a172d09239925db5a527ee7b2a5edc383c08a3` selects merged library `main`
+at `6f954bc92a84b8a2bcb12acef5462b2445edfc08`. The two reviewed baseline
+MCL files and the corrected conveyor MCL pass through encrypted simulators and
+multicast DNS without `/etc/hosts`. `feat/esphome-richard87` remains preserved
+at `5bf41f505bc601e6d2c4da8ecb3050b7c01ff34a`; implicit plaintext remains the
+only intentional parity exception.
 
 ## Preserved-branch parity audit
 

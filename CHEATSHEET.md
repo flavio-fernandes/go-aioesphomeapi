@@ -187,14 +187,14 @@ Adjust the explicit `git add` paths to match your change. Do not use `git add .`
 Until a release is tagged, pin an exact reviewed commit rather than a moving branch:
 
 ```bash
-go get github.com/flavio-fernandes/go-aioesphomeapi@73b5d58e5dd39d6dce0df024c3a792f668824b3b
+go get github.com/flavio-fernandes/go-aioesphomeapi@6f954bc92a84b8a2bcb12acef5462b2445edfc08
 ```
 
-That commit is the exact candidate pinned by MGMT `feat/esphome` and exercised
-by the ESPHome 2026.7.0 hardware blink run. Review
-[library PR #30](https://github.com/flavio-fernandes/go-aioesphomeapi/pull/30)
-for the current candidate; a tagged release command will replace this
-development pin after merge.
+MGMT `feat/esphome` at `90a172d09239925db5a527ee7b2a5edc383c08a3`
+pins this commit. Review [library PR #30](https://github.com/flavio-fernandes/go-aioesphomeapi/pull/30)
+for the client implementation and [PR #31](https://github.com/flavio-fernandes/go-aioesphomeapi/pull/31)
+for the reviewed fixture corrections. A tagged release command will replace
+this development pin later.
 
 To inspect the exact MGMT revision, unchanged MCL hashes, dependency reduction, and verification record:
 
