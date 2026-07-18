@@ -6,17 +6,12 @@ name: MGMT compatibility
 # MCL simulator scenarios over Noise and multicast DNS.
 
 on:
+  pull_request:
+  push:
+    branches: [main]
   schedule:
     - cron: "47 10 * * 1"
   workflow_dispatch:
-  pull_request:
-    paths:
-      - go.mod
-      - go.sum
-      - "tools/test-mgmt-baselines.sh"
-      - "tools/test-mgmt-conveyor.sh"
-      - "compatibility/mgmt-upstream-pr-961-ready.json"
-      - ".github/workflows/mgmt-compat.yml"
 
 permissions:
   contents: read
@@ -52,6 +47,9 @@ jobs:
           repository: ${{ steps.pin.outputs.repository }}
           ref: ${{ steps.pin.outputs.revision }}
           path: mgmt
+          # Full history so MGMT's `git describe` versioning works during
+          # `make build` instead of printing "fatal: No names found".
+          fetch-depth: 0
       - name: Verify the pinned commit and tree hashes
         run: |
           test "$(git -C mgmt rev-parse HEAD)" = "${{ steps.pin.outputs.revision }}"
@@ -70,17 +68,21 @@ jobs:
         run: |
           cd mgmt
           go mod edit -replace github.com/flavio-fernandes/go-aioesphomeapi=../library
+      # Augeas and libvirt are unrelated optional MGMT resources that need
+      # native libraries this lane does not exercise; MGMT's supported
+      # `noaugeas novirt` build tags exclude them. The lane specifically
+      # validates the ESPHome integration.
       - name: Run the targeted MGMT ESPHome lanes
         run: |
           cd mgmt
           make resources
-          go vet ./util/esphome ./engine/resources
-          go test -race -count=1 ./util/esphome
-          go test -race -count=1 -run 'TestEsphome|TestParseEsphome' ./engine/resources
+          go vet -tags='noaugeas novirt' ./util/esphome ./engine/resources
+          go test -race -count=1 -tags='noaugeas novirt' ./util/esphome
+          go test -race -count=1 -tags='noaugeas novirt' -run 'TestEsphome|TestParseEsphome' ./engine/resources
       - name: Build the patched MGMT binary
         run: |
           cd mgmt
-          make build
+          GOTAGS='noaugeas novirt' make build
       - name: Confirm only the module patch changed the pinned checkout
         run: |
           cd mgmt

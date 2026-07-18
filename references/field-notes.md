@@ -171,3 +171,24 @@ work. Update both files when future work changes the operational truth.
 - Protect `main` with required conversations as an administrator-enforced
   backstop. Still run `$merge-reviewed-pr` immediately before merge because a
   late review can arrive after CI succeeds.
+
+## 2026-07-18 release verification lanes
+
+- Hosted Ubuntu runners have no Augeas or libvirt native libraries. MGMT's
+  supported `noaugeas novirt` build tags exclude those unrelated optional
+  resources; the ESPHome lanes must pass the tags to `go vet`, `go test`, and
+  `GOTAGS` for `make build`.
+- Do not relax `kernel.apparmor_restrict_unprivileged_userns` runner-wide for
+  the loopback MCL lanes. Privileged namespace creation is exempt, so invoking
+  only the two lane scripts under `sudo -E env "PATH=$PATH"` is sufficient.
+- A shallow pinned MGMT checkout makes `git describe` fail during `make build`
+  ("No names found"); use `fetch-depth: 0` for the MGMT checkout.
+- Never blanket-gitignore `testdata/fuzz/`: it silently blocks the reviewed
+  regression-corpus workflow. The rule is procedural — raw generated failures
+  are never committed as-is; a reviewed, minimized, fully synthetic
+  reproduction may be added deliberately.
+- Goroutine budgets count library-owned stack blocks, never the process-wide
+  goroutine total: one connected client owns exactly three goroutines (read
+  loop, its context watcher, callback dispatcher) and the simulator owns one
+  per accepted connection; both are zero after close. Waiting for the exact
+  budget doubles as proof the frame markers still match the implementation.

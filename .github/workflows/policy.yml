@@ -89,7 +89,7 @@ jobs:
           cache: true
       - name: Install the pinned protobuf generator toolchain
         run: |
-          curl -sSfL -o /tmp/protoc.zip \
+          curl -sSfL --retry 4 --retry-all-errors --retry-delay 2 -o /tmp/protoc.zip \
             https://github.com/protocolbuffers/protobuf/releases/download/v31.1/protoc-31.1-linux-x86_64.zip
           echo "96553041f1a91ea0efee963cb16f462f5985b4d65365f3907414c360044d8065  /tmp/protoc.zip" | sha256sum -c -
           unzip -q /tmp/protoc.zip -d "$HOME/protoc"
