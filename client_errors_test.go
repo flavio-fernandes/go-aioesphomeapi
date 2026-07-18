@@ -161,6 +161,53 @@ func TestDialReportsSanitizedPeerKeyRejection(t *testing.T) {
 	}
 }
 
+func TestDialRedactsCRLFWrappedPeerKeyRejection(t *testing.T) {
+	front, back := net.Pipe()
+	t.Cleanup(func() { _ = back.Close() })
+	key := make([]byte, 32)
+	for i := range key {
+		key[i] = byte(i + 1)
+	}
+	encoded := base64.StdEncoding.EncodeToString(key)
+	wrapped := encoded[:16] + "\r\n" + encoded[16:32] + "\n" + encoded[32:]
+	peerDone := make(chan error, 1)
+	go func() {
+		var preamble [3]byte
+		if _, err := io.ReadFull(back, preamble[:]); err != nil {
+			peerDone <- err
+			return
+		}
+		if _, err := readTestNoisePacket(back); err != nil {
+			peerDone <- err
+			return
+		}
+		if err := writeTestNoisePacket(back, []byte{1, 'r', 'e', 'j', 'e', 'c', 't', 'i', 'n', 'g', 0, 0}); err != nil {
+			peerDone <- err
+			return
+		}
+		peerDone <- writeTestNoisePacket(back, append([]byte{1}, []byte("Handshake MAC failure "+wrapped)...))
+	}()
+	address := "rejecting-device.local:6053"
+	_, err := DialWithContext(context.Background(), address, time.Second,
+		WithEncryptionKey(wrapped), WithExpectedName("rejecting"),
+		WithDialContext(func(context.Context, string, string) (net.Conn, error) { return front, nil }),
+	)
+	if !errors.Is(err, ErrNoiseHandshake) || !errors.Is(err, ErrNoiseKeyRejected) {
+		t.Fatalf("got %v, want handshake and key-rejected categories", err)
+	}
+	if !strings.Contains(err.Error(), address) || !strings.Contains(err.Error(), "redacted") {
+		t.Fatalf("error omits target or explicit redaction: %v", err)
+	}
+	for _, fragment := range []string{encoded[:16], encoded[16:32], encoded[32:]} {
+		if strings.Contains(err.Error(), fragment) {
+			t.Fatalf("error leaks wrapped key fragment %q: %q", fragment, err)
+		}
+	}
+	if peerErr := <-peerDone; peerErr != nil {
+		t.Fatalf("rejecting peer: %v", peerErr)
+	}
+}
+
 func TestNoiseConfigurationErrorsRedactKeys(t *testing.T) {
 	tests := []struct {
 		name string
