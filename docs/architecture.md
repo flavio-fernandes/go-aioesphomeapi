@@ -37,7 +37,10 @@ flowchart TB
 4. **Client** owns one active connection, discovery, subscriptions, state snapshots, and serialized frame writes. Reconnect state belongs to its caller.
 5. **MGMT compatibility facade** exposes only the symbols needed by the pinned MGMT driver with matching behavior. It does not own MGMT pooling or convergence.
 6. **Typed public API** provides the preferred generic Go experience without requiring callers to traffic in generated messages.
-7. **Simulator** is a server-side peer using the same framing and wire definitions. It is not a fake client.
+7. **Simulator** is a server-side peer using the same framing and wire
+   definitions. It is not a fake client. Its accepted deterministic behavior,
+   test boundaries, cleanup rules, and fidelity limits are the
+   [scenario contract](../references/scenario-contract.md).
 
 Dependencies point downward. MGMT, examples, firmware, and workbench tooling never become core dependencies.
 

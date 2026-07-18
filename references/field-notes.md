@@ -25,6 +25,25 @@ absolute paths, or camera/serial output here.
 See `docs/issue-status.md` for the current evidence ledger and exact remaining
 work. Update both files when future work changes the operational truth.
 
+## 2026-07-18 deterministic simulator contract
+
+- Architecture issue #2 is a decision gate; implementation issue #10 owns the
+  remaining virtual-clock, state-timeline, slow-subscriber, network-shaping,
+  command-expectation, and resource-assertion code.
+- Deterministic scenario time is a device-global duration starting at zero.
+  Acceptance tests advance an injected manual clock; equal-time state events
+  retain declaration order, and reconnect snapshots expose the latest state.
+- Every scenario uses a non-zero explicit seed. Normal entity, state, log, and
+  command order never depends on randomness.
+- Network shaping belongs below plaintext or Noise framing on the simulator
+  side of the real connection. Fragmentation and coalescing preserve bytes;
+  delay and stall wait on virtual time or cancellation rather than sleeping.
+- A slow callback fills the bounded client event queue and ends the ambiguous
+  session with `ErrEventQueueFull`; it never causes silent drops or unbounded
+  memory.
+- Cleanup evidence counts resources owned by the simulator. Do not use exact
+  process-wide goroutine counts as a stable assertion.
+
 ## 2026-07-17 M1 hostile-peer and lifecycle review
 
 - The dial timeout covers TCP establishment, Noise, and Native API Hello as one
