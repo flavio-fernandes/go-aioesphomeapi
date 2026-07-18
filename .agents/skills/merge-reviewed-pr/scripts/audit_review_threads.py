@@ -67,25 +67,33 @@ def trusted_codex(login: str | None) -> bool:
     return login in TRUSTED_CODEX_LOGINS
 
 
-def exact_head_reaction(comment: dict[str, Any], head: str) -> bool:
-    """Return whether trusted Codex approved a trusted exact-head request."""
+def exact_head_reaction_time(comment: dict[str, Any], head: str) -> str | None:
+    """Return the latest trusted Codex reaction time for an exact-head request."""
     author = (comment.get("author") or {}).get("login")
     if author not in TRUSTED_REVIEW_REQUEST_LOGINS:
-        return False
+        return None
     lines = {line.strip() for line in (comment.get("body") or "").splitlines()}
     request_prefix = f"Please review exact head `{head}`."
     if "@codex review" not in lines or not any(
         line.startswith(request_prefix) for line in lines
     ):
-        return False
+        return None
     updated_at = comment.get("updatedAt")
     if not isinstance(updated_at, str):
-        return False
-    return any(
-        trusted_codex((reaction.get("user") or {}).get("login"))
-        and reaction.get("createdAt", "") > updated_at
+        return None
+    times = [
+        reaction["createdAt"]
         for reaction in (comment.get("reactions") or {}).get("nodes") or []
-    )
+        if trusted_codex((reaction.get("user") or {}).get("login"))
+        and isinstance(reaction.get("createdAt"), str)
+        and reaction["createdAt"] > updated_at
+    ]
+    return max(times, default=None)
+
+
+def exact_head_reaction(comment: dict[str, Any], head: str) -> bool:
+    """Return whether trusted Codex approved a trusted exact-head request."""
+    return exact_head_reaction_time(comment, head) is not None
 
 
 def exact_head_review(review: dict[str, Any], head: str) -> bool:
@@ -109,6 +117,24 @@ def latest_codex_head_review(
         and isinstance(review.get("submittedAt"), str)
     ]
     return max(candidates, key=lambda review: review["submittedAt"], default=None)
+
+
+def codex_evidence_complete(
+    reviews: list[dict[str, Any]], comments: list[dict[str, Any]], head: str
+) -> bool:
+    """Return whether the newest exact-head Codex evidence is non-blocking."""
+    latest_review = latest_codex_head_review(reviews, head)
+    reaction_times = [
+        reaction_time
+        for comment in comments
+        if (reaction_time := exact_head_reaction_time(comment, head)) is not None
+    ]
+    latest_reaction = max(reaction_times, default=None)
+    if latest_review is None:
+        return latest_reaction is not None
+    if latest_reaction is not None and latest_reaction > latest_review["submittedAt"]:
+        return True
+    return exact_head_review(latest_review, head)
 
 
 def audit(repository: str, number: int) -> dict[str, Any]:
@@ -142,17 +168,14 @@ def audit(repository: str, number: int) -> dict[str, Any]:
 
     assert metadata is not None
     head = metadata["headRefOid"]
-    latest_review = latest_codex_head_review(metadata["reviews"]["nodes"], head)
-    reviewed = latest_review is not None and exact_head_review(latest_review, head)
-    reacted = any(
-        exact_head_reaction(comment, head)
-        for comment in metadata["comments"]["nodes"]
+    review_complete = codex_evidence_complete(
+        metadata["reviews"]["nodes"], metadata["comments"]["nodes"], head
     )
     return {
         "repository": repository,
         "pull_request": number,
         "head": head,
-        "codex_review_complete": reviewed or reacted,
+        "codex_review_complete": review_complete,
         "unresolved_count": len(unresolved),
         "unresolved_threads": unresolved,
     }

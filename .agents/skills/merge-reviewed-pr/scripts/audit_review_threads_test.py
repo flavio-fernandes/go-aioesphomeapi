@@ -148,6 +148,28 @@ class ExactHeadReviewTest(unittest.TestCase):
         self.assertIs(latest, newer_rejection)
         self.assertFalse(audit_review_threads.exact_head_review(latest, self.head))
 
+    def test_newer_negative_review_overrides_stale_reaction(self) -> None:
+        reaction = ExactHeadReactionTest().comment(
+            reaction_created_at="2026-07-18T22:42:17Z"
+        )
+        rejection = self.review(state="CHANGES_REQUESTED")
+        self.assertFalse(
+            audit_review_threads.codex_evidence_complete(
+                [rejection], [reaction], self.head
+            )
+        )
+
+    def test_newer_reaction_can_clear_negative_review(self) -> None:
+        reaction = ExactHeadReactionTest().comment(
+            reaction_created_at="2026-07-18T22:42:19Z"
+        )
+        rejection = self.review(state="CHANGES_REQUESTED")
+        self.assertTrue(
+            audit_review_threads.codex_evidence_complete(
+                [rejection], [reaction], self.head
+            )
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
