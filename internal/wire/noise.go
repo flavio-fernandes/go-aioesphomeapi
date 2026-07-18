@@ -2,6 +2,7 @@ package wire
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -89,7 +90,7 @@ func NewNoiseClientFramer(conn net.Conn, psk []byte, expectedName string, timeou
 		return nil, fmt.Errorf("%w: read server handshake message: %w", ErrNoiseHandshake, err)
 	}
 	if len(response) >= 1 && response[0] == 1 {
-		return nil, fmt.Errorf("%w: %w: %s", ErrNoiseHandshake, ErrNoiseKeyRejected, sanitizeNoiseRejection(response[1:]))
+		return nil, fmt.Errorf("%w: %w: %s", ErrNoiseHandshake, ErrNoiseKeyRejected, sanitizeNoiseRejection(response[1:], psk))
 	}
 	if len(response) < 2 || response[0] != 0 {
 		return nil, fmt.Errorf("%w: invalid server handshake packet", ErrNoiseHandshake)
@@ -184,7 +185,13 @@ func (f *noiseFramer) WriteFrame(messageType uint32, payload []byte) error {
 	return writeNoisePacket(f.conn, ciphertext)
 }
 
-func sanitizeNoiseRejection(raw []byte) string {
+func sanitizeNoiseRejection(raw, psk []byte) string {
+	// The rejection text is controlled by the peer. Treat an echo of either
+	// accepted key representation as entirely sensitive, including when a key
+	// crosses the printable-length boundary below.
+	if len(psk) > 0 && (bytes.Contains(raw, psk) || bytes.Contains(raw, []byte(base64.StdEncoding.EncodeToString(psk)))) {
+		return "peer rejection reason redacted"
+	}
 	if len(raw) > maxNoiseRejectionReason {
 		raw = raw[:maxNoiseRejectionReason]
 	}

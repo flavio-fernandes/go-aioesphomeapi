@@ -18,7 +18,7 @@ type plainFramer struct {
 
 // NewPlainFramer wraps a connection using the explicitly insecure plaintext framing.
 func NewPlainFramer(conn net.Conn, maxFrame int) Framer {
-	if maxFrame <= 0 {
+	if maxFrame <= 0 || maxFrame > DefaultMaxFrameSize {
 		maxFrame = DefaultMaxFrameSize
 	}
 	return &plainFramer{

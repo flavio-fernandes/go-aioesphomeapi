@@ -2,6 +2,7 @@ package wire
 
 import (
 	"bytes"
+	"encoding/base64"
 	"errors"
 	"io"
 	"math"
@@ -50,6 +51,67 @@ func TestNoiseClientReportsSanitizedKeyRejection(t *testing.T) {
 	}
 	if serverErr := <-serverDone; serverErr != nil {
 		t.Fatalf("rejection peer: %v", serverErr)
+	}
+}
+
+func TestNoiseClientRedactsKeyEchoedByPeer(t *testing.T) {
+	client, server := net.Pipe()
+	defer client.Close()
+	defer server.Close()
+	key := bytes.Repeat([]byte{'B'}, 32)
+	encodedKey := base64.StdEncoding.EncodeToString(key)
+	serverDone := make(chan error, 1)
+	go func() {
+		var preamble [3]byte
+		if _, err := io.ReadFull(server, preamble[:]); err != nil {
+			serverDone <- err
+			return
+		}
+		if _, err := readNoisePacket(server); err != nil {
+			serverDone <- err
+			return
+		}
+		if err := writeNoisePacket(server, []byte{1, 't', 'e', 's', 't', 0, 0}); err != nil {
+			serverDone <- err
+			return
+		}
+		reason := []byte("rejected " + string(key) + " " + encodedKey)
+		serverDone <- writeNoisePacket(server, append([]byte{1}, reason...))
+	}()
+
+	_, err := NewNoiseClientFramer(client, key, "test", time.Second, DefaultMaxFrameSize)
+	if !errors.Is(err, ErrNoiseHandshake) || !errors.Is(err, ErrNoiseKeyRejected) {
+		t.Fatalf("got %v, want handshake and rejected-key categories", err)
+	}
+	if strings.Contains(err.Error(), string(key)) || strings.Contains(err.Error(), encodedKey) {
+		t.Fatalf("peer-controlled error leaked key material: %q", err)
+	}
+	if !strings.Contains(err.Error(), "redacted") {
+		t.Fatalf("redaction was not explicit: %v", err)
+	}
+	if serverErr := <-serverDone; serverErr != nil {
+		t.Fatalf("rejection peer: %v", serverErr)
+	}
+}
+
+func TestNoisePacketsHandleFragmentedCoalescedAndPartialIO(t *testing.T) {
+	var stream bytes.Buffer
+	writer := &chunkWriter{writer: &stream, chunk: 2}
+	for _, payload := range [][]byte{[]byte("first"), []byte("second")} {
+		if err := writeNoisePacket(writer, payload); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	reader := &chunkReader{reader: bytes.NewReader(stream.Bytes()), chunk: 1}
+	for _, want := range []string{"first", "second"} {
+		payload, err := readNoisePacket(reader)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(payload) != want {
+			t.Fatalf("got %q, want %q", payload, want)
+		}
 	}
 }
 
