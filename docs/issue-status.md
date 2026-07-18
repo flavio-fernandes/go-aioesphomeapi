@@ -5,8 +5,8 @@ issue closes only when its own acceptance evidence is present; adjacent working
 features do not qualify. Future milestone epics stay open until that milestone
 is intentionally scheduled and completed.
 
-This snapshot was reconciled on 2026-07-18 against library `main` at
-`3655bef5c0a9d871ca5ee262665afddcf83158a7` and MGMT `feat/esphome` at
+This snapshot was reconciled on 2026-07-18 against library implementation
+`main` at `f789731bc9f460a92ef3a3db159387101a2066ab` and MGMT `feat/esphome` at
 `eb8953a4be99147ae4cc7f48b6e3b6939b426ab2`. The latest append-only
 machine-readable record is
 [`compatibility/mgmt-feat-esphome-simulator-timeline-postmerge.json`](../compatibility/mgmt-feat-esphome-simulator-timeline-postmerge.json).
