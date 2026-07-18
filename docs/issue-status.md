@@ -36,6 +36,19 @@ record is [`compatibility/mgmt-feat-esphome-review.json`](../compatibility/mgmt-
 | [#15](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/15) conveyor firmware/workbench | Land the board-specific profile in the approved workbench repository with reviewed pins/power/entities and every local safety invariant; retain compile evidence and add the authorized flash/recovery checklist. Physical flashing remains separately authorized. |
 | [#23](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/23) durable GitHub automation | The connected GitHub app now performs repository, issue, branch, commit, PR, check, and merge operations without exposing a token. A safe local Git/Actions fallback still needs an OS keyring or short-lived repository-scoped app credential; the invalid file-backed CLI credential must not be reused. |
 
+## Blocking review findings
+
+Issues #32 through #36 were opened by a fresh review while this reconciliation
+was in progress. They are Milestone 1 work, not optional roadmap breadth.
+
+| Issue | Required outcome |
+|---|---|
+| [#32](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/32) duplicate entity-list completion panic | Prevent a hostile peer from closing the same completion channel twice; add duplicate and spurious-done regression tests and prove the embedding process cannot panic. |
+| [#33](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/33) unbounded Hello | Bound the complete dial, transport handshake, and Hello exchange by both context and timeout for Noise and plaintext; preserve the Hello error category and causes. |
+| [#34](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/34) unknown-message compatibility | Decide and document forward-compatible unknown-ID handling. The recommended behavior skips bounded unknown frames, continues subsequent traffic, and keeps malformed known messages fatal. |
+| [#35](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/35) Noise key rejection diagnostics | Preserve the broad handshake category while exposing a distinct server-rejected-key cause; sanitize and cap the unauthenticated reason and never include key material. |
+| [#36](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/36) robustness batch | Address or split all nine findings: Noise bound/type errors, mDNS retransmit/response validation, expected-name/plaintext behavior, log dump policy, liveness probe, simulator command overflow, and wrapped accept errors. |
+
 ## Deliberately open roadmap
 
 Issues [#16](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/16)
@@ -47,12 +60,16 @@ open until their milestone is active.
 
 ## Recommended implementation order
 
-1. Finish #2 so later simulator evidence has one accepted deterministic contract.
-2. Enrich #5 while adding the missing MGMT entity evidence in #9.
-3. Complete the simulator and lifecycle gaps in #10 and #11.
-4. Close the security and release-candidate gates in #6, #8, and #12.
-5. Enforce repository controls and durable fallback automation in #7 and #23.
-6. Finish the interactive and workbench deliverables in #14 and #15.
+1. Fix #32 and #33 first because an authenticated peer can currently panic or
+   indefinitely block the embedding MGMT process.
+2. Resolve the forward-compatibility decision in #34, then fix #35 and split or
+   complete every item in #36.
+3. Finish #2 so later simulator evidence has one accepted deterministic contract.
+4. Enrich #5 while adding the missing MGMT entity evidence in #9.
+5. Complete the simulator and lifecycle gaps in #10 and #11.
+6. Close the security and release-candidate gates in #6, #8, and #12.
+7. Enforce repository controls and durable fallback automation in #7 and #23.
+8. Finish the interactive and workbench deliverables in #14 and #15.
 
 This order requires no physical hardware until the explicitly authorized part
 of #15.
