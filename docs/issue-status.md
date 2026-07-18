@@ -7,9 +7,9 @@ is intentionally scheduled and completed.
 
 This snapshot was reconciled on 2026-07-18 against library implementation
 `main` at `091b9af4f600dfa98b1ebea169265d2afc254047` and MGMT `feat/esphome` at
-`3e09c56874553ab6b8027b2c2cb47c83f1ca19dd`. The latest append-only
+`08514da10969b0188a1127c3938790139e7fa0c6`. The latest append-only
 machine-readable record is
-[`compatibility/mgmt-upstream-pr-961.json`](../compatibility/mgmt-upstream-pr-961.json).
+[`compatibility/mgmt-upstream-pr-961-ready.json`](../compatibility/mgmt-upstream-pr-961-ready.json).
 
 ## Evidence-complete issues
 
