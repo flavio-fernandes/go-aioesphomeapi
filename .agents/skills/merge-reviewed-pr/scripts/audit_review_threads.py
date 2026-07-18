@@ -20,7 +20,7 @@ query($owner: String!, $repo: String!, $number: Int!, $cursor: String) {
     pullRequest(number: $number) {
       headRefOid
       reviews(last: 100) {
-        nodes { author { login } submittedAt commit { oid } }
+        nodes { author { login } state submittedAt commit { oid } }
       }
       comments(last: 100) {
         nodes {
@@ -72,15 +72,27 @@ def exact_head_reaction(comment: dict[str, Any], head: str) -> bool:
     if author not in TRUSTED_REVIEW_REQUEST_LOGINS:
         return False
     lines = {line.strip() for line in (comment.get("body") or "").splitlines()}
-    if "@codex review" not in lines or f"Please review exact head `{head}`." not in lines:
+    request_prefix = f"Please review exact head `{head}`."
+    if "@codex review" not in lines or not any(
+        line.startswith(request_prefix) for line in lines
+    ):
         return False
     updated_at = comment.get("updatedAt")
     if not isinstance(updated_at, str):
         return False
     return any(
         trusted_codex((reaction.get("user") or {}).get("login"))
-        and reaction.get("createdAt", "") >= updated_at
+        and reaction.get("createdAt", "") > updated_at
         for reaction in (comment.get("reactions") or {}).get("nodes") or []
+    )
+
+
+def exact_head_review(review: dict[str, Any], head: str) -> bool:
+    """Return whether trusted Codex submitted a live review for head."""
+    return (
+        trusted_codex((review.get("author") or {}).get("login"))
+        and review.get("state") != "DISMISSED"
+        and (review.get("commit") or {}).get("oid") == head
     )
 
 
@@ -116,8 +128,7 @@ def audit(repository: str, number: int) -> dict[str, Any]:
     assert metadata is not None
     head = metadata["headRefOid"]
     reviewed = any(
-        trusted_codex((review.get("author") or {}).get("login"))
-        and (review.get("commit") or {}).get("oid") == head
+        exact_head_review(review, head)
         for review in metadata["reviews"]["nodes"]
     )
     reacted = any(
