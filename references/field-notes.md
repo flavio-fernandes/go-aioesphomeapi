@@ -25,6 +25,20 @@ absolute paths, or camera/serial output here.
 See `docs/issue-status.md` for the current evidence ledger and exact remaining
 work. Update both files when future work changes the operational truth.
 
+## 2026-07-18 upstream MGMT pull request
+
+- Rebase `feat/esphome` only after fetching and pinning the exact upstream
+  `master`. The verified rebase moved from `cfd43cbb` onto `e5baaa2d` with zero
+  conflicts; a range-diff showed all 20 feature commits patch-identical.
+- Preserve `feat/esphome-richard87`. Use an exact `--force-with-lease` for the
+  rebased fork branch, then normal pushes for follow-up commits.
+- Draft upstream PR #961 pins library implementation `091b9af4` from MGMT
+  commit `3e09c568`. After that pin, targeted race/vet, canonical build, all
+  MCL type checks, and every unchanged multicast `.local` runtime lane pass.
+- Keep an upstream contribution draft until required affiliation and AI-use
+  disclosures are accurate. Do not infer whether a contribution is personal
+  or made for an organization.
+
 ## 2026-07-18 deterministic simulator contract
 
 - Architecture issue #2 is a decision gate; implementation issue #10 owns the

@@ -7,9 +7,9 @@ is intentionally scheduled and completed.
 
 This snapshot was reconciled on 2026-07-18 against library implementation
 `main` at `091b9af4f600dfa98b1ebea169265d2afc254047` and MGMT `feat/esphome` at
-`eb8953a4be99147ae4cc7f48b6e3b6939b426ab2`. The latest append-only
+`3e09c56874553ab6b8027b2c2cb47c83f1ca19dd`. The latest append-only
 machine-readable record is
-[`compatibility/mgmt-feat-esphome-simulator-timeline-postmerge.json`](../compatibility/mgmt-feat-esphome-simulator-timeline-postmerge.json).
+[`compatibility/mgmt-upstream-pr-961.json`](../compatibility/mgmt-upstream-pr-961.json).
 
 ## Evidence-complete issues
 

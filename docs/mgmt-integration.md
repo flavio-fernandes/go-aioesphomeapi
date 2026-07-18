@@ -176,3 +176,19 @@ MGMT now selects Go 1.25.12 and `x/crypto` v0.52.0, closing all 13
 Dependabot alerts without adding or removing a module. Both reviewed baseline
 MCL examples and the conveyor MCL pass from the committed module pin over Noise
 and multicast DNS without `/etc/hosts` or hardware.
+
+## Upstream MGMT draft
+
+The append-only [`mgmt-upstream-pr-961.json`](../compatibility/mgmt-upstream-pr-961.json)
+record pins the current upstream candidate. `feat/esphome` rebases without
+conflict onto `purpleidea/mgmt:master` at `e5baaa2d`; a range-diff reports all
+20 feature commits patch-identical. The follow-up commit `3e09c568` selects
+library `091b9af4`, which adds deterministic bounded slow-subscriber shutdown
+without changing MGMT's module count or MCL surface.
+
+[purpleidea/mgmt PR #961](https://github.com/purpleidea/mgmt/pull/961) is a
+draft. Targeted race/vet, the canonical build, all three MCL type checks, and
+all unchanged encrypted simulator lanes pass without hosts-file substitution.
+The draft must not be marked ready until the submitter confirms the contributor
+affiliation disclosure required by upstream policy. Upstream review and merge
+remain external outcomes and are not claimed by this evidence.

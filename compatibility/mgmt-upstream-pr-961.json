@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-18",
+  "status": "draft_upstream_pr_verified",
+  "extends": "compatibility/mgmt-feat-esphome-simulator-timeline-postmerge.json",
+  "library": {
+    "repository": "https://github.com/flavio-fernandes/go-aioesphomeapi",
+    "branch": "main",
+    "implementation_revision": "091b9af4f600dfa98b1ebea169265d2afc254047",
+    "implementation_pull_request": "https://github.com/flavio-fernandes/go-aioesphomeapi/pull/60",
+    "module_pin": "github.com/flavio-fernandes/go-aioesphomeapi v0.0.0-20260718135228-091b9af4f600"
+  },
+  "mgmt": {
+    "upstream_repository": "https://github.com/purpleidea/mgmt",
+    "fork_repository": "https://github.com/flavio-fernandes/mgmt",
+    "branch": "feat/esphome",
+    "upstream_base_revision": "e5baaa2dcf77c4076e23941004c9b114a7657db9",
+    "pre_rebase_revision": "cfd43cbb9c76a1a8dcc6ba72c5df21bb003db48c",
+    "rebased_and_pinned_revision": "3e09c56874553ab6b8027b2c2cb47c83f1ca19dd",
+    "upstream_pull_request": "https://github.com/purpleidea/mgmt/pull/961",
+    "pull_request_state": "draft",
+    "pull_request_blocker": "contributor affiliation disclosure requires submitter confirmation"
+  },
+  "rebase": {
+    "conflicts": 0,
+    "feature_commits_compared": 20,
+    "range_diff": "all feature commits patch-identical",
+    "push_policy": "exact force-with-lease for the rebase, followed by a normal fast-forward pin commit",
+    "preserved_reference_branch": {
+      "branch": "feat/esphome-richard87",
+      "revision": "5bf41f505bc601e6d2c4da8ecb3050b7c01ff34a"
+    }
+  },
+  "dependency_review": {
+    "library_pin_change_only_after_rebase": true,
+    "runtime_module_count_change_from_previous_feature_tip": 0,
+    "go_directive": "1.25.12",
+    "library_runtime_policy": "standard library plus protobuf and Noise; no mDNS, YAML, CLI, telemetry, or simulator framework dependency",
+    "plaintext_policy": "normal MGMT endpoints require Noise; implicit plaintext remains intentionally unsupported"
+  },
+  "mcl_contract": {
+    "source_changes_during_rebase_or_pin": 0,
+    "files": [
+      {
+        "path": "examples/lang/esphome0.mcl",
+        "sha256": "8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df",
+        "type_check": "pass",
+        "runtime": "pass"
+      },
+      {
+        "path": "examples/lang/esphome-blink.mcl",
+        "sha256": "359cedc5b3fd1e6793a0705fc4d7c7f844f5d3dc825a372fdf0c6769ef30c187",
+        "type_check": "pass",
+        "runtime": "pass",
+        "resolution": "multicast DNS without hosts-file substitution"
+      },
+      {
+        "path": "examples/lang/esphome-conveyor.mcl",
+        "sha256": "38bb730a2897eeed1f8ed72e0299387ae2465e8b9b11b31c831f274e158868d6",
+        "type_check": "pass",
+        "runtime": "pass",
+        "resolution": "multicast DNS without hosts-file substitution"
+      }
+    ]
+  },
+  "acceptance": {
+    "consumer_selection": "committed MGMT go.mod pin with GOWORK=off",
+    "checks": [
+      "go test -race ./util/esphome ./engine/resources ./lang/core/net/esphome/...",
+      "go vet ./util/esphome ./engine/resources ./lang/core/net/esphome/...",
+      "canonical MGMT make build",
+      "mgmt check lang for all three reviewed MCL files",
+      "tools/test-mgmt-baselines.sh",
+      "tools/test-mgmt-conveyor.sh",
+      "git diff --check"
+    ],
+    "hosts_file_injection": false,
+    "hardware_used": false
+  },
+  "outcome": "The ESPHome feature rebases cleanly onto current upstream master, preserves its reviewed behavior, and is published as a draft upstream pull request. Upstream review and affiliation confirmation remain external gates."
+}
