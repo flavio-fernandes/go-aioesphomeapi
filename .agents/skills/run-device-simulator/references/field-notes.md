@@ -35,6 +35,11 @@ acceptance scripts, or external-app examples.
 
 ## Virtual state and reconnect acceptance
 
+- Adding a `Scenario` field must make
+  `TestScenarioFieldInventoryRequiresValidationAndCloneReview` fail. Extend
+  `Scenario.Validate`, `cloneScenario`, and that exact field inventory together;
+  do not silence the guard until the new field is validated and defensively
+  copied.
 - Initial snapshots must contain at most one state per entity family/key. The
   same numeric key may be reused by a different family. Call `Scenario.Validate`
   before constructing the device; duplicate `States` or `InitialStates` entries
