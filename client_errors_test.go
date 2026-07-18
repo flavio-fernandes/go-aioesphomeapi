@@ -1,6 +1,7 @@
 package aioesphomeapi
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/binary"
@@ -94,8 +95,9 @@ func TestNoiseHandshakeErrorKeepsCategoryAndAddress(t *testing.T) {
 	front, back := net.Pipe()
 	_ = back.Close()
 	address := "synthetic-device.local:6053"
+	key := "kJ7hc0lJ0Zw9N3DcJzXn1kJ7hc0lJ0Zw9N3DcJzXn1k="
 	_, err := DialWithContext(context.Background(), address, time.Second,
-		WithEncryptionKey("kJ7hc0lJ0Zw9N3DcJzXn1kJ7hc0lJ0Zw9N3DcJzXn1k="),
+		WithEncryptionKey(key),
 		WithDialContext(func(context.Context, string, string) (net.Conn, error) { return front, nil }),
 	)
 	if !errors.Is(err, ErrNoiseHandshake) {
@@ -109,6 +111,9 @@ func TestNoiseHandshakeErrorKeepsCategoryAndAddress(t *testing.T) {
 	}
 	if errors.Is(err, ErrNameResolution) || errors.Is(err, ErrHello) {
 		t.Fatalf("Noise error has an unrelated failure category: %v", err)
+	}
+	if strings.Contains(err.Error(), key) {
+		t.Fatalf("handshake error leaked encoded key: %q", err)
 	}
 }
 
@@ -135,7 +140,7 @@ func TestDialReportsSanitizedPeerKeyRejection(t *testing.T) {
 			peerDone <- err
 			return
 		}
-		peerDone <- writeTestNoisePacket(back, append([]byte{1}, []byte("Handshake MAC failure\n")...))
+		peerDone <- writeTestNoisePacket(back, append([]byte{1}, []byte("Handshake MAC failure "+encoded)...))
 	}()
 	address := "rejecting-device.local:6053"
 	_, err := DialWithContext(context.Background(), address, time.Second,
@@ -145,14 +150,40 @@ func TestDialReportsSanitizedPeerKeyRejection(t *testing.T) {
 	if !errors.Is(err, ErrNoiseHandshake) || !errors.Is(err, ErrNoiseKeyRejected) {
 		t.Fatalf("got %v, want handshake and key-rejected categories", err)
 	}
-	if !strings.Contains(err.Error(), address) || !strings.Contains(err.Error(), "Handshake MAC failure") {
-		t.Fatalf("error omits target or sanitized reason: %v", err)
+	if !strings.Contains(err.Error(), address) || !strings.Contains(err.Error(), "redacted") {
+		t.Fatalf("error omits target or explicit redaction: %v", err)
 	}
 	if strings.Contains(err.Error(), encoded) || strings.ContainsAny(err.Error(), "\r\n\t") {
 		t.Fatalf("error leaks key or control characters: %q", err)
 	}
 	if peerErr := <-peerDone; peerErr != nil {
 		t.Fatalf("rejecting peer: %v", peerErr)
+	}
+}
+
+func TestNoiseConfigurationErrorsRedactKeys(t *testing.T) {
+	tests := []struct {
+		name string
+		key  string
+	}{
+		{name: "invalid base64", key: "synthetic-invalid-key-value"},
+		{name: "wrong decoded length", key: base64.StdEncoding.EncodeToString([]byte("synthetic-short-key"))},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			front, back := net.Pipe()
+			defer back.Close()
+			_, err := DialWithContext(context.Background(), "redaction-test.local:6053", time.Second,
+				WithEncryptionKey(test.key),
+				WithDialContext(func(context.Context, string, string) (net.Conn, error) { return front, nil }),
+			)
+			if !errors.Is(err, ErrNoiseKey) {
+				t.Fatalf("got %v, want invalid-key category", err)
+			}
+			if strings.Contains(err.Error(), test.key) {
+				t.Fatalf("configuration error leaked key: %q", err)
+			}
+		})
 	}
 }
 
@@ -242,6 +273,71 @@ func TestDialBoundsNoiseHelloByTimeout(t *testing.T) {
 	)
 	if !errors.Is(err, ErrHello) {
 		t.Fatalf("got %v, want hello category", err)
+	}
+}
+
+func TestDialBoundsNoiseHandshakeByTimeout(t *testing.T) {
+	front, back := net.Pipe()
+	t.Cleanup(func() { _ = back.Close() })
+	key := bytes.Repeat([]byte{0x31}, 32)
+	peerReady := make(chan struct{})
+	go func() {
+		var preamble [3]byte
+		_, _ = io.ReadFull(back, preamble[:])
+		_, _ = readTestNoisePacket(back)
+		close(peerReady)
+	}()
+	started := time.Now()
+	_, err := DialWithContext(context.Background(), "silent-noise-handshake:6053", 30*time.Millisecond,
+		WithEncryptionKey(base64.StdEncoding.EncodeToString(key)),
+		WithDialContext(func(context.Context, string, string) (net.Conn, error) { return front, nil }),
+	)
+	if !errors.Is(err, ErrNoiseHandshake) || !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("got %v, want Noise handshake and deadline causes", err)
+	}
+	if elapsed := time.Since(started); elapsed > 500*time.Millisecond {
+		t.Fatalf("Noise handshake exceeded bound: %s", elapsed)
+	}
+	select {
+	case <-peerReady:
+	case <-time.After(time.Second):
+		t.Fatal("peer did not receive handshake request")
+	}
+}
+
+func TestDialNoiseHandshakePreservesContextCancellation(t *testing.T) {
+	front, back := net.Pipe()
+	t.Cleanup(func() { _ = back.Close() })
+	key := bytes.Repeat([]byte{0x32}, 32)
+	requestRead := make(chan struct{})
+	go func() {
+		var preamble [3]byte
+		_, _ = io.ReadFull(back, preamble[:])
+		_, _ = readTestNoisePacket(back)
+		close(requestRead)
+	}()
+	ctx, cancel := context.WithCancel(context.Background())
+	result := make(chan error, 1)
+	go func() {
+		_, err := DialWithContext(ctx, "canceled-noise-handshake:6053", time.Second,
+			WithEncryptionKey(base64.StdEncoding.EncodeToString(key)),
+			WithDialContext(func(context.Context, string, string) (net.Conn, error) { return front, nil }),
+		)
+		result <- err
+	}()
+	select {
+	case <-requestRead:
+	case <-time.After(time.Second):
+		t.Fatal("peer did not receive handshake request")
+	}
+	cancel()
+	select {
+	case err := <-result:
+		if !errors.Is(err, ErrNoiseHandshake) || !errors.Is(err, context.Canceled) {
+			t.Fatalf("got %v, want Noise handshake and cancellation causes", err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("canceled Noise handshake did not return")
 	}
 }
 

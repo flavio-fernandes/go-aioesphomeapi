@@ -42,7 +42,7 @@ Configuration will expose finite defaults for maximum frame size, pending comman
 
 ## Dependency boundary
 
-The core admits no convenience runtime dependency. Protobuf and one established Noise implementation are the only expected M1 candidates, and each needs the evidence in `docs/dependency-policy.md`. mDNS, CLI, YAML, telemetry, test, MGMT, simulator-framework, and workbench modules remain outside the core graph. Implementing Noise locally is not an acceptable dependency reduction.
+The core admits no convenience runtime dependency. Protobuf and one established Noise implementation are the only expected M1 candidates, and each needs the evidence in `docs/dependency-policy.md`. The narrow built-in `.local` resolver uses only the standard library; general mDNS discovery modules, CLI, YAML, telemetry, test, MGMT, simulator-framework, and workbench modules remain outside the core graph. Implementing Noise locally is not an acceptable dependency reduction.
 
 ## Physical safety boundary
 

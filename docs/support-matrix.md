@@ -29,7 +29,7 @@ messages. `planned` is roadmap intent, not evidence.
 | Context-bound Noise dial | yes | hardware | M1 | MGMT completed Noise against ESPHome 2026.7.0 hardware; normal path fails closed without secure configuration. |
 | Explicit insecure plaintext | compatibility review | simulated | M1 | Requires `WithInsecurePlaintext`; never selected implicitly. |
 | `.local` mDNS resolution | yes | hardware | M1 | The unchanged blink MCL resolved a real device; simulator coverage also proves no `/etc/hosts` mapping or added module is needed. |
-| Diagnostic error chains and close reason | operational | simulated | M1 | Dial retains `*net.OpError`; mDNS, Noise, rejected keys, and hello are distinct; peer rejection text is capped/sanitized; asynchronous read/decode/context/peer/queue termination is observable. |
+| Diagnostic error chains and close reason | operational | simulated | M1 | Dial retains `*net.OpError`; mDNS, Noise, rejected keys, and hello are distinct; peer rejection text is capped/sanitized and key echoes are replaced; asynchronous read/decode/context/peer/queue termination is observable. |
 | Entity list and registry metadata | yes | hardware | M1 | A real blink switch and binary sensor were resolved by exact current name. |
 | Initial state snapshot and live push | yes | hardware | M1 | Real blink state repeatedly reached MCL; broader push/fault evidence is still pending. |
 | Binary sensor state | yes | hardware | M1 | Real blink state and three simulated conveyor binary sensors reached MCL. |
@@ -95,6 +95,14 @@ The evidence is append-only: [`compatibility/mgmt-feat-esphome2.json`](../compat
 | Bluetooth proxy | known | none | none | none | none | backlog |
 | Voice assistant | known | none | none | none | none | backlog |
 | Camera streaming | known | none | none | none | none | backlog |
+
+Plain and Noise packet tests deterministically split every read, force short
+writes, and consume consecutive coalesced frames. Oversized plaintext length
+headers are rejected before payload allocation, caller limits cannot raise the
+64 KiB plaintext ceiling, and Noise packets retain their fixed 16-bit ceiling.
+Dial, Noise handshake, and Hello share one deadline/cancellation budget. This
+transport evidence changes no module version or Go directive: the accepted
+graph remains two direct and two transitive runtime modules on Go 1.25.12.
 
 ## Entity families
 
