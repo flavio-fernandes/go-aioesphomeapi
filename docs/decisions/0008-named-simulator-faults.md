@@ -30,9 +30,11 @@ real-time deadline. Unknown fault values have no effect, so a newer scenario
 cannot cause an older simulator to perform an unintended action.
 
 This slice does not add random timing, packet capture, fixed ports, automatic
-reconnect, or domain-specific conveyor policy. Fragmentation and transport
-corruption remain framing-level tests until a reviewed network-fault seam is
-needed.
+reconnect, or domain-specific conveyor policy. ADR 0004 and the accepted
+scenario contract now define the later network-shaping seam: named, bounded
+delay, fragmentation, and coalescing act below framing on the simulator side of
+the real connection and use the injected clock. Their implementation remains
+tracked by issue #10.
 
 ## Consequences
 
