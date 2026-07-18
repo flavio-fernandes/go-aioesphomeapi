@@ -130,12 +130,13 @@ graph remains two direct and two transitive runtime modules on Go 1.25.12.
 | Capability | Public API | Simulator evidence | MGMT evidence | Target | Notes |
 |---|---|---|---|---|---|
 | Typed scenario validation | typed | simulated | n/a | M1 | `Scenario.Validate` rejects ambiguous same-family initial-state keys, while allowing cross-family key reuse; deferred `DialContext`/`Serve` rejection preserves `New` compatibility and errors expose stable codes plus safe indexes without scenario data. |
-| Defensive scenario creation | typed | simulated | n/a | M1 | Valid protobuf entities, initial states, timeline events, logs, commands, and faults are cloned before the device can observe caller mutation. An exact reflected field inventory fails when `Scenario` grows until validation and cloning receive explicit review. |
+| Defensive scenario creation | typed | simulated | n/a | M1 | Valid protobuf entities, initial states, timeline events, logs, commands, protocol faults, and network faults are cloned before the device can observe caller mutation. An exact reflected field inventory fails when `Scenario` grows until validation and cloning receive explicit review. |
 | Conditional random seed | typed | simulated | n/a | M1 | Zero is valid without randomized actions; issue #10 must require non-zero only when such actions are introduced. |
 | Manual virtual time and ordered state pushes | typed | simulated | n/a | M1 | Explicit synchronous advances apply absolute events; equal-time events retain declaration order. The MGMT reconnect lane exercises the same latest-state store but does not advance timeline events. |
 | Device-global latest-state reconnect snapshot | typed | simulated | mgmt | M1 | Commands and timeline events share one store; exact merged MGMT receives one latest snapshot after reconnect with no command or past-event replay. ADR 0013's pinned re-baseline is complete. |
 | Ordered command expectations | typed | simulated | n/a | M1 | Exact protobuf values and counts are defensively copied; context-bounded waits distinguish missing, unexpected, out-of-order, and observation-overflow outcomes without exposing command payloads. The exploratory `Commands()` stream remains compatible. |
 | Slow-subscriber queue saturation | typed | simulated | n/a | M1 | A manual-clock real-wire burst fills a deliberately one-item callback queue behind a caller gate, closes with `ErrEventQueueFull`, invokes no callback concurrently or after shutdown, and permits bounded device/dispatcher cleanup. |
+| Deterministic network shaping | typed | simulated | n/a | M1 | Named next-response delay, one-byte fragmentation, and framing-segment coalescing operate below the real Noise/plain framers. Exact decode and subsequent Ping prove byte preservation; manual time controls delays and device cleanup cancels pending waits. |
 
 ## Reference-client parity
 

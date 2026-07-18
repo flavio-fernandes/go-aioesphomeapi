@@ -20,6 +20,7 @@ func TestScenarioFieldInventoryRequiresValidationAndCloneReview(t *testing.T) {
 		"Logs",
 		"Commands",
 		"Faults",
+		"Network",
 	}
 	typeOfScenario := reflect.TypeOf(Scenario{})
 	got := make([]string, typeOfScenario.NumField())
@@ -56,6 +57,9 @@ func TestCloneScenarioCopiesEveryKnownFieldWithoutAliasing(t *testing.T) {
 		Faults: []Fault{
 			{Trigger: FaultAfterHello, Action: FaultUnknownMessage},
 		},
+		Network: []NetworkFault{
+			{Trigger: FaultBeforeEntitiesDone, Action: NetworkDelayReply, Delay: time.Second},
+		},
 	}
 	sourceValue := reflect.ValueOf(source)
 	for index := 0; index < sourceValue.NumField(); index++ {
@@ -78,6 +82,7 @@ func TestCloneScenarioCopiesEveryKnownFieldWithoutAliasing(t *testing.T) {
 	source.Commands[0].Command.(*pb.SwitchCommandRequest).State = false
 	source.Commands[0].Count = 99
 	source.Faults[0].Action = FaultDropConnection
+	source.Network[0].Delay = 2 * time.Second
 
 	if cloned.Entities[0].(*pb.ListEntitiesSwitchResponse).Name != "Synthetic Switch" ||
 		!cloned.States[0].(*pb.SwitchStateResponse).State ||
@@ -87,7 +92,8 @@ func TestCloneScenarioCopiesEveryKnownFieldWithoutAliasing(t *testing.T) {
 		string(cloned.Logs[0].Message) != "synthetic log" ||
 		!cloned.Commands[0].Command.(*pb.SwitchCommandRequest).State ||
 		cloned.Commands[0].Count != 2 ||
-		cloned.Faults[0].Action != FaultUnknownMessage {
+		cloned.Faults[0].Action != FaultUnknownMessage ||
+		cloned.Network[0].Delay != time.Second {
 		t.Fatalf("cloneScenario retained mutable source aliases: %#v", cloned)
 	}
 }

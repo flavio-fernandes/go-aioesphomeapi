@@ -50,6 +50,9 @@ type Scenario struct {
 	// exploratory Commands-only mode.
 	Commands []CommandExpectation
 	Faults   []Fault
+	// Network declares deterministic server-to-client wire shaping at exact
+	// protocol triggers. Each action applies to the next response frame.
+	Network []NetworkFault
 }
 
 // StateEvent changes one entity state at an absolute ManualClock time.
@@ -94,6 +97,7 @@ type stateIdentity struct {
 
 type deviceSession struct {
 	connection net.Conn
+	network    *networkConn
 	writeMu    sync.Mutex
 	framer     wire.Framer
 	subscribed bool
@@ -101,31 +105,38 @@ type deviceSession struct {
 
 // Device accepts injected net.Pipe connections and records received commands.
 type Device struct {
-	scenario        Scenario
-	validationErr   error
-	config          config
-	clock           *ManualClock
-	commands        chan proto.Message
-	commandMu       sync.Mutex
-	commandNotify   chan struct{}
-	commandIndex    int
-	commandMatched  uint32
-	commandObserved uint64
-	commandErr      error
-	done            chan struct{}
-	closeOnce       sync.Once
-	mu              sync.Mutex
-	accepted        uint64
-	droppedCommands uint64
-	droppedSessions uint64
-	connections     map[net.Conn]*deviceSession
-	listeners       map[net.Listener]struct{}
-	wg              sync.WaitGroup
-	stateSerial     sync.Mutex
-	stateMu         sync.Mutex
-	currentStates   map[stateIdentity]proto.Message
-	stateOrder      []stateIdentity
-	timelineIndex   int
+	scenario             Scenario
+	validationErr        error
+	config               config
+	clock                *ManualClock
+	commands             chan proto.Message
+	commandMu            sync.Mutex
+	commandNotify        chan struct{}
+	commandIndex         int
+	commandMatched       uint32
+	commandObserved      uint64
+	commandErr           error
+	done                 chan struct{}
+	closeOnce            sync.Once
+	mu                   sync.Mutex
+	accepted             uint64
+	droppedCommands      uint64
+	droppedSessions      uint64
+	connections          map[net.Conn]*deviceSession
+	listeners            map[net.Listener]struct{}
+	wg                   sync.WaitGroup
+	stateSerial          sync.Mutex
+	stateMu              sync.Mutex
+	currentStates        map[stateIdentity]proto.Message
+	stateOrder           []stateIdentity
+	timelineIndex        int
+	networkMu            sync.Mutex
+	fragmentedFrames     uint64
+	fragmentedSegments   uint64
+	coalescedFrames      uint64
+	coalescedSegments    uint64
+	delayedFrames        uint64
+	pendingDelayedFrames uint64
 }
 
 // New creates a stopped-port, in-process device. The default is Noise-encrypted
@@ -253,8 +264,9 @@ func (d *Device) startConnection(connection net.Conn) bool {
 	default:
 	}
 	d.accepted++
-	session := &deviceSession{connection: connection}
-	d.connections[connection] = session
+	shaped := newNetworkConn(connection, d)
+	session := &deviceSession{connection: shaped, network: shaped}
+	d.connections[shaped] = session
 	d.wg.Add(1)
 	go d.serve(session)
 	return true
@@ -279,23 +291,38 @@ func (d *Device) Commands() <-chan proto.Message { return d.commands }
 // DeviceStats is a point-in-time connection snapshot. It contains no network
 // addresses, device identifiers, or credential material.
 type DeviceStats struct {
-	AcceptedConnections uint64
-	ActiveConnections   int
-	DroppedCommands     uint64
-	DroppedConnections  uint64
+	AcceptedConnections       uint64
+	ActiveConnections         int
+	DroppedCommands           uint64
+	DroppedConnections        uint64
+	NetworkFragmentedFrames   uint64
+	NetworkFragmentedSegments uint64
+	NetworkCoalescedFrames    uint64
+	NetworkCoalescedSegments  uint64
+	NetworkDelayedFrames      uint64
+	NetworkPendingDelays      uint64
 }
 
 // Stats reports deterministic connection counts for cleanup, polling, and
 // reconnect assertions.
 func (d *Device) Stats() DeviceStats {
 	d.mu.Lock()
-	defer d.mu.Unlock()
-	return DeviceStats{
+	result := DeviceStats{
 		AcceptedConnections: d.accepted,
 		ActiveConnections:   len(d.connections),
 		DroppedCommands:     d.droppedCommands,
 		DroppedConnections:  d.droppedSessions,
 	}
+	d.mu.Unlock()
+	d.networkMu.Lock()
+	result.NetworkFragmentedFrames = d.fragmentedFrames
+	result.NetworkFragmentedSegments = d.fragmentedSegments
+	result.NetworkCoalescedFrames = d.coalescedFrames
+	result.NetworkCoalescedSegments = d.coalescedSegments
+	result.NetworkDelayedFrames = d.delayedFrames
+	result.NetworkPendingDelays = d.pendingDelayedFrames
+	d.networkMu.Unlock()
+	return result
 }
 
 // DropConnections terminates all current sessions without closing the Device
@@ -366,6 +393,7 @@ func (d *Device) serve(session *deviceSession) {
 	if d.triggerFault(session, FaultAfterHello) {
 		return
 	}
+	d.triggerNetwork(session, FaultAfterHello)
 
 	for {
 		id, payload, err = framer.ReadFrame()
@@ -386,6 +414,7 @@ func (d *Device) serve(session *deviceSession) {
 			if d.triggerFault(session, FaultBeforeEntitiesDone) {
 				return
 			}
+			d.triggerNetwork(session, FaultBeforeEntitiesDone)
 			if session.send(&pb.ListEntitiesDoneResponse{}) != nil {
 				return
 			}
@@ -405,6 +434,7 @@ func (d *Device) serve(session *deviceSession) {
 			if d.triggerFault(session, FaultAfterInitialStates) {
 				return
 			}
+			d.triggerNetwork(session, FaultAfterInitialStates)
 		case *pb.SubscribeLogsRequest:
 			for _, entry := range d.scenario.Logs {
 				if entry.Level <= m.Level {
@@ -571,13 +601,15 @@ func (s *deviceSession) sendLocked(message proto.Message) error {
 	if err != nil {
 		return err
 	}
-	return s.framer.WriteFrame(id, payload)
+	s.network.beginFrame()
+	return s.network.endFrame(s.framer.WriteFrame(id, payload))
 }
 
 func (s *deviceSession) writeFrame(id uint32, payload []byte) error {
 	s.writeMu.Lock()
 	defer s.writeMu.Unlock()
-	return s.framer.WriteFrame(id, payload)
+	s.network.beginFrame()
+	return s.network.endFrame(s.framer.WriteFrame(id, payload))
 }
 
 func stateIdentityOf(message proto.Message) (stateIdentity, bool) {

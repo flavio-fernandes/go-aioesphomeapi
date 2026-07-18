@@ -291,7 +291,8 @@ downloaded by `go test ./...`.
 or `Serve` when preflight is skipped. Use `errors.Is(err,
 simulator.ErrInvalidScenario)` and `errors.As` to `*simulator.ValidationError`.
 The error reports a safe field/index/code, not entity data. A zero seed is valid
-unless the scenario declares a randomized action.
+unless the scenario declares a randomized action. Network delay validation
+uses the same typed, secret-safe error path.
 
 **Drive a custom scenario without waiting in real time:** use one manual clock
 for the device and advance it only when your test is ready:
@@ -320,6 +321,35 @@ if err := clock.Advance(time.Second); err != nil {
 the device and its latest state alive. It is the friendly way to test
 application-owned reconnect behavior. A reconnect gets one current snapshot;
 old timeline events and old commands are not replayed.
+
+**Make the simulated network misbehave predictably:** add one named action at
+the protocol point you want to exercise. This example fragments the first
+server response after Hello into one-byte writes while still using the normal
+encrypted client and framing path:
+
+```go
+device := simulator.New(simulator.Scenario{
+    Name: "friendly-network-demo",
+    Network: []simulator.NetworkFault{
+        {
+            Trigger: simulator.FaultAfterHello,
+            Action:  simulator.NetworkFragmentFrame,
+        },
+    },
+})
+defer device.Close()
+
+// Connect through device.ClientOptions(), then call ListEntities normally.
+// NetworkCoalesceSegments combines that response's raw framing segments
+// instead. Neither action changes the bytes seen by the client.
+```
+
+For a delayed response, use `NetworkDelayReply`, set a positive `Delay`, and
+pass a `ManualClock` through `WithManualClock`. Start the client operation,
+wait until `device.Stats().NetworkPendingDelays == 1`, then call
+`clock.Advance(delay)`. No real-time sleep is required. Every action affects
+only the next server response frame at its trigger; `Device.Close` or
+`Device.DropConnections` releases a pending delay during cleanup.
 
 **Check exact commands without sleeps or channel peeking:** declare the ordered
 commands and counts before creating the device. After your client operation is

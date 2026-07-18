@@ -17,12 +17,13 @@ var ErrInvalidScenario = errors.New("invalid simulator scenario")
 type ValidationCode string
 
 const (
-	ValidationInvalidType    ValidationCode = "invalid_type"
-	ValidationDuplicateKey   ValidationCode = "duplicate_key"
-	ValidationNegativeTime   ValidationCode = "negative_time"
-	ValidationDecreasingTime ValidationCode = "decreasing_time"
-	ValidationSeedRequired   ValidationCode = "seed_required"
-	ValidationExpectation    ValidationCode = "impossible_expectation"
+	ValidationInvalidType     ValidationCode = "invalid_type"
+	ValidationDuplicateKey    ValidationCode = "duplicate_key"
+	ValidationNegativeTime    ValidationCode = "negative_time"
+	ValidationDecreasingTime  ValidationCode = "decreasing_time"
+	ValidationInvalidDuration ValidationCode = "invalid_duration"
+	ValidationSeedRequired    ValidationCode = "seed_required"
+	ValidationExpectation     ValidationCode = "impossible_expectation"
 )
 
 // MaxCommandExpectationCount bounds one declared repeated command so invalid
@@ -103,6 +104,18 @@ func (s Scenario) Validate() error {
 			return validationError("commands", index, -1, ValidationExpectation)
 		}
 	}
+	for index, fault := range s.Network {
+		switch fault.Action {
+		case NetworkDelayReply:
+			if fault.Delay <= 0 || fault.Delay > MaxNetworkDelay {
+				return validationError("network", index, -1, ValidationInvalidDuration)
+			}
+		case NetworkFragmentFrame, NetworkCoalesceSegments:
+			if fault.Delay != 0 {
+				return validationError("network", index, -1, ValidationInvalidDuration)
+			}
+		}
+	}
 	return nil
 }
 
@@ -132,6 +145,7 @@ func cloneScenario(s Scenario) Scenario {
 		Logs:          make([]*pb.SubscribeLogsResponse, len(s.Logs)),
 		Commands:      make([]CommandExpectation, len(s.Commands)),
 		Faults:        append([]Fault(nil), s.Faults...),
+		Network:       append([]NetworkFault(nil), s.Network...),
 	}
 	for index, message := range s.Entities {
 		clone.Entities[index] = proto.Clone(message)
