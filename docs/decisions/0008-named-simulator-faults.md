@@ -1,6 +1,6 @@
 # ADR 0008: Simulator faults use named actions at exact protocol triggers
 
-- Status: accepted for the M1 fault slice
+- Status: accepted and implemented for the M1 fault and network-shaping slices
 - Date: 2026-07-17
 
 ## Context
@@ -29,16 +29,32 @@ released by `Device.Close`; the tested client operation supplies the only
 real-time deadline. Unknown fault values have no effect, so a newer scenario
 cannot cause an older simulator to perform an unintended action.
 
+`Scenario.Network` uses the same exact triggers for deterministic
+server-to-client wire shaping. A named action applies only to the next response
+frame. `NetworkFragmentFrame` splits that frame into one-byte connection
+writes, `NetworkCoalesceSegments` combines its framing segments into one
+connection buffer, and `NetworkDelayReply` holds it until the injected manual
+clock advances by the declared positive, bounded duration. Shaping occurs
+below both the Noise and plaintext framers, so clients consume the real wire
+bytes. Unknown network actions have no effect.
+
+The delay wait is owned by the connection and is released by `Device.Close` or
+`Device.DropConnections`; it has no hidden timer or sleep. Public counters in
+`DeviceStats` show armed frames, raw segments, and currently pending delays
+without exposing scenario data. Scenario validation rejects missing,
+non-positive, excessive, or inapplicable durations before any connection or
+listener work.
+
 This slice does not add random timing, packet capture, fixed ports, automatic
-reconnect, or domain-specific conveyor policy. ADR 0004 and the accepted
-scenario contract now define the later network-shaping seam: named, bounded
-delay, fragmentation, and coalescing act below framing on the simulator side of
-the real connection and use the injected clock. Their implementation remains
-tracked by issue #10.
+reconnect, or domain-specific conveyor policy. Conditional seed validation and
+broader owned-resource budgets remain tracked by issue #10.
 
 ## Consequences
 
-Tests can name the hostile behavior and the exact point where it happens while
+Tests can name hostile protocol and transport behavior at an exact point while
 remaining deterministic, synthetic, dependency-free, and safe to run without
-hardware. A passing scenario is simulator evidence only; it is not ESPHome
-firmware, MGMT, hardware, or production evidence.
+hardware. Real encrypted-client tests prove fragmented and coalesced bytes
+decode exactly, virtual delays release only at their deadline, subsequent
+traffic remains usable, and shutdown cancels a pending delay. A passing
+scenario is simulator evidence only; it is not ESPHome firmware, MGMT,
+hardware, or production evidence.

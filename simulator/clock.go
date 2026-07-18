@@ -3,6 +3,7 @@ package simulator
 import (
 	"errors"
 	"fmt"
+	"net"
 	"sync"
 	"time"
 )
@@ -24,6 +25,12 @@ type ManualClock struct {
 	mu        sync.Mutex
 	now       time.Duration
 	devices   []*Device
+	waiters   map[*clockWaiter]struct{}
+}
+
+type clockWaiter struct {
+	target time.Duration
+	ready  chan struct{}
 }
 
 // NewManualClock creates a stopped clock at virtual time zero.
@@ -78,6 +85,12 @@ func (c *ManualClock) advance(target func(time.Duration) (time.Duration, error))
 		return err
 	}
 	c.now = next
+	for waiter := range c.waiters {
+		if waiter.target <= next {
+			delete(c.waiters, waiter)
+			close(waiter.ready)
+		}
+	}
 	devices := append([]*Device(nil), c.devices...)
 	c.mu.Unlock()
 
@@ -87,6 +100,30 @@ func (c *ManualClock) advance(target func(time.Duration) (time.Duration, error))
 		}
 	}
 	return nil
+}
+
+func (c *ManualClock) waitUntil(target time.Duration, stop <-chan struct{}) error {
+	c.mu.Lock()
+	if c.now >= target {
+		c.mu.Unlock()
+		return nil
+	}
+	if c.waiters == nil {
+		c.waiters = make(map[*clockWaiter]struct{})
+	}
+	waiter := &clockWaiter{target: target, ready: make(chan struct{})}
+	c.waiters[waiter] = struct{}{}
+	c.mu.Unlock()
+
+	select {
+	case <-waiter.ready:
+		return nil
+	case <-stop:
+		c.mu.Lock()
+		delete(c.waiters, waiter)
+		c.mu.Unlock()
+		return net.ErrClosed
+	}
 }
 
 func (c *ManualClock) register(device *Device) {

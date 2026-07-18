@@ -94,6 +94,24 @@ acceptance scripts, or external-app examples.
 - `WaitCallbacks` observes cleanup only. It cannot cancel or forcibly unwind
   application callback code; its context bounds the caller's wait.
 
+## Deterministic network shaping
+
+- Put typed `NetworkFault` values in `Scenario.Network`. Use
+  `NetworkFragmentFrame`, `NetworkCoalesceSegments`, or `NetworkDelayReply` at
+  an existing protocol trigger. Each action affects only the next
+  server-to-client response frame.
+- Fragmentation and coalescing take no duration. A delayed reply requires a
+  positive duration no greater than `MaxNetworkDelay`; advance the device's
+  `ManualClock` to release it. Never add a real sleep to make this path work.
+- Wait for `DeviceStats.NetworkPendingDelays` before asserting or advancing a
+  delayed operation. The counter is an observation barrier, not scenario data.
+  After release or cleanup it must return to zero.
+- Keep the real client, Noise handshake, and shared framer in the test path.
+  Successful exact protobuf decoding plus subsequent `Ping` proves shaping did
+  not rewrite bytes or poison the session.
+- `Device.Close` and `Device.DropConnections` must cancel pending delay waits.
+  Unknown network actions remain no-ops for forward compatibility.
+
 ## Evidence hygiene
 
 - Expected outputs should be short deterministic text. Do not save traffic,
