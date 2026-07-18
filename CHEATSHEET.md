@@ -389,6 +389,45 @@ Missing-command errors also retain `context.Canceled` or
 command payloads. The original `Commands()` stream remains available for
 interactive exploration.
 
+**Finish a simulator test with a clean desk:** the simulator has small,
+documented limits so a broken test cannot create work forever. One device
+allows up to 64 active/closing sessions and 8 loopback `Serve` calls. A custom
+scenario allows 4,096 items per repeated field, 64 KiB per encoded protobuf
+message, and 4 MiB of encoded protobuf data in total.
+
+Close the client and device, then use one caller-owned deadline to prove every
+simulator-owned task has stopped:
+
+```go
+_ = client.Close()
+_ = device.Close()
+
+ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+defer cancel()
+if err := device.WaitForIdle(ctx); err != nil {
+    panic(err)
+}
+
+stats := device.Stats()
+fmt.Printf("connections=%d listeners=%d sessions=%d delays=%d\n",
+    stats.ActiveConnections,
+    stats.ActiveListeners,
+    stats.ActiveSessionTasks,
+    stats.NetworkPendingDelays,
+)
+```
+
+Expected output:
+
+```text
+connections=0 listeners=0 sessions=0 delays=0
+```
+
+Limit failures are friendly typed errors: check `ErrConnectionLimit` and
+`ErrListenerLimit` with `errors.Is`. If `WaitForIdle` reaches its deadline
+while work remains, its error matches both `ErrSimulatorBusy` and the context
+cause, such as `context.DeadlineExceeded`.
+
 **Prove that a slow callback cannot grow memory:** tests can deliberately use a
 one-item callback queue, hold the first callback with a channel, and advance a
 manual-clock burst. The client closes instead of blocking the network reader or

@@ -351,4 +351,5 @@ func (d *Device) recordDelayedWait(delta int) {
 		d.pendingDelayedFrames--
 	}
 	d.networkMu.Unlock()
+	d.notifyResourceChange()
 }

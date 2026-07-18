@@ -16,7 +16,7 @@ machine-readable record is
 | Issue | Decision | Evidence |
 |---|---|---|
 | [#1](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/1) MGMT facade and typed contracts | close | ADR 0006, PR #27, the compatibility manifest, merged client API, and the final MGMT replacement establish and exercise the accepted boundary. |
-| [#2](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/2) deterministic simulator contract | close | ADR 0004 and `references/scenario-contract.md` accept exact time/seed, state, command, network-shaping, slow-subscriber, cleanup, and fidelity semantics. Existing real-wire peers and MGMT lanes establish the implementation baseline; #10/#11 explicitly retain unimplemented contract rows. |
+| [#2](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/2) deterministic simulator contract | close | ADR 0004 and `references/scenario-contract.md` accept exact time/seed, state, command, network-shaping, slow-subscriber, cleanup, and fidelity semantics. Issue #10 completes the M1 simulator-owned rows; #11 explicitly retains broader client lifecycle work. |
 | [#3](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/3) freeze MGMT behavior and migration diff | close | Immutable manifests, preserved `feat/esphome-richard87`, reviewed MCL hashes, PRs #30/#31, and MGMT PRs #1/#3 preserve the shared-session behavior and document the plaintext hardening. |
 | [#4](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/4) pinned ESPHome protocol package | close | PR #28 pins source/tool/license hashes, reproducibly generates `pb`, inventories 148 unique IDs, and passes regeneration, validation, race, and vet evidence. |
 | [#5](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/5) protocol inventory views | close | The reviewed annotation schema and generated inventory classify all 148 unique IDs by version/feature gate, entity family, MGMT need, reference parity, public behavior, and every evidence level. All 33 M1 messages are accounted for: 31 implemented messages have typed/simulated proof and DeviceInfo request/response remain explicitly known-only under #11. Unknown IDs/enums/fields have separate status and test plans. |
@@ -32,6 +32,8 @@ machine-readable record is
 | [#47](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/47) simulator validation and reconnect decisions | close | ADR 0013 preserves `New`, adds typed `Scenario.Validate` plus deferred pre-connection rejection, permits zero seed without randomized actions, and makes issue #10's latest-state implementation contingent on an append-only before/after MGMT reconnect re-baseline. Simulator tests prove typed/redacted errors, zero-seed compatibility, no connection side effects, and defensive copies. |
 | [#52](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/52) scenario-field completeness guard | close | An exact reflected `Scenario` field inventory fails on additions with instructions to extend validation and cloning. A fully populated clone test proves every current mutable field preserves its value without retaining source aliases. |
 | [#56](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/56) duplicate initial-state keys | close | Both supported initial-state field names reject same-family duplicate keys with typed, secret-safe structural indexes before any dial or listener work. Tests preserve invalid-type classification and allow the same numeric key across distinct state families. |
+| [#72](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/72) wrapped Noise key echo | close | Wire and public-dial tests prove CR/LF-wrapped base64 accepted by Go's decoder is matched before printable sanitization; the complete peer reason is redacted while handshake and rejected-key categories remain intact. The accepted-representation invariant is recorded in the release skill. |
+| [#10](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/10) simulator fault engine | close | Manual time/latest-state reconnects, the pinned ADR 0013 MGMT re-baseline, command expectations, slow-subscriber saturation, all named M1 fault classes, bounded network writing, fixed scenario/session/listener limits, typed saturation, and `WaitForIdle` owned-resource cleanup have race-tested evidence. Zero seed remains valid because no randomized action exists; the field-completeness guard requires validation before a future randomized field can run. |
 
 ## Active Milestone 1 work
 
@@ -40,7 +42,6 @@ machine-readable record is
 | [#6](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/6) security and dependency budgets | Callback queue saturation is now deterministic and bounded. Add explicit pending-operation, deadline, broader cleanup/goroutine/allocation budgets with tests and an automated dependency/license/vulnerability report. Reconcile the issue body's historical `x/crypto` and Go values with the accepted ADR. |
 | [#7](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/7) public-repository controls | Verify and capture actual branch protection, approval/CODEOWNERS enforcement, stale-review dismissal, conversation resolution, secret scanning/push protection, private reporting, dependency updates, and emergency bypass through a safe test PR. |
 | [#9](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/9) complete MGMT entity slice | Add MGMT-level text-sensor state and button-command evidence plus missing/NaN, capability/type rejection, concurrent command/state, unknown-value, and slow-consumer tests. |
-| [#10](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/10) simulator fault engine | The manual clock/latest-state timeline, ADR 0013 pinned MGMT re-baseline, ordered command expectations, slow-subscriber saturation, and deterministic delayed/fragmented/coalesced network shaping are complete. Add conditional seed validation when randomized actions arrive and broader owned-resource cleanup, goroutine, and allocation budgets. |
 | [#11](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/11) connection lifecycle | Implement and test device info and bounded client keepalive; add virtual-time state-machine, one-dial-owner, cancellation, goroutine-leak, callback-isolation, and command-interruption/no-replay evidence. |
 | [#12](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/12) release-candidate verification | Add scheduled fuzzing, generated-drift CI, explicit allocation/goroutine budgets, automated dependency reporting, and an automatic pinned MGMT checkout lane. Local policy/race/vet/fuzz and current MGMT simulator lanes pass. |
 | [#14](https://github.com/flavio-fernandes/go-aioesphomeapi/issues/14) interactive conveyor demo | Complete the presenter story: pushed sensor changes, network interruption and safe stop, contradictory-sensor and slow-subscriber faults, responsibility display, presenter runbook, and sanitized physical recovery checklist. |
@@ -65,10 +66,10 @@ open until their milestone is active.
 ## Recommended implementation order
 
 1. Add the missing MGMT entity and unknown-value evidence in #9 using the protocol inventory as the claim ledger.
-2. Complete the accepted simulator and lifecycle contract in #10 and #11, and surface #40
-   so MGMT can attribute asynchronous connection loss without coupling its
+2. Complete the remaining client lifecycle contract in #11 and surface #40 so
+   MGMT can attribute asynchronous connection loss without coupling its
    session layer to the concrete library client.
-3. Close the remaining security and release-candidate gates in #6, #8, and #12.
+3. Close the remaining security and release-candidate gates in #6 and #12.
 4. Enforce repository controls and durable fallback automation in #7 and #23.
 5. Finish the interactive and workbench deliverables in #14 and #15.
 

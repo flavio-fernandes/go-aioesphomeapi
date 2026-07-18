@@ -18,6 +18,8 @@ Use the simulator as a real device-side protocol peer, not as a mock of the publ
    for deterministic raw literals. Scenario time is device-global and starts
    at zero; equal-time events retain declaration order. Bind to loopback unless
    a task requires an isolated test network.
+   Keep scenarios within the exported fixed budgets: 4,096 items per repeated
+   field, 64 KiB per encoded message, and 4 MiB total encoded protobuf data.
 5. Run the documented simulator command and the real client or MGMT adapter
    against it. A reconnect receives the latest state snapshot and only future
    timeline events; past events are not replayed as a burst. When introducing
@@ -49,6 +51,12 @@ Use the simulator as a real device-side protocol peer, not as a mock of the publ
   and simulator-owned goroutines even when a callback remains blocked. After
   releasing the caller gate, use `Client.WaitCallbacks(ctx)` before asserting
   the exact final callback count.
+- One `Device` owns at most 64 session teardown tasks and 8 concurrent
+  loopback `Serve` calls. Assert `ErrConnectionLimit` or `ErrListenerLimit`
+  when deliberately testing saturation. After closing producers, call
+  `Device.WaitForIdle(ctx)` and require zero active connections, listeners,
+  session tasks, and pending virtual delays; cancellation retains both
+  `ErrSimulatorBusy` and the context cause.
 - Keep implementation claims aligned with the ledger in
   `references/scenario-contract.md`; issue #2 accepts the design and issue #10
   owns the remaining simulator machinery.
