@@ -154,3 +154,20 @@ work. Update both files when future work changes the operational truth.
 - Keep unknown message IDs, enum values, and fields as separate plans. Unknown
   IDs are verified; unknown M1 enums and fields remain planned until focused
   tests establish their handwritten behavior.
+
+## 2026-07-18 merged-review audit
+
+- A green workflow does not mean automated review finished. Audit thread-aware
+  GraphQL data after checks and require Codex review or a positive reaction for
+  the exact head commit before merge.
+- The audit found 11 unresolved Codex threads across PRs merged that day. Later
+  PRs already corrected CR/LF key echoes, delayed timeline writes, duplicate
+  initial states, mDNS retransmits, the reviewed-manifest command, and several
+  evidence transitions. New focused fixes cover strict base64 pad bits, every
+  pinned command-request type, and per-connection stall cancellation.
+- Preserve immutable evidence records. Correct a historical overstatement in a
+  later append-only record and point readers at it; do not silently rewrite the
+  original artifact.
+- Protect `main` with required conversations as an administrator-enforced
+  backstop. Still run `$merge-reviewed-pr` immediately before merge because a
+  late review can arrive after CI succeeds.

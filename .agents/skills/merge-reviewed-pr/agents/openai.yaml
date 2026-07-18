@@ -1,0 +1,4 @@
+interface:
+  display_name: "Merge Reviewed PR"
+  short_description: "Audit review threads before every merge"
+  default_prompt: "Use $merge-reviewed-pr to verify checks and resolve every review thread before merging this pull request."

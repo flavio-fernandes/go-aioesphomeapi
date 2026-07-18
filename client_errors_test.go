@@ -209,12 +209,21 @@ func TestDialRedactsCRLFWrappedPeerKeyRejection(t *testing.T) {
 }
 
 func TestNoiseConfigurationErrorsRedactKeys(t *testing.T) {
+	canonical := base64.StdEncoding.EncodeToString(bytes.Repeat([]byte{0x42}, 32))
+	const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+	lastIndex := len(canonical) - 2
+	canonicalValue := strings.IndexByte(alphabet, canonical[lastIndex])
+	nonCanonical := canonical[:lastIndex] + string(alphabet[canonicalValue+1]) + canonical[lastIndex+1:]
+	if decoded, err := base64.StdEncoding.DecodeString(nonCanonical); err != nil || len(decoded) != 32 {
+		t.Fatalf("test setup did not produce accepted non-canonical base64: len=%d err=%v", len(decoded), err)
+	}
 	tests := []struct {
 		name string
 		key  string
 	}{
 		{name: "invalid base64", key: "synthetic-invalid-key-value"},
 		{name: "wrong decoded length", key: base64.StdEncoding.EncodeToString([]byte("synthetic-short-key"))},
+		{name: "non-canonical pad bits", key: nonCanonical[:16] + "\r\n" + nonCanonical[16:]},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -229,6 +238,11 @@ func TestNoiseConfigurationErrorsRedactKeys(t *testing.T) {
 			}
 			if strings.Contains(err.Error(), test.key) {
 				t.Fatalf("configuration error leaked key: %q", err)
+			}
+			for _, fragment := range strings.FieldsFunc(test.key, func(r rune) bool { return r == '\r' || r == '\n' }) {
+				if len(fragment) >= 12 && strings.Contains(err.Error(), fragment) {
+					t.Fatalf("configuration error leaked key fragment %q: %q", fragment, err)
+				}
 			}
 		})
 	}

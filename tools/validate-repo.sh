@@ -107,6 +107,8 @@ for record in \
 done
 
 if command -v python3 >/dev/null 2>&1; then
+  python3 -B -m unittest discover \
+    -s .agents/skills/merge-reviewed-pr/scripts -p '*_test.py'
   python3 -m json.tool compatibility/mgmt-feat-esphome.json >/dev/null
   python3 -m json.tool compatibility/mgmt-feat-esphome2.json >/dev/null
   python3 -m json.tool compatibility/mgmt-feat-esphome2-runtime.json >/dev/null

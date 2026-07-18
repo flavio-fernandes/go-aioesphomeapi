@@ -148,6 +148,29 @@ func TestFaultAfterInitialStatesUsesRealSubscriptionPath(t *testing.T) {
 	waitForClientClose(t, client)
 }
 
+func TestDropConnectionsReleasesStalledSessionTask(t *testing.T) {
+	device := simulator.New(simulator.Scenario{
+		Name:   "dropped-stall-simulator",
+		Faults: []simulator.Fault{{Trigger: simulator.FaultAfterHello, Action: simulator.FaultStall}},
+	})
+	t.Cleanup(func() { _ = device.Close() })
+	client := dialSimulator(t, device)
+	t.Cleanup(func() { _ = client.Close() })
+
+	if dropped := device.DropConnections(); dropped != 1 {
+		t.Fatalf("DropConnections = %d, want one stalled session", dropped)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	if err := device.WaitForIdle(ctx); err != nil {
+		t.Fatalf("stalled session remained after DropConnections: %v", err)
+	}
+	stats := device.Stats()
+	if stats.ActiveConnections != 0 || stats.ActiveSessionTasks != 0 {
+		t.Fatalf("stalled session resources remain: %+v", stats)
+	}
+}
+
 func TestUnknownFaultValuesHaveNoEffect(t *testing.T) {
 	device := simulator.New(simulator.Scenario{
 		Name:   "forward-compatible-fault-simulator",

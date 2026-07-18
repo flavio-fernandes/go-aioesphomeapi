@@ -15,6 +15,14 @@ Two immutable snapshots inform the current design:
 
 The original snapshot remains immutable. A second append-only record, `compatibility/mgmt-feat-esphome2.json`, captures the rebased MGMT baseline, the replacement branch, this library's exact candidate revision, preserved MCL hashes, dependency delta, and verification results. A later run creates another record instead of rewriting either historical record.
 
+One historical sentence in `compatibility/mgmt-feat-esphome-review.json`
+describes both baseline examples as multicast-DNS evidence. The immutable MCL
+and runner show the precise split: `esphome0.mcl` used its reviewed numeric-IP
+forwarder, while `esphome-blink.mcl` and `esphome-conveyor.mcl` used multicast
+DNS without hosts substitution. The later append-only
+`compatibility/mgmt-upstream-pr-961-ready.json` records this per-file truth and
+supersedes that sentence without rewriting historical evidence.
+
 The local manifest records only public repository paths, symbols, revisions, and SHA-256 values. It does not vendor the GPL MGMT source or reference-client implementation.
 
 ## Clean implementation rule

@@ -127,7 +127,11 @@ func DialWithContext(ctx context.Context, address string, timeout time.Duration,
 	}
 	var framer wire.Framer
 	if cfg.encryptionKey != "" {
-		key, decodeErr := base64.StdEncoding.DecodeString(cfg.encryptionKey)
+		// Strict decoding rejects non-zero trailing pad bits. CR and LF remain
+		// accepted by encoding/base64, so wrapped canonical ESPHome keys work,
+		// while every accepted textual form re-encodes to the single canonical
+		// value that rejection diagnostics know how to redact.
+		key, decodeErr := base64.StdEncoding.Strict().DecodeString(cfg.encryptionKey)
 		if decodeErr != nil {
 			for i := range key {
 				key[i] = 0

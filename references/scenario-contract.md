@@ -57,6 +57,12 @@ family, negative times, decreasing timelines, a randomized scenario without a
 seed, and impossible expectations must fail with a typed, secret-safe
 validation error. They must not silently change the scenario.
 
+`Scenario` is a pre-v1 extensible struct and callers must use keyed composite
+literals. Adding accepted scenario capabilities necessarily adds fields, so
+unkeyed external literals are not a promised source-compatibility surface.
+`New(Scenario, ...Option)` and existing keyed fields remain the compatibility
+boundary.
+
 ### Validation surface
 
 `Scenario.Validate() error` is the explicit preflight. Failures are
