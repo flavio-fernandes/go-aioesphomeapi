@@ -77,6 +77,82 @@ func TestNetworkDelayReplyUsesOnlyManualTime(t *testing.T) {
 	}
 }
 
+func TestDelayedTimelineFrameDoesNotBlockManualClock(t *testing.T) {
+	const delay = 5 * time.Second
+	clock := simulator.NewManualClock()
+	device := simulator.New(simulator.Scenario{
+		Name: "delayed-timeline-simulator",
+		InitialStates: []proto.Message{
+			&pb.SwitchStateResponse{Key: 41, State: false},
+		},
+		StateTimeline: []simulator.StateEvent{
+			{At: time.Second, State: &pb.SwitchStateResponse{Key: 41, State: true}},
+			{At: time.Second, State: &pb.SwitchStateResponse{Key: 41, State: false}},
+		},
+		Network: []simulator.NetworkFault{{
+			Trigger: simulator.FaultAfterInitialStates,
+			Action:  simulator.NetworkDelayReply,
+			Delay:   delay,
+		}},
+	}, simulator.WithManualClock(clock))
+	t.Cleanup(func() { _ = device.Close() })
+	client := dialSimulator(t, device)
+	t.Cleanup(func() { _ = client.Close() })
+
+	states := make(chan bool, 3)
+	unsubscribe, err := client.SubscribeStates(func(message proto.Message) {
+		if state, ok := message.(*pb.SwitchStateResponse); ok && state.Key == 41 {
+			states <- state.State
+		}
+	})
+	if err != nil {
+		t.Fatalf("subscribe states: %v", err)
+	}
+	t.Cleanup(unsubscribe)
+	select {
+	case state := <-states:
+		if state {
+			t.Fatal("unexpected initial switch state")
+		}
+	case <-time.After(time.Second):
+		t.Fatal("initial state was not received")
+	}
+
+	advanced := make(chan error, 1)
+	go func() { advanced <- clock.AdvanceTo(time.Second) }()
+	select {
+	case err := <-advanced:
+		if err != nil {
+			t.Fatalf("advance to timeline event: %v", err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("timeline send blocked ManualClock.AdvanceTo before its delay target")
+	}
+	waitForPendingNetworkDelay(t, device)
+	select {
+	case state := <-states:
+		t.Fatalf("delayed timeline state arrived early: %t", state)
+	default:
+	}
+	// Advance by the full declared delay from the now-committed event. The
+	// trigger may arm immediately before or after the first AdvanceTo updates
+	// the shared clock, but this reaches either valid target deterministically.
+	if err := clock.Advance(delay); err != nil {
+		t.Fatal(err)
+	}
+	for index, want := range []bool{true, false} {
+		select {
+		case state := <-states:
+			if state != want {
+				t.Fatalf("delayed state %d = %t, want %t", index, state, want)
+			}
+		case <-time.After(time.Second):
+			t.Fatalf("timeline state %d did not arrive at the virtual delay target", index)
+		}
+	}
+	assertClientPing(t, client)
+}
+
 func TestDeviceCloseCancelsPendingNetworkDelay(t *testing.T) {
 	clock := simulator.NewManualClock()
 	device := simulator.New(networkScenario(simulator.NetworkFault{
