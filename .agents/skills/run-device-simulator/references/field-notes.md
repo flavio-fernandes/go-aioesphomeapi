@@ -69,6 +69,20 @@ acceptance scripts, or external-app examples.
   increments `DeviceStats.DroppedCommands` and also fails an active declared
   expectation with overflow, even when that same command completed the count.
 
+## Slow subscriber saturation
+
+- Use `WithCallbackQueueSize(1)`, block the first state callback on a
+  caller-owned channel, then advance two equal-time timeline events. The first
+  fills the queue and the second must close with `ErrEventQueueFull`.
+- Wait for `Client.Done`, inspect `CloseReason`, and prove `Device.Close`
+  returns while the callback is still held. Release the caller gate, then use
+  `Client.WaitCallbacks(ctx)` before asserting the exact final callback count.
+- The dispatcher checks shutdown before dequeuing another event and before
+  invoking each callback. Never replace this ordering with a timed sleep or an
+  unbounded callback drain.
+- `WaitCallbacks` observes cleanup only. It cannot cancel or forcibly unwind
+  application callback code; its context bounds the caller's wait.
+
 ## Evidence hygiene
 
 - Expected outputs should be short deterministic text. Do not save traffic,

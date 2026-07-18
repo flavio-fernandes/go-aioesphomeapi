@@ -353,3 +353,53 @@ Missing-command errors also retain `context.Canceled` or
 `context.DeadlineExceeded`. Error text contains only counters and indexes, not
 command payloads. The original `Commands()` stream remains available for
 interactive exploration.
+
+**Prove that a slow callback cannot grow memory:** tests can deliberately use a
+one-item callback queue, hold the first callback with a channel, and advance a
+manual-clock burst. The client closes instead of blocking the network reader or
+silently dropping state:
+
+```go
+options := append(device.ClientOptions(), aioesphomeapi.WithCallbackQueueSize(1))
+client, err := aioesphomeapi.DialWithContext(ctx, "synthetic:6053", time.Second, options...)
+if err != nil {
+    panic(err)
+}
+
+gate := make(chan struct{})
+entered := make(chan struct{})
+var enteredOnce sync.Once
+_, err = client.SubscribeStates(func(proto.Message) {
+    enteredOnce.Do(func() { close(entered) })
+    <-gate
+})
+if err != nil {
+    panic(err)
+}
+
+select {
+case <-entered:
+case <-ctx.Done():
+    panic(ctx.Err())
+}
+
+// Advance a scenario containing two equal-time updates. One fills the queue;
+// the next closes the session.
+if err := clock.Advance(time.Second); err != nil {
+    panic(err)
+}
+<-client.Done()
+if !errors.Is(client.CloseReason(), aioesphomeapi.ErrEventQueueFull) {
+    panic("expected bounded callback queue to close")
+}
+
+close(gate)
+if err := client.WaitCallbacks(ctx); err != nil {
+    panic(err)
+}
+```
+
+`WaitCallbacks` never forces application code to return. It only provides a
+context-bounded way to confirm that the serial dispatcher has stopped after the
+application releases its own callback. This pattern is for tests; production
+queue sizing should remain finite and callbacks should return promptly.

@@ -57,6 +57,11 @@ work. Update both files when future work changes the operational truth.
   use a client Ping as a wire-ordering barrier when exact-count rejection of
   trailing commands matters. Missing, unexpected, out-of-order, and legacy
   observation-stream overflow remain separate secret-safe error categories.
+- Slow-subscriber acceptance uses a one-item callback queue, a caller-owned
+  callback gate, and an equal-time manual-clock burst. Saturation closes with
+  `ErrEventQueueFull`; `Device.Close` must not wait for the application
+  callback, and `WaitCallbacks(ctx)` makes the final callback count observable
+  after the caller releases its own gate.
 
 ## 2026-07-18 mDNS retransmit deadlines
 

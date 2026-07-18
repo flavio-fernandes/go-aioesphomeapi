@@ -230,7 +230,8 @@ correctly bypasses it.
 | named drop, malformed, unknown, duplicate-completion, and stall faults | ADR 0008 and real-wire fault tests | delay/fragment/coalesce in #10 |
 | validation surface and defensive scenario copy | `Scenario.Validate`, deferred `DialContext`/`Serve` rejection, and simulator tests cover initial states, timeline events, and command expectations | future randomized/network fields extend validation in #10 |
 | manual clock and pushed latest-state timeline | `ManualClock`, `StateTimeline`, device-global snapshots, `DropConnections`, and repeated race tests | final pinned MGMT re-baseline required by ADR 0013 |
-| conditional non-zero seed and slow-subscriber proof | zero remains valid because no randomized action exists; semantics accepted above | randomized actions and queue-saturation scenario in #10 |
+| conditional non-zero seed | zero remains valid because no randomized action exists; semantics accepted above | randomized actions in #10 |
+| slow-subscriber proof | manual-clock real-wire burst, caller-controlled callback gate, `ErrEventQueueFull`, exact final callback count, and bounded device/dispatcher cleanup | complete for M1 contract |
 | device information, keepalive, callback isolation, connection-state cleanup | lifecycle tests and MGMT acceptance are partial | #11, with budgets in #6/#12 |
 
 Closing architecture issue #2 accepts this contract; it does not claim the

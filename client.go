@@ -65,13 +65,14 @@ type Client struct {
 	closeReasonMu      sync.RWMutex
 	closeReason        error
 
-	handlerMu   sync.RWMutex
-	nextHandler uint64
-	handlers    map[uint32]map[uint64]callback
-	events      chan proto.Message
-	listMu      sync.Mutex
-	list        *listResult
-	pingGate    chan struct{}
+	handlerMu     sync.RWMutex
+	nextHandler   uint64
+	handlers      map[uint32]map[uint64]callback
+	events        chan proto.Message
+	callbacksDone chan struct{}
+	listMu        sync.Mutex
+	list          *listResult
+	pingGate      chan struct{}
 }
 
 // Dial connects using a background context.
@@ -193,12 +194,13 @@ func DialWithContext(ctx context.Context, address string, timeout time.Duration,
 
 func newClient(framer wire.Framer, callbackQueueSize int) *Client {
 	client := &Client{
-		framer:   framer,
-		entities: newEntityRegistry(),
-		done:     make(chan struct{}),
-		handlers: make(map[uint32]map[uint64]callback),
-		events:   make(chan proto.Message, callbackQueueSize),
-		pingGate: make(chan struct{}, 1),
+		framer:        framer,
+		entities:      newEntityRegistry(),
+		done:          make(chan struct{}),
+		handlers:      make(map[uint32]map[uint64]callback),
+		events:        make(chan proto.Message, callbackQueueSize),
+		callbacksDone: make(chan struct{}),
+		pingGate:      make(chan struct{}, 1),
 	}
 	client.pingGate <- struct{}{}
 	return client
@@ -282,9 +284,20 @@ func (c *Client) readLoop(ctx context.Context) {
 }
 
 func (c *Client) dispatchLoop() {
+	defer close(c.callbacksDone)
 	for {
 		select {
+		case <-c.done:
+			return
+		default:
+		}
+		select {
 		case message := <-c.events:
+			select {
+			case <-c.done:
+				return
+			default:
+			}
 			c.entities.handle(message)
 			c.handleList(message)
 			id, err := wire.MessageID(message)
@@ -298,6 +311,11 @@ func (c *Client) dispatchLoop() {
 			}
 			c.handlerMu.RUnlock()
 			for _, fn := range callbacks {
+				select {
+				case <-c.done:
+					return
+				default:
+				}
 				fn(message)
 			}
 		case <-c.done:
@@ -387,6 +405,21 @@ func (c *Client) CloseReason() error {
 	c.closeReasonMu.RLock()
 	defer c.closeReasonMu.RUnlock()
 	return c.closeReason
+}
+
+// WaitCallbacks waits for the serial callback dispatcher to stop after the
+// client closes. It never forces a caller callback to return; the supplied
+// context bounds the wait instead.
+func (c *Client) WaitCallbacks(ctx context.Context) error {
+	if ctx == nil {
+		return errors.New("wait for ESPHome callbacks: nil context")
+	}
+	select {
+	case <-c.callbacksDone:
+		return nil
+	case <-ctx.Done():
+		return fmt.Errorf("wait for ESPHome callbacks: %w", context.Cause(ctx))
+	}
 }
 
 // ListEntities refreshes the entity registry and returns the raw descriptors.
