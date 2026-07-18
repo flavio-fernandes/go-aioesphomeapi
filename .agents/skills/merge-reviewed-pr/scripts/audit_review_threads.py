@@ -11,6 +11,7 @@ from typing import Any
 
 
 TRUSTED_CODEX_LOGINS = frozenset({"chatgpt-codex-connector"})
+TRUSTED_REVIEW_REQUEST_LOGINS = frozenset({"flavio-fernandes"})
 
 
 QUERY = """
@@ -18,12 +19,18 @@ query($owner: String!, $repo: String!, $number: Int!, $cursor: String) {
   repository(owner: $owner, name: $repo) {
     pullRequest(number: $number) {
       headRefOid
-      commits(last: 1) { nodes { commit { committedDate } } }
       reviews(last: 100) {
         nodes { author { login } submittedAt commit { oid } }
       }
-      reactions(last: 100, content: THUMBS_UP) {
-        nodes { createdAt user { login } }
+      comments(last: 100) {
+        nodes {
+          author { login }
+          body
+          updatedAt
+          reactions(last: 100, content: THUMBS_UP) {
+            nodes { createdAt user { login } }
+          }
+        }
       }
       reviewThreads(first: 100, after: $cursor) {
         pageInfo { hasNextPage endCursor }
@@ -59,6 +66,24 @@ def trusted_codex(login: str | None) -> bool:
     return login in TRUSTED_CODEX_LOGINS
 
 
+def exact_head_reaction(comment: dict[str, Any], head: str) -> bool:
+    """Return whether trusted Codex approved a trusted exact-head request."""
+    author = (comment.get("author") or {}).get("login")
+    if author not in TRUSTED_REVIEW_REQUEST_LOGINS:
+        return False
+    lines = {line.strip() for line in (comment.get("body") or "").splitlines()}
+    if "@codex review" not in lines or f"Please review exact head `{head}`." not in lines:
+        return False
+    updated_at = comment.get("updatedAt")
+    if not isinstance(updated_at, str):
+        return False
+    return any(
+        trusted_codex((reaction.get("user") or {}).get("login"))
+        and reaction.get("createdAt", "") >= updated_at
+        for reaction in (comment.get("reactions") or {}).get("nodes") or []
+    )
+
+
 def audit(repository: str, number: int) -> dict[str, Any]:
     owner, repo = repository.split("/", 1)
     cursor: str | None = None
@@ -90,16 +115,14 @@ def audit(repository: str, number: int) -> dict[str, Any]:
 
     assert metadata is not None
     head = metadata["headRefOid"]
-    committed = metadata["commits"]["nodes"][0]["commit"]["committedDate"]
     reviewed = any(
         trusted_codex((review.get("author") or {}).get("login"))
         and (review.get("commit") or {}).get("oid") == head
         for review in metadata["reviews"]["nodes"]
     )
     reacted = any(
-        trusted_codex((reaction.get("user") or {}).get("login"))
-        and reaction["createdAt"] >= committed
-        for reaction in metadata["reactions"]["nodes"]
+        exact_head_reaction(comment, head)
+        for comment in metadata["comments"]["nodes"]
     )
     return {
         "repository": repository,

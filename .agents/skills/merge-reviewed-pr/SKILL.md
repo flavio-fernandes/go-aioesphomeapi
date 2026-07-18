@@ -21,10 +21,12 @@ Fail closed: a green workflow is necessary but never sufficient to merge.
    ```
 
    This must prove the explicitly trusted `chatgpt-codex-connector` identity
-   reviewed the exact head commit (or reacted positively after it) and that
-   zero unresolved review threads remain. Similar-looking usernames are not
-   trusted. Flat PR comments are not a substitute for thread-aware GraphQL
-   data.
+   reviewed the exact head commit, or reacted positively to a trusted review
+   request that names the exact full head SHA. For an edited request, the
+   reaction must follow GitHub's server-controlled comment-update time.
+   Commit-authored timestamps do not establish freshness. Similar-looking
+   usernames are not trusted. Flat PR comments are not a substitute for
+   thread-aware GraphQL data.
 4. Treat every unresolved thread as blocking. Implement actionable feedback
    with a focused regression. For an intentional tradeoff or superseded
    finding, record the exact rationale or correcting PR. Never resolve a thread
