@@ -35,13 +35,16 @@ Fail closed: a green workflow is necessary but never sufficient to merge.
    ```
 
    This proves the explicitly trusted `chatgpt-codex-connector` identity
-   reviewed the exact head commit, or reacted positively to a trusted review
-   request that names the exact full head SHA. For an edited request, the
-   reaction must follow GitHub's server-controlled comment-update time.
-   Commit-authored timestamps do not establish freshness. Similar-looking
-   usernames are not trusted. Flat PR comments are not a substitute for
-   thread-aware GraphQL data. The command publishes the required
-   `codex-review` success status only when the audit passes.
+   reviewed the exact head commit, reacted positively to a trusted review
+   request that names the exact full head SHA, or posted its clean comment
+   verdict ("Didn't find any major issues" with a backticked
+   `**Reviewed commit:**` prefix of at least ten hexadecimal characters
+   matching the head). For an edited request, the reaction must follow
+   GitHub's server-controlled comment-update time. Commit-authored timestamps
+   do not establish freshness. Similar-looking usernames are not trusted.
+   Other flat PR comments are not a substitute for thread-aware GraphQL data.
+   The command publishes the required `codex-review` success status only when
+   the audit passes.
 7. Confirm `go`, `validate`, and `codex-review` are successful immediately
    before merging. Merge with an expected-head SHA so a concurrent push cannot
    bypass the reviewed commit.
