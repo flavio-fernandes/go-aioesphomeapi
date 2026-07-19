@@ -289,6 +289,112 @@ python3 -m json.tool compatibility/mgmt-upstream-pr-961-ready.json
 
 Real-device access is deliberately not a beginner copy/paste command. Applications must provide the target and base64 Noise key at runtime, keep both out of source and shell history, and call `WithEncryptionKey`. Plaintext requires `WithInsecurePlaintext()` and is for isolated tests only.
 
+### Temporarily test MGMT with newer library code
+
+MGMT normally pins one exact reviewed `go-aioesphomeapi` commit. Use one of the following methods to test newer library code without accidentally treating a moving branch as the reviewed dependency.
+
+#### Test a newer commit pushed to GitHub
+
+Run these commands from the MGMT repository root:
+
+```bash
+module=github.com/flavio-fernandes/go-aioesphomeapi
+commit=<FULL_OR_UNAMBIGUOUS_COMMIT_SHA>
+
+go get "${module}@${commit}"
+go mod tidy
+
+go list -m -f '{{.Path}} {{.Version}}' "${module}"
+```
+
+Go resolves the commit to a pseudo-version and updates `go.mod` and `go.sum`. Do not manually construct the pseudo-version.
+
+Run the focused MGMT checks:
+
+```bash
+go test -race ./util/esphome ./engine/resources ./lang/core/net/esphome/...
+go vet ./util/esphome ./engine/resources ./lang/core/net/esphome/...
+GOWORK=off make build
+```
+
+To return to the reviewed library pin, either run `go get` with the reviewed commit documented above, or discard only the dependency-file changes when no other edits to those files need to be kept:
+
+```bash
+git restore go.mod go.sum
+```
+
+Review `git diff` before discarding or committing dependency changes.
+
+#### Test a local library checkout with `replace`
+
+This is useful for testing uncommitted library changes. The replacement path must point to the directory containing the library's `go.mod`.
+
+For sibling checkouts named `mgmt` and `go-aioesphomeapi`, run from the MGMT repository:
+
+```bash
+go mod edit \
+  -replace=github.com/flavio-fernandes/go-aioesphomeapi=../go-aioesphomeapi
+
+go list -m -f '{{.Path}} {{.Version}} => {{with .Replace}}{{.Dir}}{{end}}' \
+  github.com/flavio-fernandes/go-aioesphomeapi
+```
+
+Build and test without `GOWORK=off`:
+
+```bash
+go test -race ./util/esphome ./engine/resources ./lang/core/net/esphome/...
+go vet ./util/esphome ./engine/resources ./lang/core/net/esphome/...
+make build
+```
+
+Remove the local replacement afterward:
+
+```bash
+go mod edit \
+  -dropreplace=github.com/flavio-fernandes/go-aioesphomeapi
+```
+
+Do not commit a developer-specific local `replace` path to MGMT.
+
+#### Test both repositories with a Go workspace
+
+For ongoing development across both repositories, a workspace avoids changing MGMT's tracked `go.mod`.
+
+From the parent directory containing both checkouts:
+
+```bash
+go work init ./mgmt ./go-aioesphomeapi
+go work sync
+```
+
+Run local-library tests from the MGMT checkout without `GOWORK=off`:
+
+```bash
+cd mgmt
+
+go test -race ./util/esphome ./engine/resources ./lang/core/net/esphome/...
+go vet ./util/esphome ./engine/resources ./lang/core/net/esphome/...
+make build
+```
+
+To verify the exact dependency pinned by MGMT rather than the workspace copy:
+
+```bash
+GOWORK=off go list -m -f '{{.Path}} {{.Version}}' \
+  github.com/flavio-fernandes/go-aioesphomeapi
+
+GOWORK=off make build
+```
+
+Remove the temporary workspace when it is no longer needed:
+
+```bash
+cd ..
+rm -f go.work go.work.sum
+```
+
+Do not commit a developer-specific `go.work` or `go.work.sum` unless the repositories deliberately adopt a shared workspace.
+
 ## Safe command rules
 
 - Never put a real Noise key, SSID, IP address, device identifier, username, or local path in a command committed to this repository.
