@@ -5,7 +5,9 @@ unchanged blink MCL against a real ESPHome device. MGMT watches the device's
 binary-sensor state and turns the onboard LED switch off each time the firmware
 turns it on.
 
-Use the [simulator walkthrough](mgmt-simulator-demo.md) first. Continue here
+Use the [simulator walkthrough](mgmt-simulator-demo.md) first; the
+[blink loop demo](mgmt-blink-demo.md) runs this exact cooperative blink
+behavior with no hardware at all. Continue here
 only when you are authorized to control the named device and you can identify
 its onboard LED safely. This workflow does not flash firmware.
 

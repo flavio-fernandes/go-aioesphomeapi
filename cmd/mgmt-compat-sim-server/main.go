@@ -19,13 +19,12 @@ import (
 	"time"
 
 	"github.com/flavio-fernandes/go-aioesphomeapi/internal/mdns"
-	"github.com/flavio-fernandes/go-aioesphomeapi/pb"
 	"github.com/flavio-fernandes/go-aioesphomeapi/simulator"
 	"google.golang.org/protobuf/proto"
 )
 
 func main() {
-	scenarioName := flag.String("scenario", "", "scenario: basic-io or blink")
+	scenarioName := flag.String("scenario", "", "scenario: basic-io, blink, or blink-device")
 	address := flag.String("listen", "127.0.0.1:6053", "loopback Native API address")
 	forwardAddress := flag.String("forward-listen", "", "optional private-namespace TCP forward address")
 	parentNetworkNamespace := flag.String("parent-netns", "", "parent network namespace identifier required by non-loopback forwarding")
@@ -50,7 +49,12 @@ func main() {
 
 	serveDone := make(chan error, 1)
 	go func() { serveDone <- device.Serve(listener) }()
-	go printCommands(device.Commands())
+	if *scenarioName == "blink-device" {
+		firmware := &blinkFirmware{device: device, relight: blinkRelightDelay}
+		go firmware.run(device.Commands())
+	} else {
+		go printCommands(device.Commands())
+	}
 	var mdnsResponder *mdns.Responder
 	if *mdnsHost != "" {
 		host, _, splitErr := net.SplitHostPort(listener.Addr().String())
@@ -103,6 +107,10 @@ func namedScenario(name string) (simulator.Scenario, error) {
 	case "basic-io":
 		return simulator.BasicIOScenario(), nil
 	case "blink":
+		return simulator.BlinkScenario(), nil
+	case "blink-device":
+		// Same advertised device as "blink"; main additionally runs the
+		// firmware-style automations so the LED blinks forever.
 		return simulator.BlinkScenario(), nil
 	default:
 		return simulator.Scenario{}, fmt.Errorf("unknown simulator scenario %q", name)
@@ -190,13 +198,6 @@ func (f *tcpForwarder) forward(front net.Conn) {
 
 func printCommands(commands <-chan proto.Message) {
 	for command := range commands {
-		switch value := command.(type) {
-		case *pb.SwitchCommandRequest:
-			fmt.Printf("received switch command: key=%d state=%t\n", value.Key, value.State)
-		case *pb.NumberCommandRequest:
-			fmt.Printf("received number command: key=%d value=%g\n", value.Key, value.State)
-		case *pb.ButtonCommandRequest:
-			fmt.Printf("received button command: key=%d\n", value.Key)
-		}
+		printCommand(command)
 	}
 }

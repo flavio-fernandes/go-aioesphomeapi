@@ -18,6 +18,7 @@ This remains an independent greenfield implementation. The reference client is a
 - Copy/paste repository commands: [cheatsheet](CHEATSHEET.md)
 - Standalone Go executable without MGMT: [standalone simulator demo](docs/standalone-simulator-demo.md)
 - Friendly no-hardware MGMT walkthrough: [MGMT simulator demo](docs/mgmt-simulator-demo.md)
+- Endless no-hardware blink loop, indistinguishable from hardware to MGMT: [MGMT blink loop demo](docs/mgmt-blink-demo.md)
 - Maintainer-only real-device walkthrough: [MGMT hardware blink demo](docs/mgmt-hardware-blink.md)
 - Exact MGMT behavior we must preserve: [MGMT compatibility contract](docs/mgmt-integration.md)
 - What is implemented and evidenced: [support matrix](docs/support-matrix.md)

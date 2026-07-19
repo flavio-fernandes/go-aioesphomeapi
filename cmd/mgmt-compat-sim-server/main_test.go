@@ -21,7 +21,7 @@ func TestForwardingRequiresPrivateNamespace(t *testing.T) {
 }
 
 func TestNamedScenarios(t *testing.T) {
-	for _, name := range []string{"basic-io", "blink"} {
+	for _, name := range []string{"basic-io", "blink", "blink-device"} {
 		if _, err := namedScenario(name); err != nil {
 			t.Fatalf("scenario %q: %v", name, err)
 		}
