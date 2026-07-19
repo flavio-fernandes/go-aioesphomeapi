@@ -104,6 +104,14 @@ if [[ "${1:-}" == "--inside" ]]; then
 		sleep 0.2
 	done
 
+	# A healthy loop never ends by itself: MGMT must still be running when the
+	# target count is reached, otherwise a crash after the last relight would
+	# be reported as success.
+	if ! kill -0 "${mgmt_pid}" 2>/dev/null; then
+		echo "MGMT exited on its own after ${observed} observed blink cycles" >&2
+		tail -n 40 "${simulator_log}" "${mgmt_log}" >&2
+		exit 1
+	fi
 	kill -TERM "${mgmt_pid}" 2>/dev/null || true
 	wait "${mgmt_pid}" 2>/dev/null || true
 	mgmt_pid=""

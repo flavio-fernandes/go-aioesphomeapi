@@ -48,6 +48,7 @@ messages. `planned` is roadmap intent, not evidence.
 | MGMT persistent and polling modes | external contract | mgmt / mgmt | M1 | Persistent MCL and conveyor runs pass; real-driver polling disconnects between cycles and wakes once for a queued command. |
 | Unchanged `esphome0.mcl` | yes | mgmt | M1 | Hash verified, real MGMT converged, and switch/number corrections reached the encrypted peer. |
 | Reviewed `esphome-blink.mcl` | yes | hardware | M1 | A review-accepted comment-only correction changed its hash without changing behavior; real MGMT converged repeatedly against encrypted ESPHome 2026.7.0 hardware. |
+| Continuous blink loop demo | demonstration | mgmt | M1 | The `blink-device` scenario reproduces the firmware automations documented in the MCL (sensor mirror, three-second relight, firmware logs); real MGMT drove the unchanged blink MCL through repeated bounded cycles locally and in the hosted pinned lane. Simulator behavior, not hardware. |
 
 ## Current MGMT migration proof
 
@@ -78,6 +79,7 @@ The evidence is append-only: [`compatibility/mgmt-feat-esphome2.json`](../compat
 | Latest-state timeline candidate | pass with library `62c6962b` and MGMT `8e8b1599` | Manual-clock pushes retain equal-time order; one switch command survives a same-device reconnect as the latest snapshot, with positive outage accounting and zero command-count delta. All unchanged MCL lanes remain green. |
 | Latest-state timeline post-merge | pass with library `3655bef5` and MGMT `eb8953a4` | The committed MGMT pin passes targeted race/vet, canonical build, focused same-device reconnect, and all unchanged MCL lanes without hosts substitution. |
 | Upstream MGMT PR ready for review | pass with library `091b9af4` and MGMT `08514da1` on upstream `e5baaa2d` | Final tree is byte-identical after commit-policy metadata corrections; targeted race/vet, canonical build, all MCL type checks, all unchanged runtime lanes, and upstream `basic`, `shell`, and `race` jobs pass. Affiliation is confirmed; upstream review and merge remain external. |
+| Continuous blink loop lane (PR #84) | pass locally with MGMT `08514da1` and hosted in the pinned MGMT lane (first pull-request execution: MGMT compatibility run 29694595221, 2026-07-19) | `tools/demo-mgmt-blink.sh` runs the unchanged blink MCL against the `blink-device` simulator: bounded runs count firmware relights observed in MGMT's own log and require MGMT to outlive the target count; the endless watch mode shut down cleanly on Ctrl-C. Simulator and `mgmt` evidence only; no hardware claim. |
 | Firmware flash and physical conveyor actuation | not performed | Conveyor, Fan, Light, and firmware-provisioning hardware cells remain `no`. |
 
 ## Protocol and transport
