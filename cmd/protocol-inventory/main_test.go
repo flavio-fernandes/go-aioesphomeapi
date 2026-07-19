@@ -62,7 +62,7 @@ func TestInventoryIsCompleteAndCurrent(t *testing.T) {
 	if got, want := m1Count, 33; got != want {
 		t.Fatalf("M1 message count = %d, want %d", got, want)
 	}
-	if got, want := implementedCount, 31; got != want {
+	if got, want := implementedCount, 33; got != want {
 		t.Fatalf("implemented message count = %d, want %d", got, want)
 	}
 	expectedM1 := []string{

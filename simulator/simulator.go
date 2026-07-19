@@ -141,6 +141,7 @@ type Device struct {
 	closeOnce            sync.Once
 	mu                   sync.Mutex
 	accepted             uint64
+	answeredPings        uint64
 	droppedCommands      uint64
 	droppedSessions      uint64
 	connections          map[net.Conn]*deviceSession
@@ -322,6 +323,22 @@ func (d *Device) ClientOptions() []aioesphomeapi.Option {
 	return append(options, aioesphomeapi.WithEncryptionKey(base64.StdEncoding.EncodeToString(d.config.key)))
 }
 
+// deviceInfo describes the simulated device. Every identity value is a fixed
+// synthetic constant or the scenario's own name: the MAC address is a locally
+// administered synthetic value and the version names the pinned protocol
+// generation, so no real device identifier can appear in tests or logs.
+func (d *Device) deviceInfo() *pb.DeviceInfoResponse {
+	return &pb.DeviceInfoResponse{
+		Name:                   d.scenario.Name,
+		FriendlyName:           d.scenario.Name,
+		MacAddress:             "02:00:00:00:00:01",
+		EsphomeVersion:         "2026.7.0",
+		Model:                  "go-aioesphomeapi-simulator",
+		Manufacturer:           "go-aioesphomeapi",
+		ApiEncryptionSupported: !d.config.plaintext,
+	}
+}
+
 // Clock returns the Device's deterministic clock. Callers that do not need to
 // share time across Devices can advance this default clock directly.
 func (d *Device) Clock() *ManualClock { return d.clock }
@@ -333,6 +350,7 @@ func (d *Device) Commands() <-chan proto.Message { return d.commands }
 // addresses, device identifiers, or credential material.
 type DeviceStats struct {
 	AcceptedConnections       uint64
+	AnsweredPings             uint64
 	ActiveConnections         int
 	ActiveListeners           int
 	ActiveSessionTasks        int
@@ -352,6 +370,7 @@ func (d *Device) Stats() DeviceStats {
 	d.mu.Lock()
 	result := DeviceStats{
 		AcceptedConnections: d.accepted,
+		AnsweredPings:       d.answeredPings,
 		ActiveConnections:   len(d.connections),
 		ActiveListeners:     len(d.listeners),
 		ActiveSessionTasks:  d.sessionTasks,
@@ -525,6 +544,13 @@ func (d *Device) serve(session *deviceSession) {
 			}
 		case *pb.PingRequest:
 			if session.send(&pb.PingResponse{}) != nil {
+				return
+			}
+			d.mu.Lock()
+			d.answeredPings++
+			d.mu.Unlock()
+		case *pb.DeviceInfoRequest:
+			if session.send(d.deviceInfo()) != nil {
 				return
 			}
 		case *pb.DisconnectRequest:

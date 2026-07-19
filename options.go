@@ -22,6 +22,8 @@ type config struct {
 	dialContext       DialContextFunc
 	maxFrameSize      int
 	callbackQueueSize int
+	keepaliveInterval time.Duration
+	keepaliveTimeout  time.Duration
 }
 
 // Option configures a Client before it connects.
@@ -63,6 +65,19 @@ func WithMaxFrameSize(bytes int) Option {
 // WithCallbackQueueSize sets the bounded asynchronous callback queue.
 func WithCallbackQueueSize(size int) Option {
 	return func(c *config) { c.callbackQueueSize = size }
+}
+
+// WithKeepalive starts an automatic liveness probe every interval once the
+// connection is established. Each probe is bounded by timeout; the first
+// probe the device never answers closes the connection with an ErrKeepalive
+// close reason. Both durations must be positive or dialing fails. Keepalive
+// stays disabled unless requested, so the MGMT facade path, whose session
+// layer owns liveness and reconnect policy, is unchanged.
+func WithKeepalive(interval, timeout time.Duration) Option {
+	return func(c *config) {
+		c.keepaliveInterval = interval
+		c.keepaliveTimeout = timeout
+	}
 }
 
 func defaultDialer(timeout time.Duration) DialContextFunc {

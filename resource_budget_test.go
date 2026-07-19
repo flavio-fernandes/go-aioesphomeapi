@@ -48,19 +48,26 @@ func countOwnedGoroutines(markers ...string) int {
 	return count
 }
 
-// clientOwnedGoroutines counts the client's owned loops. The two markers also
-// match the read loop's context-watcher closure (readLoop.func1).
+// clientOwnedGoroutines counts the client's owned loops. The first two
+// markers also match the read loop's context-watcher closure (readLoop.func1);
+// the third matches the optional automatic keepalive prober.
 func clientOwnedGoroutines() int {
 	return countOwnedGoroutines(
 		"aioesphomeapi.(*Client).readLoop",
 		"aioesphomeapi.(*Client).dispatchLoop",
+		"aioesphomeapi.(*Client).keepaliveLoop",
 	)
 }
 
 // clientGoroutineBudget is the documented maximum for one connected client:
 // the frame read loop, the read loop's context watcher, and the serial
-// callback dispatcher. Dial starts exactly these three and nothing else.
+// callback dispatcher. Without WithKeepalive, Dial starts exactly these
+// three and nothing else.
 const clientGoroutineBudget = 3
+
+// keepaliveClientGoroutineBudget adds the one automatic keepalive prober
+// that WithKeepalive starts. No other option starts a goroutine.
+const keepaliveClientGoroutineBudget = clientGoroutineBudget + 1
 
 // simulatorGoroutineBudget is the documented maximum the simulator owns per
 // accepted connection: one serve goroutine. It is the only `go` statement in
@@ -145,6 +152,38 @@ func TestClientGoroutineBudgetAfterClose(t *testing.T) {
 	if stats := device.Stats(); stats.AcceptedConnections != cycles {
 		t.Fatalf("accepted connections = %d, want %d", stats.AcceptedConnections, cycles)
 	}
+}
+
+// TestKeepaliveClientGoroutineBudget proves a keepalive-enabled client owns
+// at most one goroutine more than the plain budget while active and zero
+// after Close, so the automatic prober can never leak past the connection.
+func TestKeepaliveClientGoroutineBudget(t *testing.T) {
+	device := simulator.New(simulator.BasicIOScenario())
+	t.Cleanup(func() { _ = device.Close() })
+	options := append(device.ClientOptions(), api.WithKeepalive(5*time.Millisecond, 2*time.Second))
+	client, err := api.Dial("simulator:6053", time.Second, options...)
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	t.Cleanup(func() { _ = client.Close() })
+
+	waitUntil(t, "the keepalive client to settle at its goroutine budget", func() bool {
+		return clientOwnedGoroutines() == keepaliveClientGoroutineBudget
+	})
+	if owned := clientOwnedGoroutines(); owned > keepaliveClientGoroutineBudget {
+		t.Fatalf("keepalive client owns %d goroutines, budget %d", owned, keepaliveClientGoroutineBudget)
+	}
+	if err := client.Close(); err != nil {
+		t.Fatalf("close: %v", err)
+	}
+	select {
+	case <-client.Done():
+	case <-time.After(5 * time.Second):
+		t.Fatal("Done never closed")
+	}
+	waitUntil(t, "keepalive client goroutines to end", func() bool {
+		return clientOwnedGoroutines() == 0
+	})
 }
 
 // TestSimulatorConnectionCleanupBudget proves the simulator owns at most

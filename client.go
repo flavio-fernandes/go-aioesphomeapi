@@ -35,6 +35,11 @@ var (
 	ErrEventQueueFull = errors.New("ESPHome callback queue is full")
 	// ErrPing identifies a failed caller-initiated liveness probe.
 	ErrPing = errors.New("ESPHome ping failed")
+	// ErrKeepalive identifies an automatic liveness probe the peer never
+	// answered, or an invalid keepalive configuration.
+	ErrKeepalive = errors.New("ESPHome keepalive failed")
+	// ErrDeviceInfo identifies a failed device information exchange.
+	ErrDeviceInfo = errors.New("ESPHome device info failed")
 	// ErrNoiseHandshake identifies a failed encrypted transport handshake.
 	ErrNoiseHandshake = wire.ErrNoiseHandshake
 	// ErrPeerName identifies a configured peer-name mismatch on either transport.
@@ -66,14 +71,15 @@ type Client struct {
 	closeReasonMu      sync.RWMutex
 	closeReason        error
 
-	handlerMu     sync.RWMutex
-	nextHandler   uint64
-	handlers      map[uint32]map[uint64]callback
-	events        chan proto.Message
-	callbacksDone chan struct{}
-	listMu        sync.Mutex
-	list          *listResult
-	pingGate      chan struct{}
+	handlerMu      sync.RWMutex
+	nextHandler    uint64
+	handlers       map[uint32]map[uint64]callback
+	events         chan proto.Message
+	callbacksDone  chan struct{}
+	listMu         sync.Mutex
+	list           *listResult
+	pingGate       chan struct{}
+	deviceInfoGate chan struct{}
 }
 
 // Dial connects using a background context.
@@ -101,6 +107,10 @@ func DialWithContext(ctx context.Context, address string, timeout time.Duration,
 	}
 	if cfg.callbackQueueSize <= 0 {
 		cfg.callbackQueueSize = 256
+	}
+	if (cfg.keepaliveInterval != 0 || cfg.keepaliveTimeout != 0) &&
+		(cfg.keepaliveInterval <= 0 || cfg.keepaliveTimeout <= 0) {
+		return nil, fmt.Errorf("%w: interval and timeout must both be positive", ErrKeepalive)
 	}
 
 	establishCtx := ctx
@@ -194,6 +204,9 @@ func DialWithContext(ctx context.Context, address string, timeout time.Duration,
 	c.connected.Store(true)
 	go c.dispatchLoop()
 	go c.readLoop(ctx)
+	if cfg.keepaliveInterval > 0 {
+		go c.keepaliveLoop(cfg.keepaliveInterval, cfg.keepaliveTimeout)
+	}
 	return c, nil
 }
 
@@ -212,15 +225,17 @@ func establishmentCause(ctx context.Context, err error) error {
 
 func newClient(framer wire.Framer, callbackQueueSize int) *Client {
 	client := &Client{
-		framer:        framer,
-		entities:      newEntityRegistry(),
-		done:          make(chan struct{}),
-		handlers:      make(map[uint32]map[uint64]callback),
-		events:        make(chan proto.Message, callbackQueueSize),
-		callbacksDone: make(chan struct{}),
-		pingGate:      make(chan struct{}, 1),
+		framer:         framer,
+		entities:       newEntityRegistry(),
+		done:           make(chan struct{}),
+		handlers:       make(map[uint32]map[uint64]callback),
+		events:         make(chan proto.Message, callbackQueueSize),
+		callbacksDone:  make(chan struct{}),
+		pingGate:       make(chan struct{}, 1),
+		deviceInfoGate: make(chan struct{}, 1),
 	}
 	client.pingGate <- struct{}{}
+	client.deviceInfoGate <- struct{}{}
 	return client
 }
 
@@ -289,6 +304,15 @@ func (c *Client) readLoop(ctx context.Context) {
 			}
 			c.shutdown(ErrPeerDisconnected)
 			return
+		}
+		switch message.(type) {
+		case *pb.PingResponse, *pb.DeviceInfoResponse:
+			// Probe and device-info completions bypass the bounded callback
+			// queue: their only handlers are the client's own non-blocking
+			// completion hooks, so a slow subscriber callback can never delay
+			// a liveness verdict or make keepalive misreport a healthy peer.
+			c.deliverDirect(message)
+			continue
 		}
 		select {
 		case c.events <- message:
@@ -515,15 +539,29 @@ func (c *Client) SubscribeLogs(level pb.LogLevel, handler func(*pb.SubscribeLogs
 // probes are serialized so one response can never satisfy multiple callers.
 // A probe that times out after sending closes the ambiguous connection; a late
 // response can therefore never satisfy a later probe.
-func (c *Client) Ping(ctx context.Context) error {
+func (c *Client) Ping(ctx context.Context) error { return c.probe(ctx, ErrPing) }
+
+// probe implements Ping for both the caller-initiated and the automatic
+// keepalive category so the recorded close reason names the actual initiator.
+func (c *Client) probe(ctx context.Context, category error) error {
 	if ctx == nil {
-		return fmt.Errorf("%w: nil context", ErrPing)
+		return fmt.Errorf("%w: nil context", category)
+	}
+	// An already-ended context or client must never race the free gate below
+	// into the send path, so both are checked on their own first.
+	if ctx.Err() != nil {
+		return fmt.Errorf("%w: wait to start: %w", category, context.Cause(ctx))
+	}
+	select {
+	case <-c.done:
+		return c.closedError(category)
+	default:
 	}
 	select {
 	case <-ctx.Done():
-		return fmt.Errorf("%w: wait to start: %w", ErrPing, context.Cause(ctx))
+		return fmt.Errorf("%w: wait to start: %w", category, context.Cause(ctx))
 	case <-c.done:
-		return c.pingClosedError()
+		return c.closedError(category)
 	case <-c.pingGate:
 	}
 	defer func() { c.pingGate <- struct{}{} }()
@@ -538,24 +576,135 @@ func (c *Client) Ping(ctx context.Context) error {
 		}
 	})
 	defer remove()
+	// The watchdog bounds the whole exchange, including a send blocked by a
+	// peer that accepted the connection but stopped reading: context expiry
+	// records the timeout reason and closes the connection, which unblocks
+	// any stuck write.
+	watchdog := context.AfterFunc(ctx, func() {
+		c.shutdown(fmt.Errorf("%w: wait for response: %w", category, context.Cause(ctx)))
+	})
+	defer watchdog()
 	if err := c.send(&pb.PingRequest{}); err != nil {
-		return fmt.Errorf("%w: send request: %w", ErrPing, err)
+		return fmt.Errorf("%w: send request: %w", category, err)
 	}
 	select {
 	case <-response:
 		return nil
 	case <-ctx.Done():
-		reason := fmt.Errorf("%w: wait for response: %w", ErrPing, context.Cause(ctx))
+		reason := fmt.Errorf("%w: wait for response: %w", category, context.Cause(ctx))
 		c.shutdown(reason)
 		return reason
 	case <-c.done:
-		return c.pingClosedError()
+		return c.closedError(category)
 	}
 }
 
-func (c *Client) pingClosedError() error {
-	if reason := c.CloseReason(); reason != nil {
-		return fmt.Errorf("%w: connection closed: %w", ErrPing, reason)
+// keepaliveLoop periodically proves peer liveness after WithKeepalive. Every
+// probe carries its own timeout, so one silent peer can never park the loop,
+// and the first failed probe records an ErrKeepalive close reason and ends
+// the loop. Deliberate Close ends the loop without a failure.
+func (c *Client) keepaliveLoop(interval, timeout time.Duration) {
+	timer := time.NewTimer(interval)
+	defer timer.Stop()
+	for {
+		select {
+		case <-c.done:
+			return
+		case <-timer.C:
+		}
+		probeCtx, cancel := context.WithTimeout(context.Background(), timeout)
+		err := c.probe(probeCtx, ErrKeepalive)
+		cancel()
+		if err != nil {
+			c.shutdown(err)
+			return
+		}
+		timer.Reset(interval)
 	}
-	return fmt.Errorf("%w: %w", ErrPing, ErrClientClosed)
+}
+
+// DeviceInfo performs one context-bounded device information exchange and
+// returns the peer's static identity description. Concurrent exchanges are
+// serialized so one response can never satisfy multiple callers, and an
+// exchange that times out after sending closes the ambiguous connection for
+// the same reason Ping does: the protocol carries no correlation ID, so a
+// late response must never complete a different, later exchange.
+func (c *Client) DeviceInfo(ctx context.Context) (*pb.DeviceInfoResponse, error) {
+	if ctx == nil {
+		return nil, fmt.Errorf("%w: nil context", ErrDeviceInfo)
+	}
+	// See probe: an already-ended context or client must never race the free
+	// gate.
+	if ctx.Err() != nil {
+		return nil, fmt.Errorf("%w: wait to start: %w", ErrDeviceInfo, context.Cause(ctx))
+	}
+	select {
+	case <-c.done:
+		return nil, c.closedError(ErrDeviceInfo)
+	default:
+	}
+	select {
+	case <-ctx.Done():
+		return nil, fmt.Errorf("%w: wait to start: %w", ErrDeviceInfo, context.Cause(ctx))
+	case <-c.done:
+		return nil, c.closedError(ErrDeviceInfo)
+	case <-c.deviceInfoGate:
+	}
+	defer func() { c.deviceInfoGate <- struct{}{} }()
+
+	response := make(chan *pb.DeviceInfoResponse, 1)
+	remove := c.on(10, func(message proto.Message) {
+		if info, ok := message.(*pb.DeviceInfoResponse); ok {
+			select {
+			case response <- info:
+			default:
+			}
+		}
+	})
+	defer remove()
+	// Same watchdog contract as probe: bound the whole exchange, including a
+	// send blocked by a peer that stopped reading.
+	watchdog := context.AfterFunc(ctx, func() {
+		c.shutdown(fmt.Errorf("%w: wait for response: %w", ErrDeviceInfo, context.Cause(ctx)))
+	})
+	defer watchdog()
+	if err := c.send(&pb.DeviceInfoRequest{}); err != nil {
+		return nil, fmt.Errorf("%w: send request: %w", ErrDeviceInfo, err)
+	}
+	select {
+	case info := <-response:
+		return info, nil
+	case <-ctx.Done():
+		reason := fmt.Errorf("%w: wait for response: %w", ErrDeviceInfo, context.Cause(ctx))
+		c.shutdown(reason)
+		return nil, reason
+	case <-c.done:
+		return nil, c.closedError(ErrDeviceInfo)
+	}
+}
+
+// deliverDirect invokes the internal completion handlers for one message
+// without entering the bounded subscriber queue. Only the client's own
+// non-blocking hooks register for these message IDs.
+func (c *Client) deliverDirect(message proto.Message) {
+	id, err := wire.MessageID(message)
+	if err != nil {
+		return
+	}
+	c.handlerMu.RLock()
+	callbacks := make([]callback, 0, len(c.handlers[id]))
+	for _, fn := range c.handlers[id] {
+		callbacks = append(callbacks, fn)
+	}
+	c.handlerMu.RUnlock()
+	for _, fn := range callbacks {
+		fn(message)
+	}
+}
+
+func (c *Client) closedError(category error) error {
+	if reason := c.CloseReason(); reason != nil {
+		return fmt.Errorf("%w: connection closed: %w", category, reason)
+	}
+	return fmt.Errorf("%w: %w", category, ErrClientClosed)
 }

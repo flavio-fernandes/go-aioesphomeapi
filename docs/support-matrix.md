@@ -88,8 +88,8 @@ The evidence is append-only: [`compatibility/mgmt-feat-esphome2.json`](../compat
 | Noise transport | known | typed | simulated | mgmt | hardware | M1 |
 | `.local` A-record resolution | known | typed | simulated | mgmt | hardware | M1 |
 | Hello and API version | known | typed | simulated | mgmt | hardware | M1 |
-| Device information | known | none | none | none | none | M1 |
-| Ping, disconnect, close | known | typed | simulated | none | none | M1 |
+| Device information | known | typed | simulated | none | none | M1 |
+| Ping, keepalive, disconnect, close | known | typed | simulated | none | none | M1 |
 | Entity discovery | known | typed | simulated | mgmt | hardware | M1 |
 | State subscriptions | known | typed | simulated | mgmt | hardware | M1 |
 | Bounded device logs | known | typed | simulated | mgmt | hardware | M1 |
@@ -140,6 +140,7 @@ graph remains two direct and two transitive runtime modules on Go 1.25.12.
 | Ordered command expectations | typed | simulated | n/a | M1 | Exact protobuf values and counts are defensively copied; context-bounded waits distinguish missing, unexpected, out-of-order, and observation-overflow outcomes without exposing command payloads. The exploratory `Commands()` stream remains compatible. |
 | Slow-subscriber queue saturation | typed | simulated | n/a | M1 | A manual-clock real-wire burst fills a deliberately one-item callback queue behind a caller gate, closes with `ErrEventQueueFull`, invokes no callback concurrently or after shutdown, and permits bounded device/dispatcher cleanup. |
 | Deterministic network shaping | typed | simulated | n/a | M1 | Named next-response delay, one-byte fragmentation, and framing-segment coalescing operate below the real Noise/plain framers. Exact decode and subsequent Ping prove byte preservation; delayed timeline frames retain order without blocking manual-clock advancement; the fixed 64-frame writer queue fails closed on overflow; device cleanup cancels pending waits. |
+| Device info and probe accounting | typed | simulated | n/a | M1 | The device answers `DeviceInfoRequest` with fixed synthetic identity values (a locally administered MAC constant and the pinned protocol version) and counts answered pings in `DeviceStats.AnsweredPings`, so device-info and keepalive tests assert exact observable behavior without any real device identifier. |
 | Simulator resource budgets and cleanup | typed | simulated | n/a | M1 | Validation enforces 4,096 items per repeated field, 64 KiB per encoded message, and 4 MiB aggregate protobuf data before cloning. Each device caps session tasks at 64 and listeners at 8; typed saturation errors and `WaitForIdle` prove connections, listeners, session teardown, and virtual delays return to zero. |
 
 ## Reference-client parity

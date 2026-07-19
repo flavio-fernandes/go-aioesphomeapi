@@ -463,7 +463,23 @@ network, protocol, peer-disconnect, context, and queue failures record a cause.
 short context deadline. The probe is serialized and returns `ErrPing` while
 preserving cancellation, connection, or protocol causes. A sent probe that
 times out closes the ambiguous connection so a late reply cannot satisfy a
-later probe. Automatic periodic keepalive remains application policy for now.
+later probe.
+
+**Watch an established connection continuously:** dial with
+`aioesphomeapi.WithKeepalive(20*time.Second, 5*time.Second)` (pick your own
+durations; both must be positive). The client then probes the device on that
+interval, and the first probe the device never answers closes the connection
+with an `ErrKeepalive` close reason visible through `client.CloseReason()`.
+Keepalive stays off unless you ask for it, and a slow state callback can never
+make keepalive misreport a healthy device, because probe replies bypass the
+subscriber callback queue.
+
+**Ask a device to describe itself:** call `client.DeviceInfo(ctx)` with a
+short context deadline. It returns the peer's typed identity (name, MAC,
+firmware version, model) or `ErrDeviceInfo` with the preserved cause. Like
+`Ping`, an exchange that times out after sending closes the ambiguous
+connection. Against the simulator the reply always contains the fixed
+synthetic identity, for example MAC `02:00:00:00:00:01`.
 
 **A fuzz command cannot start:** confirm `go version` reports Go 1.25.12 or a
 later compatible Go 1.25 patch and that the repository dependencies have been

@@ -175,9 +175,9 @@
       "entity_family": "device_info",
       "mgmt_required": false,
       "reference_parity": "reference_behavior_not_required_by_mgmt",
-      "public_behavior": "generated_only",
-      "evidence_profile": "known_only",
-      "notes": "M1 lifecycle target owned by issue #11; no handwritten request behavior is implemented yet."
+      "public_behavior": "device_info",
+      "evidence_profile": "typed_simulated",
+      "notes": "Starts the context-bounded, serialized device information exchange."
     },
     {
       "name": "DeviceInfoResponse",
@@ -185,9 +185,9 @@
       "entity_family": "device_info",
       "mgmt_required": false,
       "reference_parity": "reference_behavior_not_required_by_mgmt",
-      "public_behavior": "generated_only",
-      "evidence_profile": "known_only",
-      "notes": "M1 lifecycle target owned by issue #11; generated fields are known but not exposed as typed behavior."
+      "public_behavior": "device_info",
+      "evidence_profile": "typed_simulated",
+      "notes": "Completes DeviceInfo with the peer identity description; a response after timeout closes the ambiguous connection."
     },
     {
       "name": "ListEntitiesRequest",

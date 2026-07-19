@@ -322,19 +322,27 @@
       "milestone": "M1",
       "mgmt_required": false,
       "reference_parity": "reference_behavior_not_required_by_mgmt",
-      "public_behavior": "generated_only",
+      "public_behavior": "device_info",
       "evidence": {
         "known": [
           "protocol/upstream.lock.json",
           "protocol/upstream/api.proto"
         ],
-        "typed": [],
-        "simulated": [],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
         "mgmt": [],
         "hardware": [],
         "production": []
       },
-      "notes": "M1 lifecycle target owned by issue #11; no handwritten request behavior is implemented yet."
+      "notes": "Starts the context-bounded, serialized device information exchange."
     },
     {
       "id": 10,
@@ -350,19 +358,27 @@
       "milestone": "M1",
       "mgmt_required": false,
       "reference_parity": "reference_behavior_not_required_by_mgmt",
-      "public_behavior": "generated_only",
+      "public_behavior": "device_info",
       "evidence": {
         "known": [
           "protocol/upstream.lock.json",
           "protocol/upstream/api.proto"
         ],
-        "typed": [],
-        "simulated": [],
+        "typed": [
+          "client.go",
+          "entities.go",
+          "commands.go"
+        ],
+        "simulated": [
+          "client_integration_test.go",
+          "simulator/basic_test.go",
+          "simulator/fault_test.go"
+        ],
         "mgmt": [],
         "hardware": [],
         "production": []
       },
-      "notes": "M1 lifecycle target owned by issue #11; generated fields are known but not exposed as typed behavior."
+      "notes": "Completes DeviceInfo with the peer identity description; a response after timeout closes the ambiguous connection."
     },
     {
       "id": 11,
