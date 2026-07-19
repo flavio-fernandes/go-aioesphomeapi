@@ -579,9 +579,15 @@ func (c *Client) probe(ctx context.Context, category error) error {
 	// The watchdog bounds the whole exchange, including a send blocked by a
 	// peer that accepted the connection but stopped reading: context expiry
 	// records the timeout reason and closes the connection, which unblocks
-	// any stuck write.
+	// any stuck write. Exactly one of completion and expiry wins the verdict,
+	// so a response that arrives at the deadline instant can never be
+	// reported as success while the watchdog closes a healthy connection.
+	var verdict atomic.Uint32
+	const verdictCompleted, verdictExpired = 1, 2
 	watchdog := context.AfterFunc(ctx, func() {
-		c.shutdown(fmt.Errorf("%w: wait for response: %w", category, context.Cause(ctx)))
+		if verdict.CompareAndSwap(0, verdictExpired) {
+			c.shutdown(fmt.Errorf("%w: wait for response: %w", category, context.Cause(ctx)))
+		}
 	})
 	defer watchdog()
 	if err := c.send(&pb.PingRequest{}); err != nil {
@@ -589,10 +595,15 @@ func (c *Client) probe(ctx context.Context, category error) error {
 	}
 	select {
 	case <-response:
-		return nil
+		if verdict.CompareAndSwap(0, verdictCompleted) {
+			return nil
+		}
+		return fmt.Errorf("%w: wait for response: %w", category, context.Cause(ctx))
 	case <-ctx.Done():
 		reason := fmt.Errorf("%w: wait for response: %w", category, context.Cause(ctx))
-		c.shutdown(reason)
+		if verdict.CompareAndSwap(0, verdictExpired) {
+			c.shutdown(reason)
+		}
 		return reason
 	case <-c.done:
 		return c.closedError(category)
@@ -663,9 +674,14 @@ func (c *Client) DeviceInfo(ctx context.Context) (*pb.DeviceInfoResponse, error)
 	})
 	defer remove()
 	// Same watchdog contract as probe: bound the whole exchange, including a
-	// send blocked by a peer that stopped reading.
+	// send blocked by a peer that stopped reading, and let exactly one of
+	// completion and expiry win the verdict.
+	var verdict atomic.Uint32
+	const verdictCompleted, verdictExpired = 1, 2
 	watchdog := context.AfterFunc(ctx, func() {
-		c.shutdown(fmt.Errorf("%w: wait for response: %w", ErrDeviceInfo, context.Cause(ctx)))
+		if verdict.CompareAndSwap(0, verdictExpired) {
+			c.shutdown(fmt.Errorf("%w: wait for response: %w", ErrDeviceInfo, context.Cause(ctx)))
+		}
 	})
 	defer watchdog()
 	if err := c.send(&pb.DeviceInfoRequest{}); err != nil {
@@ -673,10 +689,15 @@ func (c *Client) DeviceInfo(ctx context.Context) (*pb.DeviceInfoResponse, error)
 	}
 	select {
 	case info := <-response:
-		return info, nil
+		if verdict.CompareAndSwap(0, verdictCompleted) {
+			return info, nil
+		}
+		return nil, fmt.Errorf("%w: wait for response: %w", ErrDeviceInfo, context.Cause(ctx))
 	case <-ctx.Done():
 		reason := fmt.Errorf("%w: wait for response: %w", ErrDeviceInfo, context.Cause(ctx))
-		c.shutdown(reason)
+		if verdict.CompareAndSwap(0, verdictExpired) {
+			c.shutdown(reason)
+		}
 		return nil, reason
 	case <-c.done:
 		return nil, c.closedError(ErrDeviceInfo)
