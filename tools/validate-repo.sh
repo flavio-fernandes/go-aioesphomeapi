@@ -58,7 +58,8 @@ if [[ ! -x tools/report-dependencies.sh ]] || [[ ! -x tools/check-generated-drif
   ! grep -Fq 'run: ./tools/report-dependencies.sh' .github/workflows/policy.yml ||
   ! grep -Fq 'run: ./tools/check-generated-drift.sh' .github/workflows/policy.yml ||
   ! grep -Fq 'test-mgmt-baselines.sh' .github/workflows/mgmt-compat.yml ||
-  ! grep -Fq 'test-mgmt-conveyor.sh' .github/workflows/mgmt-compat.yml; then
+  ! grep -Fq 'test-mgmt-conveyor.sh' .github/workflows/mgmt-compat.yml ||
+  ! grep -Fq 'demo-mgmt-blink.sh' .github/workflows/mgmt-compat.yml; then
   echo "release verification lanes must stay executable and wired into CI" >&2
   exit 1
 fi

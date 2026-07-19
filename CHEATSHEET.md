@@ -219,7 +219,33 @@ Expected output:
 MGMT securely converged both reviewed baseline MCL examples against dedicated simulators
 ```
 
-### 8a. Run an explicitly authorized hardware blink demo
+### 8a. Watch the endless blink loop without hardware
+
+The baseline check above proves one corrective convergence and exits. This
+command runs the same unchanged `esphome-blink.mcl` against a simulated device
+that also reproduces the firmware automations, so the LED blinks forever and
+MGMT cannot tell it is not real hardware. Press Ctrl-C to stop:
+
+```bash
+./tools/demo-mgmt-blink.sh ../mgmt /tmp/mgmt
+```
+
+Append a cycle count to stop automatically and verify the evidence:
+
+```bash
+./tools/demo-mgmt-blink.sh ../mgmt /tmp/mgmt 3
+```
+
+Expected final line of the bounded run:
+
+```text
+MGMT blinked the unchanged blink MCL for 3 cycles against the loopback simulator
+```
+
+For the friendly walkthrough with expected log output and troubleshooting, see
+[the MGMT blink loop demo](docs/mgmt-blink-demo.md).
+
+### 8b. Run an explicitly authorized hardware blink demo
 
 After the simulator passes, maintainers with a pre-provisioned blink device can
 follow the [hardware blink walkthrough](docs/mgmt-hardware-blink.md). It keeps

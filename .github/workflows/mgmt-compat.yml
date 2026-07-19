@@ -2,8 +2,9 @@ name: MGMT compatibility
 
 # Check out the pinned MGMT revision from the append-only compatibility
 # record, verify its commit and tree hashes, patch it to build against this
-# library checkout, and run the targeted ESPHome lanes plus both no-hardware
-# MCL simulator scenarios over Noise and multicast DNS.
+# library checkout, and run the targeted ESPHome lanes plus the no-hardware
+# MCL simulator scenarios (baselines, conveyor, and the continuous blink
+# loop) over Noise and multicast DNS.
 
 on:
   pull_request:
@@ -113,3 +114,7 @@ jobs:
         run: |
           cd library
           sudo env "PATH=$PATH" ./tools/test-mgmt-conveyor.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt" 2>&1
+      - name: Blink the unchanged blink MCL for three continuous cycles
+        run: |
+          cd library
+          sudo env "PATH=$PATH" ./tools/demo-mgmt-blink.sh "$GITHUB_WORKSPACE/mgmt" "$GITHUB_WORKSPACE/mgmt/mgmt" 3 2>&1

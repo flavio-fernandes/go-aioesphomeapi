@@ -17,7 +17,7 @@ Run these commands on Linux from the `go-aioesphomeapi` repository root.
 Required tools:
 
 - the Go version requested by the MGMT checkout; the current `feat/esphome`
-  branch uses Go 1.26.1
+  branch and the pinned CI compatibility lane use Go 1.25.12
 - `git`
 - `ip`
 - `sha256sum`
@@ -81,7 +81,7 @@ walkthrough also tests the same name-resolution path used by an ESPHome device.
 Expected final line:
 
 ```text
-MGMT securely converged the unchanged conveyor MCL against the loopback simulator
+MGMT securely converged the reviewed conveyor MCL against the loopback simulator
 ```
 
 That one line means the wrapper verified all of these checks:
@@ -107,8 +107,12 @@ still work without changing their MCL source:
 Expected final line:
 
 ```text
-MGMT securely converged both unchanged baseline MCL examples against dedicated simulators
+MGMT securely converged both reviewed baseline MCL examples against dedicated simulators
 ```
+
+Those runs prove one corrective convergence and exit. To watch the blink
+example run as an endless loop against a simulated device that behaves like
+the real firmware, follow the [MGMT blink loop demo](mgmt-blink-demo.md).
 
 ## Troubleshooting
 

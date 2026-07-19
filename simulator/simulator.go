@@ -45,6 +45,9 @@ var (
 	// ErrSimulatorBusy classifies WaitForIdle cancellation while owned work
 	// remains active.
 	ErrSimulatorBusy = errors.New("simulator still has active work")
+	// ErrUnsupportedPush classifies PushState and PushLog payloads the
+	// simulator cannot represent as device output.
+	ErrUnsupportedPush = errors.New("unsupported simulator push payload")
 )
 
 // Scenario is the complete initial state advertised by a simulated device.
@@ -122,6 +125,10 @@ type deviceSession struct {
 	writeMu    sync.Mutex
 	framer     wire.Framer
 	subscribed bool
+	// logsSubscribed and logLevel record the session's log subscription for
+	// PushLog delivery. Both are guarded by Device.stateMu.
+	logsSubscribed bool
+	logLevel       pb.LogLevel
 }
 
 // Device accepts injected net.Pipe connections and records received commands.
@@ -535,6 +542,10 @@ func (d *Device) serve(session *deviceSession) {
 			}
 			d.triggerNetwork(session, FaultAfterInitialStates)
 		case *pb.SubscribeLogsRequest:
+			d.stateMu.Lock()
+			session.logsSubscribed = true
+			session.logLevel = m.Level
+			d.stateMu.Unlock()
 			for _, entry := range d.scenario.Logs {
 				if entry.Level <= m.Level {
 					if session.send(proto.Clone(entry)) != nil {
@@ -616,6 +627,79 @@ func (d *Device) storeAndSend(session *deviceSession, state proto.Message) error
 	return session.send(state)
 }
 
+// PushState commits one entity state change and sends it to every session
+// with an active state subscription, exactly as if a StateTimeline event
+// fired at the current moment. Later subscribers receive the committed value
+// in their initial snapshot. It lets device-side callers model runtime
+// behavior, such as firmware automations reacting to received commands.
+func (d *Device) PushState(state proto.Message) error {
+	if d.validationErr != nil {
+		return d.validationErr
+	}
+	if !validState(state) {
+		return fmt.Errorf("%w: state message %T", ErrUnsupportedPush, state)
+	}
+	select {
+	case <-d.done:
+		return errSimulatorClosed
+	default:
+	}
+	state = proto.Clone(state)
+	d.stateSerial.Lock()
+	defer d.stateSerial.Unlock()
+	d.stateMu.Lock()
+	d.storeStateLocked(state)
+	d.mu.Lock()
+	subscribers := make([]*deviceSession, 0, len(d.connections))
+	for _, session := range d.connections {
+		if session.subscribed {
+			subscribers = append(subscribers, session)
+		}
+	}
+	d.mu.Unlock()
+	d.stateMu.Unlock()
+	for _, subscriber := range subscribers {
+		// A concurrent disconnect is normal. State is already committed and
+		// appears in the next subscriber's snapshot.
+		_ = subscriber.send(proto.Clone(state))
+	}
+	return nil
+}
+
+// PushLog sends one device log line to every session whose log subscription
+// level admits the entry. Sessions that never subscribed to logs receive
+// nothing, matching a real device. Pushed entries are not replayed to later
+// subscribers; only Scenario.Logs are.
+func (d *Device) PushLog(entry *pb.SubscribeLogsResponse) error {
+	if d.validationErr != nil {
+		return d.validationErr
+	}
+	if nilMessage(entry) {
+		return fmt.Errorf("%w: nil log entry", ErrUnsupportedPush)
+	}
+	select {
+	case <-d.done:
+		return errSimulatorClosed
+	default:
+	}
+	entry = proto.Clone(entry).(*pb.SubscribeLogsResponse)
+	d.stateMu.Lock()
+	subscribers := make([]*deviceSession, 0)
+	d.mu.Lock()
+	for _, session := range d.connections {
+		if session.logsSubscribed && entry.Level <= session.logLevel {
+			subscribers = append(subscribers, session)
+		}
+	}
+	d.mu.Unlock()
+	d.stateMu.Unlock()
+	for _, subscriber := range subscribers {
+		// A concurrent disconnect is normal; logs are transient device output.
+		_ = subscriber.send(proto.Clone(entry))
+	}
+	return nil
+}
+
 func (d *Device) advanceTimeline(now time.Duration) error {
 	d.stateSerial.Lock()
 	defer d.stateSerial.Unlock()
@@ -627,8 +711,8 @@ func (d *Device) advanceTimeline(now time.Duration) error {
 		d.timelineIndex++
 		d.stateMu.Lock()
 		d.storeStateLocked(event.State)
-		subscribers := make([]*deviceSession, 0, len(d.connections))
 		d.mu.Lock()
+		subscribers := make([]*deviceSession, 0, len(d.connections))
 		for _, session := range d.connections {
 			if session.subscribed {
 				subscribers = append(subscribers, session)
