@@ -72,11 +72,20 @@ if [[ "${1:-}" == "--inside" ]]; then
 		mgmt_pid=$!
 		# Ctrl-C reaches every process in the foreground group. Absorb it here
 		# and keep waiting so MGMT finishes its own graceful shutdown first.
-		trap ':' INT
+		interrupted=0
+		trap 'interrupted=1' INT
+		mgmt_status=0
 		while kill -0 "${mgmt_pid}" 2>/dev/null; do
-			wait "${mgmt_pid}" 2>/dev/null || true
+			wait "${mgmt_pid}" 2>/dev/null && mgmt_status=0 || mgmt_status=$?
 		done
 		mgmt_pid=""
+		# Without an interrupt the loop never ends by itself, so reaching this
+		# point means MGMT failed; do not report a crash as a clean stop.
+		if [[ "${interrupted}" != "1" ]]; then
+			echo "MGMT exited unexpectedly with status ${mgmt_status}" >&2
+			tail -n 40 "${simulator_log}" >&2
+			exit 1
+		fi
 		echo "blink demo stopped"
 		exit 0
 	fi
