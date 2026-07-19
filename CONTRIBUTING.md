@@ -32,5 +32,8 @@ This project is architecture-first and uses pull requests for every non-bootstra
 - State whether `CHEATSHEET.md` changed and why. User-facing behavior needs a clean-clone example.
 - Never include secrets, local paths, private project links, device identifiers, network details, camera captures, or personal contact information.
 - Require review and passing checks before merge. Force-pushes and direct pushes to the default branch are not part of the normal workflow.
+- Codex reviews are manual and paid. Do not request one unless a maintainer
+  explicitly authorizes it for the PR. The required `codex-review` status keeps
+  the PR blocked until that exact-head review is complete.
 
 By contributing, you agree that your contribution is licensed under this repository's GNU General Public License v3.0 only.

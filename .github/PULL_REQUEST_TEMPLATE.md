@@ -16,6 +16,9 @@ Closes #
 
 ## Required review
 
+- [ ] Codex review was requested only after explicit maintainer authorization
+- [ ] Required `codex-review` status passes for this exact head commit
+
 - Security impact:
 - Protocol/provenance impact:
 - Public API compatibility impact:
