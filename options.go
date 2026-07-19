@@ -15,15 +15,16 @@ import (
 type DialContextFunc func(context.Context, string, string) (net.Conn, error)
 
 type config struct {
-	clientInfo        string
-	encryptionKey     string
-	expectedName      string
-	insecurePlaintext bool
-	dialContext       DialContextFunc
-	maxFrameSize      int
-	callbackQueueSize int
-	keepaliveInterval time.Duration
-	keepaliveTimeout  time.Duration
+	clientInfo         string
+	encryptionKey      string
+	expectedName       string
+	insecurePlaintext  bool
+	dialContext        DialContextFunc
+	maxFrameSize       int
+	callbackQueueSize  int
+	keepaliveRequested bool
+	keepaliveInterval  time.Duration
+	keepaliveTimeout   time.Duration
 }
 
 // Option configures a Client before it connects.
@@ -75,6 +76,7 @@ func WithCallbackQueueSize(size int) Option {
 // layer owns liveness and reconnect policy, is unchanged.
 func WithKeepalive(interval, timeout time.Duration) Option {
 	return func(c *config) {
+		c.keepaliveRequested = true
 		c.keepaliveInterval = interval
 		c.keepaliveTimeout = timeout
 	}

@@ -232,6 +232,9 @@ func TestKeepaliveRejectsInvalidConfiguration(t *testing.T) {
 	for _, invalid := range []api.Option{
 		api.WithKeepalive(0, time.Second),
 		api.WithKeepalive(time.Second, -time.Second),
+		// Zero/zero values, for example both defaulted from configuration,
+		// must fail loudly rather than silently disable liveness monitoring.
+		api.WithKeepalive(0, 0),
 	} {
 		options := append(device.ClientOptions(), api.WithDialContext(countingDialer(device, &dials)), invalid)
 		if _, err := api.Dial("simulator:6053", time.Second, options...); !errors.Is(err, api.ErrKeepalive) {

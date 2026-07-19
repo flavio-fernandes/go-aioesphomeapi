@@ -108,8 +108,7 @@ func DialWithContext(ctx context.Context, address string, timeout time.Duration,
 	if cfg.callbackQueueSize <= 0 {
 		cfg.callbackQueueSize = 256
 	}
-	if (cfg.keepaliveInterval != 0 || cfg.keepaliveTimeout != 0) &&
-		(cfg.keepaliveInterval <= 0 || cfg.keepaliveTimeout <= 0) {
+	if cfg.keepaliveRequested && (cfg.keepaliveInterval <= 0 || cfg.keepaliveTimeout <= 0) {
 		return nil, fmt.Errorf("%w: interval and timeout must both be positive", ErrKeepalive)
 	}
 
@@ -204,7 +203,7 @@ func DialWithContext(ctx context.Context, address string, timeout time.Duration,
 	c.connected.Store(true)
 	go c.dispatchLoop()
 	go c.readLoop(ctx)
-	if cfg.keepaliveInterval > 0 {
+	if cfg.keepaliveRequested {
 		go c.keepaliveLoop(cfg.keepaliveInterval, cfg.keepaliveTimeout)
 	}
 	return c, nil
