@@ -22,6 +22,7 @@ required=(
   protocol/upstream/api.proto protocol/upstream/api_options.proto protocol/upstream/LICENSE
   pb/api.pb.go pb/api_options.pb.go tools/sync-protocol.sh tools/generate-protocol.sh
   tools/run-govulncheck.sh tools/report-dependencies.sh tools/check-generated-drift.sh
+  tools/codex-review.sh
   .github/workflows/mgmt-compat.yml
 )
 
@@ -61,6 +62,16 @@ if [[ ! -x tools/report-dependencies.sh ]] || [[ ! -x tools/check-generated-drif
   echo "release verification lanes must stay executable and wired into CI" >&2
   exit 1
 fi
+
+if [[ ! -x tools/codex-review.sh ]] ||
+  ! grep -Fq 'status_context="codex-review"' tools/codex-review.sh ||
+  ! grep -Fq '**Automatic reviews** disabled' CHEATSHEET.md ||
+  ! grep -Fq 'Never request a Codex review automatically' AGENTS.md; then
+  echo "manual Codex review must remain explicit, documented, and status-gated" >&2
+  exit 1
+fi
+
+bash -n tools/codex-review.sh
 
 if ! grep -Fq '8eab220' compatibility/mgmt-feat-esphome.json ||
   ! grep -Fq '982fb85860e7214e3384e68cb69bf94b16a6985b' compatibility/mgmt-feat-esphome.json; then

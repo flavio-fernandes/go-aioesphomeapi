@@ -16,9 +16,12 @@ Read `README.md`, `CHEATSHEET.md`, `docs/architecture.md`, `docs/mgmt-integratio
 - Make the simulator the default first-use path. Never make real hardware, secrets, flashing, cameras, motors, or actuators a beginner default.
 - Do not flash hardware, energize a motor, move an actuator, or use a camera unless the current task explicitly authorizes it and the `operate-esp-workbench` skill's preflight passes.
 - Use small pull requests tied to one issue and milestone. Preserve generated/handwritten boundaries.
-- Never merge on checks alone. Require a Codex review or positive reaction for
-  the exact head commit and zero unresolved review conversations immediately
-  before merging; use `$merge-reviewed-pr` and the expected head SHA.
+- Never request a Codex review automatically or infer permission from ordinary
+  PR work. Only after the user explicitly requests that paid review, run
+  `./tools/codex-review.sh request PR_NUMBER`.
+- Never merge on checks alone. Require the `codex-review` status for the exact
+  head and zero unresolved conversations immediately before merging; use
+  `$merge-reviewed-pr` and the expected head SHA.
 
 ## Required checks
 

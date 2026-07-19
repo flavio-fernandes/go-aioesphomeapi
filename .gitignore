@@ -32,6 +32,10 @@ coverage.out
 *.test
 vendor/
 
+# Python helper output
+__pycache__/
+*.py[cod]
+
 # Editors and operating systems
 .DS_Store
 .idea/
