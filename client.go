@@ -541,6 +541,11 @@ func (c *Client) SubscribeLogs(level pb.LogLevel, handler func(*pb.SubscribeLogs
 // response can therefore never satisfy a later probe.
 func (c *Client) Ping(ctx context.Context) error { return c.probe(ctx, ErrPing) }
 
+// errProbeNotStarted classifies a probe that ended before it acquired the
+// serialization gate, so no request was sent and nothing was proven about the
+// peer. Its text keeps the established "wait to start" wording.
+var errProbeNotStarted = errors.New("wait to start")
+
 // probe implements Ping for both the caller-initiated and the automatic
 // keepalive category so the recorded close reason names the actual initiator.
 func (c *Client) probe(ctx context.Context, category error) error {
@@ -550,7 +555,7 @@ func (c *Client) probe(ctx context.Context, category error) error {
 	// An already-ended context or client must never race the free gate below
 	// into the send path, so both are checked on their own first.
 	if ctx.Err() != nil {
-		return fmt.Errorf("%w: wait to start: %w", category, context.Cause(ctx))
+		return fmt.Errorf("%w: %w: %w", category, errProbeNotStarted, context.Cause(ctx))
 	}
 	select {
 	case <-c.done:
@@ -559,7 +564,7 @@ func (c *Client) probe(ctx context.Context, category error) error {
 	}
 	select {
 	case <-ctx.Done():
-		return fmt.Errorf("%w: wait to start: %w", category, context.Cause(ctx))
+		return fmt.Errorf("%w: %w: %w", category, errProbeNotStarted, context.Cause(ctx))
 	case <-c.done:
 		return c.closedError(category)
 	case <-c.pingGate:
@@ -591,6 +596,11 @@ func (c *Client) probe(ctx context.Context, category error) error {
 	})
 	defer watchdog()
 	if err := c.send(&pb.PingRequest{}); err != nil {
+		// A send the watchdog had to unblock still reports the context cause,
+		// so a timeout remains distinguishable from a transport failure.
+		if ctx.Err() != nil {
+			return fmt.Errorf("%w: send request: %w: %w", category, err, context.Cause(ctx))
+		}
 		return fmt.Errorf("%w: send request: %w", category, err)
 	}
 	select {
@@ -627,6 +637,14 @@ func (c *Client) keepaliveLoop(interval, timeout time.Duration) {
 		err := c.probe(probeCtx, ErrKeepalive)
 		cancel()
 		if err != nil {
+			// A cycle that never acquired the gate proved nothing about the
+			// peer: a caller-initiated probe is in flight and its own outcome
+			// governs liveness, so this cycle yields instead of condemning a
+			// healthy connection.
+			if errors.Is(err, errProbeNotStarted) {
+				timer.Reset(interval)
+				continue
+			}
 			c.shutdown(err)
 			return
 		}
@@ -685,6 +703,11 @@ func (c *Client) DeviceInfo(ctx context.Context) (*pb.DeviceInfoResponse, error)
 	})
 	defer watchdog()
 	if err := c.send(&pb.DeviceInfoRequest{}); err != nil {
+		// See probe: a send the watchdog had to unblock reports the context
+		// cause alongside the transport failure.
+		if ctx.Err() != nil {
+			return nil, fmt.Errorf("%w: send request: %w: %w", ErrDeviceInfo, err, context.Cause(ctx))
+		}
 		return nil, fmt.Errorf("%w: send request: %w", ErrDeviceInfo, err)
 	}
 	select {

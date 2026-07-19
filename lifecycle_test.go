@@ -103,9 +103,10 @@ func TestDeviceInfoTimeoutClosesAmbiguousConnection(t *testing.T) {
 	// The stalled device stops reading entirely, so the exchange may fail
 	// either while waiting for the response or while still writing the
 	// request into the synchronous in-memory pipe. Both paths must stay
-	// bounded by the context and must carry the typed category.
+	// bounded, carry the typed category, and preserve the deadline cause so
+	// a timeout stays distinguishable from a transport failure.
 	_, err = client.DeviceInfo(ctx)
-	if !errors.Is(err, api.ErrDeviceInfo) {
+	if !errors.Is(err, api.ErrDeviceInfo) || !errors.Is(err, context.DeadlineExceeded) {
 		t.Fatalf("stalled device info: %v", err)
 	}
 	select {
@@ -181,6 +182,46 @@ func TestKeepaliveClosesSilentPeerWithoutRedial(t *testing.T) {
 	}
 	if accepted := device.Stats().AcceptedConnections; accepted != 1 {
 		t.Fatalf("device accepted %d connections, expected the single original dial", accepted)
+	}
+}
+
+// TestKeepaliveYieldsToCallerProbe holds the shared probe gate with a long
+// caller-initiated Ping against a silent peer and proves automatic keepalive
+// cycles that time out waiting for the gate yield instead of condemning the
+// connection: the eventual close reason belongs to the caller's probe, never
+// to keepalive. The caller acquires the free gate in straight-line code right
+// after Dial, long before the first 150ms keepalive cycle can fire, and then
+// holds it for the whole probe, so every keepalive cycle meets a contended
+// gate and its 50ms wait budget expires without a request being sent.
+func TestKeepaliveYieldsToCallerProbe(t *testing.T) {
+	scenario := simulator.BasicIOScenario()
+	scenario.Faults = []simulator.Fault{{Trigger: simulator.FaultAfterHello, Action: simulator.FaultStall}}
+	device := simulator.New(scenario)
+	t.Cleanup(func() { _ = device.Close() })
+	options := append(device.ClientOptions(), api.WithKeepalive(150*time.Millisecond, 50*time.Millisecond))
+	client, err := api.Dial("simulator:6053", time.Second, options...)
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	t.Cleanup(func() { _ = client.Close() })
+
+	ctx, cancel := context.WithTimeout(context.Background(), 1500*time.Millisecond)
+	defer cancel()
+	err = client.Ping(ctx)
+	if !errors.Is(err, api.ErrPing) || errors.Is(err, api.ErrKeepalive) {
+		t.Fatalf("caller probe against a silent peer: %v", err)
+	}
+	select {
+	case <-client.Done():
+	case <-time.After(5 * time.Second):
+		t.Fatal("the caller probe never closed the silent connection")
+	}
+	reason := client.CloseReason()
+	if !errors.Is(reason, api.ErrPing) || !errors.Is(reason, context.DeadlineExceeded) {
+		t.Fatalf("close reason: %v", reason)
+	}
+	if errors.Is(reason, api.ErrKeepalive) {
+		t.Fatalf("a yielded keepalive cycle still condemned the connection: %v", reason)
 	}
 }
 
