@@ -536,8 +536,9 @@ func (c *Client) SubscribeLogs(level pb.LogLevel, handler func(*pb.SubscribeLogs
 
 // Ping performs one context-bounded Native API liveness probe. Concurrent
 // probes are serialized so one response can never satisfy multiple callers.
-// A probe that times out after sending closes the ambiguous connection; a late
-// response can therefore never satisfy a later probe.
+// A probe whose context ends once the request may be in flight closes the
+// ambiguous connection; a late response can therefore never satisfy a later
+// probe.
 func (c *Client) Ping(ctx context.Context) error { return c.probe(ctx, ErrPing) }
 
 // errProbeNotStarted classifies a probe that ended before it acquired the
@@ -620,9 +621,11 @@ func (c *Client) probe(ctx context.Context, category error) error {
 }
 
 // keepaliveLoop periodically proves peer liveness after WithKeepalive. Every
-// probe carries its own timeout, so one silent peer can never park the loop,
-// and the first failed probe records an ErrKeepalive close reason and ends
-// the loop. Deliberate Close ends the loop without a failure.
+// probe carries its own timeout, so one silent peer can never park the loop.
+// A cycle that never acquired the shared gate yields to the caller-initiated
+// probe holding it; the first probe that actually fails records an
+// ErrKeepalive close reason and ends the loop. Deliberate Close ends the
+// loop without a failure.
 func (c *Client) keepaliveLoop(interval, timeout time.Duration) {
 	timer := time.NewTimer(interval)
 	defer timer.Stop()
@@ -654,9 +657,10 @@ func (c *Client) keepaliveLoop(interval, timeout time.Duration) {
 // DeviceInfo performs one context-bounded device information exchange and
 // returns the peer's static identity description. Concurrent exchanges are
 // serialized so one response can never satisfy multiple callers, and an
-// exchange that times out after sending closes the ambiguous connection for
-// the same reason Ping does: the protocol carries no correlation ID, so a
-// late response must never complete a different, later exchange.
+// exchange whose context ends once the request may be in flight closes the
+// ambiguous connection for the same reason Ping does: the protocol carries
+// no correlation ID, so a late response must never complete a different,
+// later exchange.
 func (c *Client) DeviceInfo(ctx context.Context) (*pb.DeviceInfoResponse, error) {
 	if ctx == nil {
 		return nil, fmt.Errorf("%w: nil context", ErrDeviceInfo)
