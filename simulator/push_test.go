@@ -1,6 +1,7 @@
 package simulator_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -59,6 +60,13 @@ func TestPushLogHonorsSubscriptionLevel(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(unsubscribe)
+	// SubscribeLogs returns once the request is written; ping the same serve
+	// loop so the subscription is registered before the pushes below.
+	pingCtx, cancelPing := context.WithTimeout(context.Background(), time.Second)
+	defer cancelPing()
+	if err := client.Ping(pingCtx); err != nil {
+		t.Fatalf("Ping subscription barrier: %v", err)
+	}
 
 	if err := device.PushLog(&pb.SubscribeLogsResponse{Level: pb.LogLevel_LOG_LEVEL_DEBUG, Message: []byte("too detailed")}); err != nil {
 		t.Fatal(err)
