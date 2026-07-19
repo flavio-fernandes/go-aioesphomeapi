@@ -167,7 +167,7 @@ go run ./cmd/protocol-inventory -check protocol/inventory.json
 Expected output:
 
 ```text
-ESPHome 2026.7.0: 148 unique messages, 33 M1 accounted (31 implemented), 117 generated-only
+ESPHome 2026.7.0: 148 unique messages, 33 M1 accounted (33 implemented), 115 generated-only
 protocol inventory is current: 148 unique messages
 ```
 

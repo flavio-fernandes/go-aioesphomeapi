@@ -45,4 +45,4 @@ The `pb` package is permitted as the narrow MGMT compatibility exception describ
 
 ## Current record
 
-ESPHome 2026.7.0 protocol definitions and their generated Go output are committed with the exact upstream license and lock. No third-party implementation source is committed. Generated presence raises protocol inventory entries only to `known`. The compatibility inventory explicitly classifies all 148 message IDs; only 31 independently implemented M1 messages carry typed or stronger evidence.
+ESPHome 2026.7.0 protocol definitions and their generated Go output are committed with the exact upstream license and lock. No third-party implementation source is committed. Generated presence raises protocol inventory entries only to `known`. The compatibility inventory explicitly classifies all 148 message IDs; only 33 independently implemented M1 messages carry typed or stronger evidence.

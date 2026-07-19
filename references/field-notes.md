@@ -147,9 +147,8 @@ work. Update both files when future work changes the operational truth.
 - The pinned protobuf does not declare when most messages were introduced.
   Record `not_declared_upstream`, the snapshot where the message is known, and
   a null minimum API version instead of inventing a compatibility floor.
-- M1 currently accounts for 33 wire messages. Thirty-one have typed and
-  simulated proof; DeviceInfo request/response remain known-only under issue
-  #11. MGMT and hardware evidence is attached per message, so text-sensor and
+- M1 currently accounts for 33 wire messages, all with typed and simulated
+  proof since issue #11 landed the DeviceInfo exchange. MGMT and hardware evidence is attached per message, so text-sensor and
   button gaps remain visible for issue #9.
 - Keep unknown message IDs, enum values, and fields as separate plans. Unknown
   IDs are verified; unknown M1 enums and fields remain planned until focused
