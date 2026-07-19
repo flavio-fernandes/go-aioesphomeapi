@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from typing import Any
@@ -13,6 +14,15 @@ from typing import Any
 TRUSTED_CODEX_LOGINS = frozenset({"chatgpt-codex-connector"})
 TRUSTED_REVIEW_REQUEST_LOGINS = frozenset({"flavio-fernandes"})
 ACCEPTED_CODEX_REVIEW_STATES = frozenset({"APPROVED", "COMMENTED"})
+
+# Codex posts its clean verdict as an issue comment, not a review object:
+# "Codex Review: Didn't find any major issues." plus a backticked
+# "**Reviewed commit:**" prefix of the head SHA. Require both, and at least
+# ten hexadecimal characters, before accepting the comment as head evidence.
+CODEX_REVIEWED_COMMIT_PATTERN = re.compile(
+    r"\*\*Reviewed commit:\*\*\s*`([0-9a-f]{10,40})`"
+)
+CODEX_CLEAN_VERDICT_MARKER = "Didn't find any major issues"
 
 
 QUERY = """
@@ -96,6 +106,20 @@ def exact_head_reaction(comment: dict[str, Any], head: str) -> bool:
     return exact_head_reaction_time(comment, head) is not None
 
 
+def codex_comment_verdict_time(comment: dict[str, Any], head: str) -> str | None:
+    """Return the time of a trusted Codex clean comment verdict naming head."""
+    if not trusted_codex((comment.get("author") or {}).get("login")):
+        return None
+    body = comment.get("body") or ""
+    if CODEX_CLEAN_VERDICT_MARKER not in body:
+        return None
+    match = CODEX_REVIEWED_COMMIT_PATTERN.search(body)
+    if match is None or not head.startswith(match.group(1)):
+        return None
+    updated_at = comment.get("updatedAt")
+    return updated_at if isinstance(updated_at, str) else None
+
+
 def exact_head_review(review: dict[str, Any], head: str) -> bool:
     """Return whether trusted Codex submitted a live review for head."""
     return (
@@ -124,15 +148,19 @@ def codex_evidence_complete(
 ) -> bool:
     """Return whether the newest exact-head Codex evidence is non-blocking."""
     latest_review = latest_codex_head_review(reviews, head)
-    reaction_times = [
-        reaction_time
+    evidence_times = [
+        evidence_time
         for comment in comments
-        if (reaction_time := exact_head_reaction_time(comment, head)) is not None
+        for evidence_time in (
+            exact_head_reaction_time(comment, head),
+            codex_comment_verdict_time(comment, head),
+        )
+        if evidence_time is not None
     ]
-    latest_reaction = max(reaction_times, default=None)
+    latest_evidence = max(evidence_times, default=None)
     if latest_review is None:
-        return latest_reaction is not None
-    if latest_reaction is not None and latest_reaction > latest_review["submittedAt"]:
+        return latest_evidence is not None
+    if latest_evidence is not None and latest_evidence > latest_review["submittedAt"]:
         return True
     return exact_head_review(latest_review, head)
 

@@ -197,8 +197,9 @@ known traffic continues.
   Raw `runtime.NumGoroutine` equality is not a stable ownership assertion.
 - Every blocking helper accepts `context.Context`. Cancellation preserves
   `errors.Is` access to `context.Canceled` or `context.DeadlineExceeded`.
-- Allocation and queue limits are tested separately under issues #6, #10, and
-  #12. No cleanup helper may hide a non-zero counter by resetting it.
+- Allocation and queue limits are tested separately under issues #6 and #10,
+  with the release-verification budgets landed by issue #12. No cleanup helper
+  may hide a non-zero counter by resetting it.
 
 ## Planned acceptance scenarios
 
@@ -239,7 +240,7 @@ correctly bypasses it.
 | conditional non-zero seed | zero remains valid because no randomized action exists; every future randomized field must add non-zero validation before runtime use | complete for current M1 fields |
 | slow-subscriber proof | manual-clock real-wire burst, caller-controlled callback gate, `ErrEventQueueFull`, exact final callback count, and bounded device/dispatcher cleanup | complete for M1 contract |
 | owned-resource saturation and cleanup | 64 session-task cap, 8 listener cap, typed saturation errors, `Device.WaitForIdle`, and repeated race tests | complete for M1 contract |
-| device information, keepalive, callback isolation, connection-state cleanup | lifecycle tests and MGMT acceptance are partial | #11, with budgets in #6/#12 |
+| device information, keepalive, callback isolation, connection-state cleanup | typed `DeviceInfo`, opt-in bounded keepalive, slow-callback isolation, and owned-goroutine cleanup have race-tested lifecycle evidence from issue #11; the simulator answers `DeviceInfoRequest` and counts answered pings | complete for M1 contract; remaining budget breadth stays under #6 |
 
 Closing architecture issue #2 accepted this contract; implementation issue #10
 may close only with every M1-owned row above complete and unchanged MGMT lanes
