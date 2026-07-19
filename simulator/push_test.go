@@ -98,6 +98,40 @@ func TestPushLogHonorsSubscriptionLevel(t *testing.T) {
 	}
 }
 
+func TestPushStateDuringConnectionChurnIsRaceFree(t *testing.T) {
+	device := simulator.New(simulator.Scenario{Name: "churn-simulator"})
+	t.Cleanup(func() { _ = device.Close() })
+	done := make(chan struct{})
+	pusherStopped := make(chan struct{})
+	t.Cleanup(func() {
+		close(done)
+		<-pusherStopped
+	})
+	go func() {
+		defer close(pusherStopped)
+		for i := 0; ; i++ {
+			select {
+			case <-done:
+				return
+			default:
+			}
+			// Errors are expected once the device closes underneath the loop.
+			_ = device.PushState(&pb.SwitchStateResponse{Key: 1, State: i%2 == 0})
+		}
+	}()
+	for i := 0; i < 20; i++ {
+		client := dialSimulator(t, device)
+		unsubscribe, err := client.SubscribeStates(func(proto.Message) {})
+		if err != nil {
+			t.Fatal(err)
+		}
+		unsubscribe()
+		if err := client.Close(); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
 func TestPushRejectsUnsupportedPayloads(t *testing.T) {
 	device := simulator.New(simulator.Scenario{Name: "push-reject-simulator"})
 	t.Cleanup(func() { _ = device.Close() })

@@ -649,8 +649,8 @@ func (d *Device) PushState(state proto.Message) error {
 	defer d.stateSerial.Unlock()
 	d.stateMu.Lock()
 	d.storeStateLocked(state)
-	subscribers := make([]*deviceSession, 0, len(d.connections))
 	d.mu.Lock()
+	subscribers := make([]*deviceSession, 0, len(d.connections))
 	for _, session := range d.connections {
 		if session.subscribed {
 			subscribers = append(subscribers, session)
@@ -711,8 +711,8 @@ func (d *Device) advanceTimeline(now time.Duration) error {
 		d.timelineIndex++
 		d.stateMu.Lock()
 		d.storeStateLocked(event.State)
-		subscribers := make([]*deviceSession, 0, len(d.connections))
 		d.mu.Lock()
+		subscribers := make([]*deviceSession, 0, len(d.connections))
 		for _, session := range d.connections {
 			if session.subscribed {
 				subscribers = append(subscribers, session)

@@ -58,6 +58,12 @@ func (f *blinkFirmware) run(commands <-chan proto.Message) {
 				continue
 			}
 			ledOn = request.State
+			// The device core echoes the commanded switch state from another
+			// goroutine, so that echo can lose the race against this mirror.
+			// Push the switch state here first: PushState calls from this one
+			// goroutine are delivered in order, so no client can observe the
+			// sensor mirror before the switch state it reflects.
+			f.push(&pb.SwitchStateResponse{Key: request.Key, State: request.State})
 			if request.State {
 				stopTimer()
 				f.mirror(true)

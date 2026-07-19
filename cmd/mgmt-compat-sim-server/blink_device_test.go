@@ -80,6 +80,7 @@ func TestBlinkFirmwareRelightsAfterDelay(t *testing.T) {
 	commands <- &pb.ButtonCommandRequest{Key: 9}
 	commands <- &pb.SwitchCommandRequest{Key: simulator.BlinkSwitchKey, State: false}
 	pusher.waitForEvents(t, []string{
+		"switch=false",
 		"sensor=false",
 		"log=LED turned off; turning it back on in three seconds",
 		"switch=true",
@@ -109,8 +110,10 @@ func TestBlinkFirmwareOnCommandCancelsPendingRelight(t *testing.T) {
 	commands <- &pb.SwitchCommandRequest{Key: simulator.BlinkSwitchKey, State: true}
 	time.Sleep(150 * time.Millisecond)
 	pusher.waitForEvents(t, []string{
+		"switch=false",
 		"sensor=false",
 		"log=LED turned off; turning it back on in three seconds",
+		"switch=true",
 		"sensor=true",
 		"log=LED turned on; waiting for mgmt to turn it off",
 	})

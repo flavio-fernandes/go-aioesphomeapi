@@ -21,7 +21,7 @@ Run these commands on Linux from the `go-aioesphomeapi` repository root.
 Required tools:
 
 - the Go version requested by the MGMT checkout; the current `feat/esphome`
-  branch uses Go 1.26.1
+  branch and the pinned CI compatibility lane use Go 1.25.12
 - `git`
 - `ip`
 - `sha256sum`
