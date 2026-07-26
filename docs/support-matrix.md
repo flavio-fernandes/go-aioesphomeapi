@@ -28,7 +28,7 @@ messages. `planned` is roadmap intent, not evidence.
 |---|---|---|---|---|
 | Context-bound Noise dial | yes | hardware | M1 | MGMT completed Noise against ESPHome 2026.7.0 hardware; normal path fails closed without secure configuration. |
 | Explicit insecure plaintext | compatibility review | simulated | M1 | Requires `WithInsecurePlaintext`; never selected implicitly. |
-| `.local` mDNS resolution | yes | hardware | M1 | The unchanged blink MCL resolved a real device; simulator coverage also proves no `/etc/hosts` mapping or added module is needed. |
+| `.local` mDNS resolution | yes | hardware | M1 | The unchanged blink MCL resolved a real device; race-tested per-interface fan-out covers multi-homed hosts, single-interface pinning, actionable failure diagnostics, and the real UDP loopback simulator without `/etc/hosts` or an added module. |
 | Diagnostic error chains and close reason | operational | simulated | M1 | Dial retains `*net.OpError`; mDNS, Noise, rejected keys, and hello are distinct; peer rejection text is capped/sanitized and key echoes are replaced; asynchronous read/decode/context/peer/queue termination is observable. |
 | Entity list and registry metadata | yes | hardware | M1 | A real blink switch and binary sensor were resolved by exact current name. |
 | Initial state snapshot and live push | yes | hardware | M1 | Real blink state repeatedly reached MCL; broader push/fault evidence is still pending. |

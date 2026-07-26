@@ -27,10 +27,13 @@ func TestIsMDNSHost(t *testing.T) {
 func TestDefaultDialerResolvesLocalWithInjectedLookup(t *testing.T) {
 	lookupCalled := false
 	dialCalled := false
-	lookup := func(_ context.Context, host string, timeout time.Duration) (net.IP, error) {
+	lookup := func(_ context.Context, host string, timeout time.Duration, iface *net.Interface) (net.IP, error) {
 		lookupCalled = true
 		if host != "ESPHOME-BLINK.LOCAL" || timeout != 3*time.Second {
 			t.Fatalf("unexpected lookup: host=%q timeout=%v", host, timeout)
+		}
+		if iface != nil {
+			t.Fatalf("unexpected pinned interface: %v", iface)
 		}
 		return net.IPv4(192, 0, 2, 44), nil
 	}
@@ -43,7 +46,7 @@ func TestDefaultDialerResolvesLocalWithInjectedLookup(t *testing.T) {
 		t.Cleanup(func() { _ = back.Close() })
 		return front, nil
 	}
-	conn, err := defaultDialerWith(3*time.Second, lookup, dial)(context.Background(), "tcp", "ESPHOME-BLINK.LOCAL:6053")
+	conn, err := defaultDialerWith(3*time.Second, nil, lookup, dial)(context.Background(), "tcp", "ESPHOME-BLINK.LOCAL:6053")
 	if err != nil {
 		t.Fatalf("dial: %v", err)
 	}
@@ -55,14 +58,14 @@ func TestDefaultDialerResolvesLocalWithInjectedLookup(t *testing.T) {
 
 func TestDefaultDialerPreservesMDNSError(t *testing.T) {
 	underlying := errors.New("synthetic mDNS timeout")
-	lookup := func(context.Context, string, time.Duration) (net.IP, error) {
+	lookup := func(context.Context, string, time.Duration, *net.Interface) (net.IP, error) {
 		return nil, underlying
 	}
 	dial := func(context.Context, string, string) (net.Conn, error) {
 		t.Fatal("TCP dial ran after mDNS failure")
 		return nil, nil
 	}
-	_, err := defaultDialerWith(time.Second, lookup, dial)(context.Background(), "tcp", "missing-device.local:6053")
+	_, err := defaultDialerWith(time.Second, nil, lookup, dial)(context.Background(), "tcp", "missing-device.local:6053")
 	if !errors.Is(err, ErrNameResolution) || !errors.Is(err, underlying) {
 		t.Fatalf("error chain lost mDNS category or cause: %v", err)
 	}
@@ -75,7 +78,7 @@ func TestDefaultDialerPreservesMDNSError(t *testing.T) {
 }
 
 func TestDefaultDialerLeavesNonLocalNamesAlone(t *testing.T) {
-	lookup := func(context.Context, string, time.Duration) (net.IP, error) {
+	lookup := func(context.Context, string, time.Duration, *net.Interface) (net.IP, error) {
 		t.Fatal("mDNS lookup ran for a non-local name")
 		return nil, nil
 	}
@@ -86,8 +89,42 @@ func TestDefaultDialerLeavesNonLocalNamesAlone(t *testing.T) {
 		}
 		return nil, underlying
 	}
-	_, err := defaultDialerWith(time.Second, lookup, dial)(context.Background(), "tcp", "device.example:6053")
+	_, err := defaultDialerWith(time.Second, nil, lookup, dial)(context.Background(), "tcp", "device.example:6053")
 	if !errors.Is(err, underlying) {
 		t.Fatalf("TCP cause was not preserved: %v", err)
+	}
+}
+
+func TestDefaultDialerPinsMulticastInterface(t *testing.T) {
+	selected := &net.Interface{Index: 7, Name: "device-lan"}
+	lookup := func(_ context.Context, _ string, _ time.Duration, iface *net.Interface) (net.IP, error) {
+		if iface == nil || iface.Index != selected.Index || iface.Name != selected.Name {
+			t.Fatalf("lookup interface = %#v, want %#v", iface, selected)
+		}
+		return net.IPv4(192, 0, 2, 45), nil
+	}
+	dial := func(_ context.Context, _, address string) (net.Conn, error) {
+		if address != "192.0.2.45:6053" {
+			t.Fatalf("address = %q", address)
+		}
+		front, back := net.Pipe()
+		t.Cleanup(func() { _ = back.Close() })
+		return front, nil
+	}
+	conn, err := defaultDialerWith(time.Second, selected, lookup, dial)(context.Background(), "tcp", "pinned.local:6053")
+	if err != nil {
+		t.Fatalf("dial: %v", err)
+	}
+	_ = conn.Close()
+}
+
+func TestWithMulticastInterfaceCopiesSelection(t *testing.T) {
+	selected := &net.Interface{Index: 9, Name: "device-lan"}
+	var cfg config
+	WithMulticastInterface(selected)(&cfg)
+	selected.Index = 10
+	selected.Name = "changed"
+	if cfg.multicastInterface == nil || cfg.multicastInterface.Index != 9 || cfg.multicastInterface.Name != "device-lan" {
+		t.Fatalf("configured interface changed with caller value: %#v", cfg.multicastInterface)
 	}
 }

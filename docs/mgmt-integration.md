@@ -30,7 +30,8 @@ This repository records the contract but does not copy MGMT's GPL source or MCL 
 ## Existing MGMT behavior we preserve
 
 - one shared session per logical endpoint across functions and resources;
-- built-in `.local` multicast DNS resolution without requiring host-file edits;
+- built-in `.local` multicast DNS resolution across usable IPv4 interfaces
+  without requiring MGMT options, route overrides, or host-file edits;
 - endpoint data published through MGMT's local bridge;
 - zero-valued functions before endpoint publication or first valid state;
 - persistent native push when `interval` is zero;
