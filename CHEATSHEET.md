@@ -478,6 +478,17 @@ as `*net.OpError`, `ErrNameResolution`, `ErrNoiseHandshake`, and `ErrHello`.
 Never paste a production error into an issue until you have removed private
 hostnames and addresses.
 
+**A `.local` device works by IP but not by name:** the default resolver sends
+the same bounded multicast DNS query concurrently on every active,
+multicast-capable IPv4 interface, including IPv4 loopback. A failed lookup
+names the interfaces it tried, which helps identify host firewall or network
+isolation problems on VPN, container, and multi-network hosts. Applications
+that intentionally want only one network can obtain a `*net.Interface` with
+`net.InterfaceByName` and pass
+`aioesphomeapi.WithMulticastInterface(iface)` to `DialWithContext`. Passing a
+nil interface keeps the all-interface default. Treat interface names as
+operational metadata and redact them before sharing diagnostics.
+
 An ESPHome peer that explicitly rejects a key returns both the broad
 `ErrNoiseHandshake` category and the more actionable `ErrNoiseKeyRejected`
 category. Its untrusted reason text is printable and length-limited; key

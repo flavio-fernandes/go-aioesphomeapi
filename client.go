@@ -103,7 +103,7 @@ func DialWithContext(ctx context.Context, address string, timeout time.Duration,
 		return nil, ErrTransportPolicy
 	}
 	if cfg.dialContext == nil {
-		cfg.dialContext = defaultDialer(timeout)
+		cfg.dialContext = defaultDialer(timeout, cfg.multicastInterface)
 	}
 	if cfg.callbackQueueSize <= 0 {
 		cfg.callbackQueueSize = 256

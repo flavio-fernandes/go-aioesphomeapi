@@ -25,6 +25,7 @@ type config struct {
 	keepaliveRequested bool
 	keepaliveInterval  time.Duration
 	keepaliveTimeout   time.Duration
+	multicastInterface *net.Interface
 }
 
 // Option configures a Client before it connects.
@@ -58,6 +59,19 @@ func WithDialContext(fn DialContextFunc) Option {
 	return func(c *config) { c.dialContext = fn }
 }
 
+// WithMulticastInterface pins .local mDNS resolution to one network
+// interface. The default queries every usable IPv4 multicast interface.
+func WithMulticastInterface(iface *net.Interface) Option {
+	return func(c *config) {
+		if iface == nil {
+			c.multicastInterface = nil
+			return
+		}
+		selected := *iface
+		c.multicastInterface = &selected
+	}
+}
+
 // WithMaxFrameSize lowers the default 64 KiB peer-allocation bound.
 func WithMaxFrameSize(bytes int) Option {
 	return func(c *config) { c.maxFrameSize = bytes }
@@ -82,18 +96,18 @@ func WithKeepalive(interval, timeout time.Duration) Option {
 	}
 }
 
-func defaultDialer(timeout time.Duration) DialContextFunc {
+func defaultDialer(timeout time.Duration, iface *net.Interface) DialContextFunc {
 	dialer := &net.Dialer{Timeout: timeout}
-	return defaultDialerWith(timeout, mdns.Lookup, dialer.DialContext)
+	return defaultDialerWith(timeout, iface, mdns.LookupInterface, dialer.DialContext)
 }
 
-type mdnsLookupFunc func(context.Context, string, time.Duration) (net.IP, error)
+type mdnsLookupFunc func(context.Context, string, time.Duration, *net.Interface) (net.IP, error)
 
-func defaultDialerWith(timeout time.Duration, lookup mdnsLookupFunc, dial DialContextFunc) DialContextFunc {
+func defaultDialerWith(timeout time.Duration, iface *net.Interface, lookup mdnsLookupFunc, dial DialContextFunc) DialContextFunc {
 	return func(ctx context.Context, network, address string) (net.Conn, error) {
 		host, port, err := net.SplitHostPort(address)
 		if err == nil && isMDNSHost(host) {
-			ip, lookupErr := lookup(ctx, host, timeout)
+			ip, lookupErr := lookup(ctx, host, timeout, iface)
 			if lookupErr != nil {
 				return nil, fmt.Errorf("%w for %q: %w", ErrNameResolution, host, lookupErr)
 			}

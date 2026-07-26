@@ -34,7 +34,7 @@ Documentation is part of the product. Runnable commands must be tested, safe by 
 ## Design promises
 
 - Existing MGMT `.mcl` behavior is a release-blocking compatibility contract.
-- ESPHome `.local` device names resolve through bounded built-in mDNS, so the unchanged MGMT blink and conveyor examples do not depend on host-file edits or a separately configured resolver.
+- ESPHome `.local` device names resolve through bounded built-in mDNS on every usable IPv4 interface, so multi-homed hosts and the unchanged MGMT blink and conveyor examples do not depend on route overrides, host-file edits, or a separately configured resolver.
 - Core types remain generic ESPHome concepts; MGMT and conveyor types stay outside the library.
 - Noise is required by the normal production path. Plaintext requires an unmistakable insecure opt-in.
 - One concurrency-safe connection per client has bounded queues and no silent command replay. The caller owns reconnect policy.
