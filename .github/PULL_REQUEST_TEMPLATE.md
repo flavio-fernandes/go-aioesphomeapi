@@ -14,10 +14,10 @@ Closes #
 - [ ] Pinned MGMT MCL files remain unchanged, or a linked MGMT defect decision explains the change
 - [ ] `go.mod` is unchanged, or the dependency-policy delta is included below
 
-## Required review
+## Review
 
-- [ ] Codex review was requested only after explicit maintainer authorization
-- [ ] Required `codex-review` status passes for this exact head commit
+- [ ] Any paid Codex review was requested only after explicit maintainer authorization, or none was requested
+- [ ] All review conversations are addressed and resolved
 
 - Security impact:
 - Protocol/provenance impact:

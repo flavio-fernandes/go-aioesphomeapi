@@ -290,15 +290,16 @@ gh pr create --draft --fill
 
 Adjust the explicit `git add` paths to match your change. Do not use `git add .` when unrelated files are present.
 
-### Maintainer: request the required Codex review
+### Maintainer: optionally request a Codex review
 
-Codex reviews are intentionally manual so an ordinary PR does not spend review
-credits. In [Codex code-review settings](https://chatgpt.com/codex/settings/code-review),
-keep **Code review** enabled and **Automatic reviews** disabled. The required
-`codex-review` status blocks every PR until a maintainer explicitly authorizes
-the paid review.
+Codex reviews are optional and intentionally manual so an ordinary PR does not
+spend review credits. In [Codex code-review settings](https://chatgpt.com/codex/settings/code-review),
+keep **Code review** enabled and **Automatic reviews** disabled. A missing
+`codex-review` status does not block merge. Required CI and unresolved review
+conversations still do.
 
-After the PR is ready and authorization is explicit, run from this repository:
+If a maintainer explicitly authorizes the paid review, run from this
+repository:
 
 ```bash
 ./tools/codex-review.sh request PR_NUMBER
@@ -316,9 +317,10 @@ resolved, publish the result:
 ```
 
 Success ends with `codex-review status is successful`. If the audit fails, the
-status remains blocking and the command explains whether review evidence or
-thread cleanup is incomplete. A new commit has no inherited success status;
-request another paid review only after fresh explicit authorization.
+command explains whether review evidence or thread cleanup is incomplete, but
+the optional status is not a merge prerequisite. A new commit has no inherited
+review evidence; request another paid review only after fresh explicit
+authorization.
 
 ## Use from another Go module
 
