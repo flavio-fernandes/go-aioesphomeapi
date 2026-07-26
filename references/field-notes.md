@@ -156,9 +156,9 @@ work. Update both files when future work changes the operational truth.
 
 ## 2026-07-18 merged-review audit
 
-- A green workflow does not mean automated review finished. Audit thread-aware
-  GraphQL data after checks and require Codex review or a positive reaction for
-  the exact head commit before merge.
+- The policy adopted after this audit required exact-head Codex review. The
+  later optional-review decision below supersedes that merge requirement while
+  retaining thread-aware conversation checks.
 - The audit found 11 unresolved Codex threads across PRs merged that day. Later
   PRs already corrected CR/LF key echoes, delayed timeline writes, duplicate
   initial states, mDNS retransmits, the reviewed-manifest command, and several
@@ -170,6 +170,16 @@ work. Update both files when future work changes the operational truth.
 - Protect `main` with required conversations as an administrator-enforced
   backstop. Still run `$merge-reviewed-pr` immediately before merge because a
   late review can arrive after CI succeeds.
+
+## 2026-07-26 optional Codex review policy
+
+- Paid Codex review is optional because requiring it on every pull request is
+  disproportionate to its cost. Automatic reviews remain disabled.
+- Never infer authorization to spend review credits. The exact-head request
+  and audit scripts remain available only when a maintainer explicitly asks.
+- Required `go` and `validate` checks, thread-aware conversation resolution,
+  and expected-head merge protection remain mandatory. The GitHub ruleset must
+  not require the optional `codex-review` status.
 
 ## 2026-07-18 release verification lanes
 

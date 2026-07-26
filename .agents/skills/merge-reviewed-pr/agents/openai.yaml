@@ -1,4 +1,4 @@
 interface:
   display_name: "Merge Reviewed PR"
-  short_description: "Gate merges on explicit exact-head review"
-  default_prompt: "Use $merge-reviewed-pr to verify checks, require explicit authorization for paid Codex review, and safely gate the pull request merge."
+  short_description: "Gate merges on checks and resolved reviews"
+  default_prompt: "Use $merge-reviewed-pr to verify required checks, resolve every review conversation, keep paid Codex review optional and explicitly authorized, and merge only the expected head."

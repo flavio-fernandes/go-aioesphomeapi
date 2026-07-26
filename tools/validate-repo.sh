@@ -67,8 +67,9 @@ fi
 if [[ ! -x tools/codex-review.sh ]] ||
   ! grep -Fq 'status_context="codex-review"' tools/codex-review.sh ||
   ! grep -Fq '**Automatic reviews** disabled' CHEATSHEET.md ||
-  ! grep -Fq 'Never request a Codex review automatically' AGENTS.md; then
-  echo "manual Codex review must remain explicit, documented, and status-gated" >&2
+  ! grep -Fq 'Codex review is optional and paid' AGENTS.md ||
+  ! grep -Fq 'optional `codex-review` status is not a merge prerequisite' AGENTS.md; then
+  echo "optional paid Codex review must remain explicit and must not gate merges" >&2
   exit 1
 fi
 

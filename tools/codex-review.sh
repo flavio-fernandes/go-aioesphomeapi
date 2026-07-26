@@ -12,7 +12,7 @@ Usage: ./tools/codex-review.sh request PR_NUMBER
        ./tools/codex-review.sh complete PR_NUMBER
 
 request   Post one explicit exact-head @codex review request.
-complete  Audit that review and publish the required codex-review status.
+complete  Audit that review and publish the optional codex-review status.
 EOF
 }
 
@@ -87,5 +87,5 @@ if python3 "$audit_script" "$repository" "$pull_request" --require-codex; then
 fi
 
 set_status failure "Codex review is incomplete or has open threads"
-echo "codex-review remains blocking; finish the exact-head review and resolve every thread" >&2
+echo "codex-review is incomplete; finish the exact-head review and resolve every thread" >&2
 exit 1
