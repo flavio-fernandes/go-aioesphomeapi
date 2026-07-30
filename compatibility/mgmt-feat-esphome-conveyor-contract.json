@@ -5,10 +5,14 @@
   "extends": "compatibility/mgmt-feat-esphome-security.json",
   "decision_record": "docs/decisions/0014-conveyor-single-owner-contract.md",
   "candidate": {
-    "repository": "https://github.com/flavio-fernandes/mgmt",
+    "upstream_repository": "https://github.com/purpleidea/mgmt",
+    "fork_repository": "https://github.com/flavio-fernandes/mgmt",
     "branch": "feat/esphome",
     "revision": "8d009e1cba1bf58c95453338ec78f94de6cb25e1",
-    "subject": "examples: Debounce the sensors and keep the light rules flat"
+    "tree": "ada7c3546eb398eafbb7e0305576a9b7751d6dc9",
+    "subject": "examples: Debounce the sensors and keep the light rules flat",
+    "supersedes_pinned_revision": "08514da10969b0188a1127c3938790139e7fa0c6",
+    "pin_note": "The hosted MGMT compatibility lane checks out this revision. The conveyor MCL and this library's simulated firmware are one contract, so the lane must use the MGMT revision whose MCL hash the acceptance runner pins."
   },
   "library": {
     "repository": "https://github.com/flavio-fernandes/go-aioesphomeapi",
