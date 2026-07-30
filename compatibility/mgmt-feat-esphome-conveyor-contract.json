@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-30",
+  "status": "runtime_verified",
+  "extends": "compatibility/mgmt-feat-esphome-security.json",
+  "decision_record": "docs/decisions/0014-conveyor-single-owner-contract.md",
+  "candidate": {
+    "upstream_repository": "https://github.com/purpleidea/mgmt",
+    "fork_repository": "https://github.com/flavio-fernandes/mgmt",
+    "branch": "feat/esphome",
+    "revision": "8d009e1cba1bf58c95453338ec78f94de6cb25e1",
+    "tree": "ada7c3546eb398eafbb7e0305576a9b7751d6dc9",
+    "subject": "examples: Debounce the sensors and keep the light rules flat",
+    "supersedes_pinned_revision": "08514da10969b0188a1127c3938790139e7fa0c6",
+    "pin_note": "The hosted MGMT compatibility lane checks out this revision. The conveyor MCL and this library's simulated firmware are one contract, so the lane must use the MGMT revision whose MCL hash the acceptance runner pins."
+  },
+  "library": {
+    "repository": "https://github.com/flavio-fernandes/go-aioesphomeapi",
+    "base_revision": "7c96f427dd5bceb09f84c47b64a80cb0e66f96b9",
+    "branch": "feat/conveyor-single-owner-contract"
+  },
+  "contract_change": {
+    "summary": "The conveyor scenario exports only the entities MGMT reads.",
+    "exported_entities_before": 13,
+    "exported_entities_after": 4,
+    "exported_entities": [
+      "Conveyor Motor (fan, commanded)",
+      "Status Light (light, RGB and named effects, commanded)",
+      "Brick En Route (binary sensor, reported)",
+      "Exit Red Ratio (sensor, reported, negative means no trustworthy reading)"
+    ],
+    "withdrawn_entities": [
+      "Entry Object Present",
+      "Exit Object Present",
+      "Conveyor Run Request",
+      "Entry Red",
+      "Entry Green",
+      "Entry Blue",
+      "Color Clear",
+      "Conveyor Enable",
+      "Conveyor Speed",
+      "Reset Cycle",
+      "System Status"
+    ],
+    "state_messages_per_brick": 4,
+    "api_break": "simulator.ConveyorScenario changed shape; the withdrawn entity keys are replaced. The previous thirteen-entity set is preserved as simulator.EntityFamilyScenario for generic per-domain client coverage."
+  },
+  "mcl_contract": {
+    "source_changes": 0,
+    "files": [
+      {
+        "path": "examples/lang/esphome0.mcl",
+        "sha256": "8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df"
+      },
+      {
+        "path": "examples/lang/esphome-blink.mcl",
+        "sha256": "359cedc5b3fd1e6793a0705fc4d7c7f844f5d3dc825a372fdf0c6769ef30c187"
+      },
+      {
+        "path": "examples/lang/esphome-conveyor.mcl",
+        "sha256": "a6666f7104f071f3ab4f5b6c2f26b694584197a0094859c8824f74740517e82a"
+      }
+    ]
+  },
+  "acceptance": {
+    "runner": "tools/test-mgmt-conveyor.sh",
+    "result": "pass",
+    "repetitions": 4,
+    "isolation": "private Linux user and network namespaces",
+    "network": "loopback-only TCP port 6053 inside the private network namespace",
+    "transport": "Noise with a public test-only key",
+    "device_model": "cmd/conveyor-sim-server firmware model at the real firmware's delays",
+    "bricks": 2,
+    "assertions": [
+      "the reviewed conveyor MCL SHA-256 matches before execution",
+      "MGMT resolves esphome-conveyor.local through multicast DNS, not /etc/hosts",
+      "MGMT reads the device boot state: no brick en route and no color reading",
+      "a settled entry brick makes the device request a run, and MGMT starts the belt",
+      "MGMT selects the traveling blink effect while a brick is en route",
+      "MGMT stops the belt when the device reports the brick arrived",
+      "one averaged color reading per brick reaches MCL, with the device log that produced it",
+      "MGMT classifies a 48 percent red ratio as red and sets a solid red light",
+      "MGMT classifies a 29 percent red ratio as another color and selects the rainbow effect",
+      "the light returns to idle white with no effect after the last brick",
+      "MGMT converges, exits, and leaves the belt stopped",
+      "MGMT reports no failed fan cleanup",
+      "the firmware jam backstop does not fire during a healthy run"
+    ]
+  },
+  "library_tests": {
+    "unit": "go test ./... passes, including a firmware-model test for the single-brick sequence, the brick-color rotation, and the two-stage jam timeout",
+    "race": "go test ./... -race passes; the firmware-model tests also pass at -count=5 -race"
+  },
+  "mgmt_defect_guard": {
+    "issue": "https://github.com/purpleidea/mgmt/issues/966",
+    "summary": "MGMT drops the update produced by an if expression nested inside another if expression's branch. On hardware a light effect kept running after the object it described was removed.",
+    "ownership": "This is an MGMT engine defect, independent of this library and of the ESPHome feature.",
+    "guard": "The acceptance test asserts the light returns to idle, so the MCL workaround that keeps each rule flat cannot regress unnoticed."
+  },
+  "limitations": [
+    "This record exercises the conveyor MCL only; switch, number, button, text-sensor, polling, and fault scenarios retain their prior evidence levels.",
+    "The exported entity set shrank, so the withdrawn entity families lose conveyor-derived evidence and keep only whatever other lanes provided.",
+    "No physical device was flashed or actuated.",
+    "The published red ratios are values from an earlier bench capture, not measurements taken during this run.",
+    "A simulator is not ESPHome firmware, so hardware evidence remains pending."
+  ]
+}

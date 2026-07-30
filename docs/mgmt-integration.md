@@ -192,3 +192,38 @@ personal and independent. Targeted race/vet, the canonical build, all three
 MCL type checks, every unchanged encrypted simulator lane, and upstream
 `basic`, `shell`, and `race` jobs pass. Upstream review and merge remain
 external outcomes and are not claimed by this evidence.
+
+## Single-owner conveyor contract
+
+The conveyor demo was rebuilt around one rule: while MGMT is connected, MGMT is
+the only thing that commands the belt. The device reports what its sensors saw
+and nothing else. The append-only
+[`mgmt-feat-esphome-conveyor-contract.json`](../compatibility/mgmt-feat-esphome-conveyor-contract.json)
+record pins MGMT `feat/esphome` at `8d009e1c` against this library revision, and
+[ADR 0014](decisions/0014-conveyor-single-owner-contract.md) records why the
+simulator's exported entity set shrank from thirteen to four.
+
+The earlier profile exported entry presence, exit presence, a run-request
+mirror, four raw color channels, an enable switch, a speed number, a reset
+button, and a status text sensor. The MCL read none of them. They are internal
+to the device now, so one brick costs four state messages instead of a
+telemetry stream, and the demo stays responsive without MGMT having to filter
+anything.
+
+Two behaviors are newly proven at `mgmt` evidence level. MGMT starts and stops
+the motor purely from the reported run request, across repeated belt runs rather
+than a single corrective command. And MGMT selects a light effect by name from
+the set the device declares, then clears it, which is what lets the device own
+the animation while MGMT owns the decision.
+
+Clearing the effect is asserted rather than assumed. On real hardware an effect
+kept running after the object it described was removed, and the cause was
+[purpleidea/mgmt#966](https://github.com/purpleidea/mgmt/issues/966): MGMT drops
+the update produced by an `if` expression nested inside another one's branch.
+The MCL avoids the shape, and the acceptance test now fails if the light does
+not return to idle, so the workaround cannot quietly regress. That bug is
+MGMT's, independent of this library and of the conveyor feature.
+
+No physical device was flashed or actuated for this record. The red ratios the
+simulator publishes are the values from an earlier bench capture, not
+measurements taken during the run.

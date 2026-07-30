@@ -32,14 +32,14 @@ messages. `planned` is roadmap intent, not evidence.
 | Diagnostic error chains and close reason | operational | simulated | M1 | Dial retains `*net.OpError`; mDNS, Noise, rejected keys, and hello are distinct; peer rejection text is capped/sanitized and key echoes are replaced; asynchronous read/decode/context/peer/queue termination is observable. |
 | Entity list and registry metadata | yes | hardware | M1 | A real blink switch and binary sensor were resolved by exact current name. |
 | Initial state snapshot and live push | yes | hardware | M1 | Real blink state repeatedly reached MCL; broader push/fault evidence is still pending. |
-| Binary sensor state | yes | hardware | M1 | Real blink state and three simulated conveyor binary sensors reached MCL. |
+| Binary sensor state | yes | hardware | M1 | Real blink state and the simulated conveyor's brick-en-route state reached MCL. |
 | Sensor state and missing/NaN | yes | mgmt | M1 | RGB sensor state reached MCL; missing/NaN remains adapter-test evidence. |
 | Text sensor state | yes | typed | M1 | MGMT evidence pending. |
 | Switch state and command | yes | hardware | M1 | The unchanged blink MCL issued at least eight corrective commands accepted by real firmware. |
 | Number state and command | yes | mgmt | M1 | Unchanged `esphome0.mcl` observed state and issued its safe desired number command. |
 | Button discovery and command | yes in driver | simulated | M1 | Exposed even though current examples do not call it. |
-| Fan state and command | conveyor | mgmt | M1 | State, speed, direction, and graceful cleanup stop passed. |
-| RGB Light state and command | conveyor | mgmt | M1 | State, brightness, and blue RGB command passed. |
+| Fan state and command | conveyor | mgmt | M1 | State, speed, direction, and graceful cleanup stop passed. Sensor-driven start and stop across repeated belt runs also passed. |
+| RGB Light state and command | conveyor | mgmt | M1 | State, brightness, and RGB command passed. Named-effect selection also passed: MGMT chooses an effect the device declares, and clearing it is asserted. |
 | Device logs | yes | hardware | M1 | ESPHome 2026.7.0 logs reached the MGMT endpoint logger; only sanitized evidence was committed. |
 | Done signal and idempotent close | yes | simulated | M1 | Race tests cover clean termination. |
 | Hostile peer and stalled operation | security | simulated | M1 | Named drop, malformed-protobuf, duplicate-completion, incomplete-discovery, and stalled-discovery tests are panic-free over the real framing/session path; bounded unknown IDs are skipped and subsequent known traffic succeeds. |
@@ -80,6 +80,7 @@ The evidence is append-only: [`compatibility/mgmt-feat-esphome2.json`](../compat
 | Latest-state timeline post-merge | pass with library `3655bef5` and MGMT `eb8953a4` | The committed MGMT pin passes targeted race/vet, canonical build, focused same-device reconnect, and all unchanged MCL lanes without hosts substitution. |
 | Upstream MGMT PR ready for review | pass with library `091b9af4` and MGMT `08514da1` on upstream `e5baaa2d` | Final tree is byte-identical after commit-policy metadata corrections; targeted race/vet, canonical build, all MCL type checks, all unchanged runtime lanes, and upstream `basic`, `shell`, and `race` jobs pass. Affiliation is confirmed; upstream review and merge remain external. |
 | Continuous blink loop lane (PR #84) | pass locally with MGMT `08514da1` and hosted in the pinned MGMT lane (first pull-request execution: MGMT compatibility run 29694595221, 2026-07-19) | `tools/demo-mgmt-blink.sh` runs the unchanged blink MCL against the `blink-device` simulator: bounded runs count firmware relights observed in MGMT's own log and require MGMT to outlive the target count; the endless watch mode shut down cleanly on Ctrl-C. Simulator and `mgmt` evidence only; no hardware claim. |
+| Single-owner conveyor contract | pass locally with MGMT `8d009e1c` | `tools/test-mgmt-conveyor.sh` runs the unchanged conveyor MCL against a simulated firmware that reports facts and never steers the belt: two bricks travel the belt, MGMT starts and stops the motor from the reported run request, classifies one red and one non-red brick, selects and then clears a named light effect, converges, and leaves the belt stopped. The device's jam backstop does not fire. Simulator and `mgmt` evidence only; no hardware claim. |
 | Firmware flash and physical conveyor actuation | not performed | Conveyor, Fan, Light, and firmware-provisioning hardware cells remain `no`. |
 
 ## Protocol and transport

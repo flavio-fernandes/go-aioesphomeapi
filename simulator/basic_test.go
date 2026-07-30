@@ -43,7 +43,7 @@ func TestGenericCompatibilityScenarios(t *testing.T) {
 }
 
 func TestCommandOverflowIsObservable(t *testing.T) {
-	device := simulator.New(simulator.ConveyorScenario())
+	device := simulator.New(simulator.EntityFamilyScenario())
 	t.Cleanup(func() { _ = device.Close() })
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
@@ -53,7 +53,7 @@ func TestCommandOverflowIsObservable(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = client.Close() })
 	for i := 0; i < 70; i++ {
-		if err := client.SendCommand(&pb.ButtonCommandRequest{Key: simulator.ResetButtonKey}); err != nil {
+		if err := client.SendCommand(&pb.ButtonCommandRequest{Key: simulator.FamilyButtonKey}); err != nil {
 			t.Fatalf("send command %d: %v", i, err)
 		}
 	}

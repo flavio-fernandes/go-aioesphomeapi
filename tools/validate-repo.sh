@@ -14,6 +14,9 @@ required=(
   compatibility/mgmt-feat-esphome-mdns.json compatibility/mgmt-feat-esphome-diagnostics.json
   compatibility/mgmt-feat-esphome-hardware-blink.json docs/mgmt-hardware-blink.md
   compatibility/mgmt-feat-esphome-security.json
+  compatibility/mgmt-feat-esphome-conveyor-contract.json
+  docs/decisions/0014-conveyor-single-owner-contract.md
+  docs/conveyor-demo.md docs/mgmt-simulator-demo.md
   compatibility/mgmt-feat-esphome-simulator-timeline-candidate.json
   compatibility/mgmt-feat-esphome-simulator-timeline-postmerge.json
   compatibility/mgmt-upstream-pr-961.json
@@ -143,6 +146,7 @@ if command -v python3 >/dev/null 2>&1; then
   python3 -m json.tool compatibility/mgmt-feat-esphome-diagnostics.json >/dev/null
   python3 -m json.tool compatibility/mgmt-feat-esphome-hardware-blink.json >/dev/null
   python3 -m json.tool compatibility/mgmt-feat-esphome-security.json >/dev/null
+  python3 -m json.tool compatibility/mgmt-feat-esphome-conveyor-contract.json >/dev/null
   python3 -m json.tool compatibility/mgmt-feat-esphome-simulator-timeline-candidate.json >/dev/null
   python3 -m json.tool compatibility/mgmt-feat-esphome-simulator-timeline-postmerge.json >/dev/null
   python3 -m json.tool compatibility/mgmt-upstream-pr-961.json >/dev/null
@@ -170,6 +174,20 @@ fi
 if ! grep -Fq 'f1f9e3ef9b5efca161aa97cbe0040d278fdb4038' compatibility/mgmt-feat-esphome-security.json ||
   ! grep -Fq 'ede1737219be106e2c5e06bb497af9a1ec9e17c8' compatibility/mgmt-feat-esphome-security.json; then
   echo "security compatibility manifest must pin the verified library and MGMT revisions" >&2
+  exit 1
+fi
+
+if ! grep -Fq '8d009e1cba1bf58c95453338ec78f94de6cb25e1' compatibility/mgmt-feat-esphome-conveyor-contract.json ||
+  ! grep -Fq 'a6666f7104f071f3ab4f5b6c2f26b694584197a0094859c8824f74740517e82a' compatibility/mgmt-feat-esphome-conveyor-contract.json; then
+  echo "conveyor contract manifest must pin the verified MGMT revision and conveyor MCL hash" >&2
+  exit 1
+fi
+
+# The conveyor MCL and the simulated firmware are one contract, so the reviewed
+# MCL hash must be identical in the acceptance runner and in the manifest.
+if ! grep -Fq "$(sed -n 's/^readonly expected_mcl_sha="\(.*\)"$/\1/p' tools/test-mgmt-conveyor.sh)" \
+  compatibility/mgmt-feat-esphome-conveyor-contract.json; then
+  echo "conveyor acceptance runner and manifest disagree about the reviewed MCL hash" >&2
   exit 1
 fi
 

@@ -35,12 +35,15 @@ jobs:
         run: |
           python3 - <<'EOF' >> "$GITHUB_OUTPUT"
           import json
-          record = json.load(open("library/compatibility/mgmt-upstream-pr-961-ready.json"))
-          mgmt = record["mgmt"]
+          # The conveyor MCL and this repository's simulated firmware are one
+          # contract, so the lane must use the MGMT revision whose MCL hash
+          # tools/test-mgmt-conveyor.sh pins.
+          record = json.load(open("library/compatibility/mgmt-feat-esphome-conveyor-contract.json"))
+          mgmt = record["candidate"]
           repository = mgmt["fork_repository"].removeprefix("https://github.com/")
           print(f"repository={repository}")
-          print(f"revision={mgmt['ready_revision']}")
-          print(f"tree={mgmt['ready_tree']}")
+          print(f"revision={mgmt['revision']}")
+          print(f"tree={mgmt['tree']}")
           EOF
       - name: Check out the pinned MGMT revision
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
