@@ -138,8 +138,8 @@ go run ./cmd/conveyor-sim
 Expected output:
 
 ```text
-connected securely to conveyor-simulator; discovered 13 entities
-simulated conveyor speed=35 and status color=#00ff00
+connected securely to conveyor-simulator; discovered 4 entities
+simulated conveyor belt on at speed=100 and status effect="Traveling Blink"
 ```
 
 To build it as a standalone executable, or to create a tiny external Go module
@@ -191,10 +191,22 @@ and troubleshooting, see [the MGMT simulator demo](docs/mgmt-simulator-demo.md).
 ./tools/test-mgmt-conveyor.sh ../mgmt /tmp/mgmt
 ```
 
+The run takes about twenty seconds: it sends two bricks down a simulated belt at
+the real firmware's pacing, so MGMT starts and stops the motor, classifies a red
+brick and a non-red one, and returns the light to idle.
+
 Expected output:
 
 ```text
 MGMT securely converged the reviewed conveyor MCL against the loopback simulator
+```
+
+To watch the same device narrate itself instead of asserting silently, run it
+directly. A negative cycle count keeps putting bricks on the belt until you
+interrupt it:
+
+```bash
+go run ./cmd/conveyor-sim-server --listen 127.0.0.1:6053 --cycles -1
 ```
 
 ### 8. Prove both original MGMT examples without hardware

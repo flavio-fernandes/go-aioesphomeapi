@@ -12,8 +12,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func TestSecureConveyorRoundTrip(t *testing.T) {
-	device := simulator.New(simulator.ConveyorScenario())
+func TestSecureEntityFamilyRoundTrip(t *testing.T) {
+	device := simulator.New(simulator.EntityFamilyScenario())
 	t.Cleanup(func() { _ = device.Close() })
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -22,7 +22,7 @@ func TestSecureConveyorRoundTrip(t *testing.T) {
 		t.Fatalf("dial: %v", err)
 	}
 	t.Cleanup(func() { _ = client.Close() })
-	if client.Name() != "conveyor-simulator" {
+	if client.Name() != "entity-family-simulator" {
 		t.Fatalf("unexpected name %q", client.Name())
 	}
 
@@ -30,13 +30,13 @@ func TestSecureConveyorRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("list: %v", err)
 	}
-	if len(descriptors) != 13 {
-		t.Fatalf("got %d descriptors, want 13", len(descriptors))
+	if len(descriptors) != 8 {
+		t.Fatalf("got %d descriptors, want 8", len(descriptors))
 	}
-	if got := client.Entities().Fans(); len(got) != 1 || got[0].ObjectID != "conveyor_motor" {
+	if got := client.Entities().Fans(); len(got) != 1 || got[0].ObjectID != "example_fan" {
 		t.Fatalf("unexpected fans: %#v", got)
 	}
-	if got := client.Entities().Lights(); len(got) != 1 || got[0].ObjectID != "status_light" {
+	if got := client.Entities().Lights(); len(got) != 1 || got[0].ObjectID != "example_light" {
 		t.Fatalf("unexpected lights: %#v", got)
 	}
 
@@ -68,19 +68,19 @@ func TestSecureConveyorRoundTrip(t *testing.T) {
 	if !lightState.State || lightState.Red != 1 || lightState.Green != 0.25 || lightState.Blue != 0 {
 		t.Fatalf("unexpected light state: %#v", lightState)
 	}
-	if err := client.SetSwitch(simulator.EnableSwitchKey, true); err != nil {
+	if err := client.SetSwitch(simulator.FamilySwitchKey, true); err != nil {
 		t.Fatalf("switch command: %v", err)
 	}
 	if state := waitForType[*pb.SwitchStateResponse](t, states); !state.State {
 		t.Fatalf("switch did not turn on: %#v", state)
 	}
-	if err := client.SetNumber(simulator.SpeedNumberKey, 35); err != nil {
+	if err := client.SetNumber(simulator.FamilyNumberKey, 35); err != nil {
 		t.Fatalf("number command: %v", err)
 	}
 	if state := waitForType[*pb.NumberStateResponse](t, states); state.State != 35 {
 		t.Fatalf("number state is %v", state.State)
 	}
-	if err := client.PressButton(simulator.ResetButtonKey); err != nil {
+	if err := client.PressButton(simulator.FamilyButtonKey); err != nil {
 		t.Fatalf("button command: %v", err)
 	}
 
@@ -92,7 +92,7 @@ func TestSecureConveyorRoundTrip(t *testing.T) {
 	t.Cleanup(stopLogs)
 	select {
 	case entry := <-logs:
-		if string(entry.Message) != "conveyor simulator ready\n" {
+		if string(entry.Message) != "entity family simulator ready\n" {
 			t.Fatalf("unexpected log %q", entry.Message)
 		}
 	case <-time.After(time.Second):

@@ -32,11 +32,13 @@ func main() {
 		log.Fatal(err)
 	}
 	defer unsubscribe()
-	if err := client.SetFan(simulator.ConveyorFanKey, api.FanCommandOpts{HasState: true, State: true, HasSpeedLevel: true, SpeedLevel: 35}); err != nil {
+	if err := client.SetFan(simulator.ConveyorFanKey, api.FanCommandOpts{HasState: true, State: true, HasSpeedLevel: true, SpeedLevel: 100, HasDirection: true, Direction: pb.FanDirection_FAN_DIRECTION_FORWARD}); err != nil {
 		log.Fatal(err)
 	}
-	if err := client.SetLight(simulator.StatusLightKey, api.LightCommandOpts{HasState: true, State: true, HasColorMode: true, ColorMode: pb.ColorMode_COLOR_MODE_RGB, HasRGB: true, Green: 1}); err != nil {
+	// Selecting an effect by name is how the conveyor light works: the device
+	// owns the animation and the controller only names the one it wants.
+	if err := client.SetLight(simulator.StatusLightKey, api.LightCommandOpts{HasState: true, State: true, HasBrightness: true, Brightness: 0.35, HasColorMode: true, ColorMode: pb.ColorMode_COLOR_MODE_RGB, HasRGB: true, Red: 1, Green: 1, Blue: 1, HasEffect: true, Effect: simulator.ConveyorEffectTraveling}); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("simulated conveyor speed=35 and status color=#00ff00")
+	fmt.Printf("simulated conveyor belt on at speed=100 and status effect=%q\n", simulator.ConveyorEffectTraveling)
 }

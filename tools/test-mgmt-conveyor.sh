@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-readonly expected_mcl_sha="38bb730a2897eeed1f8ed72e0299387ae2465e8b9b11b31c831f274e158868d6"
+readonly expected_mcl_sha="a6666f7104f071f3ab4f5b6c2f26b694584197a0094859c8824f74740517e82a"
+
+# Two bricks: the rotation starts with a red one and follows it with a blue one,
+# so a single run exercises both classifications and therefore both light
+# outcomes.
+readonly bricks=2
 
 if [[ "${1:-}" == "--inside" ]]; then
 	shift
@@ -13,7 +18,8 @@ if [[ "${1:-}" == "--inside" ]]; then
 	ip link set lo up
 	ip link set lo multicast on
 	ip route add 224.0.0.0/4 dev lo
-	"${simulator_binary}" --listen 127.0.0.1:6053 --mdns-host esphome-conveyor.local >"${evidence_dir}/simulator.log" 2>&1 &
+	"${simulator_binary}" --listen 127.0.0.1:6053 --mdns-host esphome-conveyor.local \
+		--cycles "${bricks}" >"${evidence_dir}/simulator.log" 2>&1 &
 	simulator_pid=$!
 	cleanup() {
 		kill "${simulator_pid}" 2>/dev/null || true
@@ -33,38 +39,85 @@ if [[ "${1:-}" == "--inside" ]]; then
 	done
 	grep -Fq "secure conveyor simulator listening" "${evidence_dir}/simulator.log"
 
+	# MGMT exits on its own: once the last brick is off the belt the device goes
+	# quiet, so the converger settles and --converged-exit ends the run.
 	(
 		cd "${mgmt_root}"
-		timeout --signal=TERM --kill-after=5s 30s "${mgmt_binary}" run \
+		timeout --signal=TERM --kill-after=5s 120s "${mgmt_binary}" run \
 			--tmp-prefix --converger-timeout=3 --converged-exit \
 			lang examples/lang/esphome-conveyor.mcl
 	) >"${evidence_dir}/mgmt.log" 2>&1
 
-	grep -Fq "print[conveyor telemetry]: Msg: entry=false exit=false run=false rgb=(0, 0, 0) status=blue" "${evidence_dir}/mgmt.log"
-	grep -Fq "esphome:fan[Conveyor Motor]: turning fan off at speed 35 in the forward direction" "${evidence_dir}/mgmt.log"
-	grep -Fq "esphome:light[Status Light]: turning light on at brightness 0.35 with color blue" "${evidence_dir}/mgmt.log"
-	grep -Fq "device log [info]: conveyor simulator ready" "${evidence_dir}/mgmt.log"
-	grep -Fq "converged for 3 seconds, exiting!" "${evidence_dir}/mgmt.log"
-	grep -Fq "received fan command: state=false speed=35 direction=forward" "${evidence_dir}/simulator.log"
-	grep -Fq "received light command: state=true brightness=0.35 rgb=#0000ff" "${evidence_dir}/simulator.log"
-	for _ in $(seq 1 20); do
-		if [[ "$(grep -Fc "received fan command: state=false speed=35 direction=forward" "${evidence_dir}/simulator.log")" -ge 2 ]]; then
-			break
-		fi
-		sleep 0.05
-	done
-	if [[ "$(grep -Fc "received fan command: state=false speed=35 direction=forward" "${evidence_dir}/simulator.log")" -lt 2 ]]; then
-		echo "MGMT did not send the expected fan stop during cleanup" >&2
+	fail() {
+		echo "$1" >&2
+		echo "--- mgmt.log" >&2
 		cat "${evidence_dir}/mgmt.log" >&2
+		echo "--- simulator.log" >&2
 		cat "${evidence_dir}/simulator.log" >&2
 		exit 1
-	fi
-	if grep -Fq "could not stop the fan on cleanup" "${evidence_dir}/mgmt.log"; then
-		echo "MGMT reported a failed fan cleanup" >&2
-		exit 1
+	}
+	want_mgmt() {
+		grep -Fq "$1" "${evidence_dir}/mgmt.log" || fail "MGMT did not report: $1"
+	}
+	want_device() {
+		grep -Fq "$1" "${evidence_dir}/simulator.log" || fail "the simulator did not receive: $1"
+	}
+
+	# The device boots with no brick en route and no color reading, and MGMT
+	# reads both. A ratio of exactly zero is the pre-subscription value and must
+	# not be classified, which is why the idle light shows no color.
+	want_mgmt "print[conveyor]: Msg: en_route=false red_ratio=-1 red=false other=false"
+
+	# A brick settles on the entry, so the device asks for a run and MGMT starts
+	# the belt and blinks the light.
+	want_mgmt "print[conveyor]: Msg: en_route=true red_ratio=-1 red=false other=false"
+	want_mgmt "esphome:fan[Conveyor Motor]: turning fan on at speed 100 in the forward direction"
+	want_mgmt "esphome:light[Status Light]: turning light on at brightness 0.35 with color white and effect Traveling Blink"
+
+	# The brick arrives, so the belt stops and one averaged reading arrives.
+	want_mgmt "esphome:fan[Conveyor Motor]: turning fan off at speed 100 in the forward direction"
+	want_mgmt "device log [info]: Exit red ratio 48.0% from 5 samples"
+	want_mgmt "print[conveyor]: Msg: en_route=false red_ratio=48 red=true other=false"
+	want_mgmt "esphome:light[Status Light]: turning light on at brightness 0.35 with color red and effect "
+
+	# The second brick is not red, so it is honestly reported as other.
+	want_mgmt "device log [info]: Exit red ratio 29.0% from 5 samples"
+	want_mgmt "print[conveyor]: Msg: en_route=false red_ratio=29 red=false other=true"
+	want_mgmt "esphome:light[Status Light]: turning light on at brightness 0.35 with color white and effect Rainbow"
+
+	want_mgmt "converged for 3 seconds, exiting!"
+
+	# The device received the decisions, not just MGMT's intent to make them.
+	want_device "received fan command: state=true speed=100 direction=forward"
+	want_device 'received light command: state=true brightness=0.35 rgb=#ffffff effect="Traveling Blink"'
+	want_device 'received light command: state=true brightness=0.35 rgb=#ff0000 effect="None"'
+	want_device 'received light command: state=true brightness=0.35 rgb=#ffffff effect="Rainbow"'
+
+	# Returning to idle is a regression guard, not a formality. An if expression
+	# nested inside the branch of another one makes MGMT drop the update that
+	# switches between them, and the update this catches is the one that clears
+	# a running animation. See https://github.com/purpleidea/mgmt/issues/966.
+	last_effect="$(grep -F "received light command:" "${evidence_dir}/simulator.log" | tail -n 1)"
+	if [[ "${last_effect}" != 'received light command: state=true brightness=0.35 rgb=#ffffff effect="None"' ]]; then
+		fail "the light did not return to idle white with no effect: ${last_effect}"
 	fi
 
-echo "MGMT securely converged the reviewed conveyor MCL against the loopback simulator"
+	# The belt must be left stopped, whatever else happened.
+	last_fan="$(grep -F "received fan command:" "${evidence_dir}/simulator.log" | tail -n 1)"
+	if [[ "${last_fan}" != "received fan command: state=false speed=100 direction=forward" ]]; then
+		fail "the belt was not left stopped: ${last_fan}"
+	fi
+	if grep -Fq "could not stop the fan on cleanup" "${evidence_dir}/mgmt.log"; then
+		fail "MGMT reported a failed fan cleanup"
+	fi
+
+	# The firmware only overrides MGMT when nobody is left to decide. Neither
+	# override may happen in a healthy run.
+	if grep -Fq "firmware backstop" "${evidence_dir}/simulator.log"; then
+		fail "the firmware jam backstop fired during a healthy run"
+	fi
+
+	echo "MGMT securely converged the reviewed conveyor MCL against the loopback simulator"
 	exit 0
 fi
 

@@ -42,13 +42,19 @@ Run it:
 Expected output:
 
 ```text
-connected securely to conveyor-simulator; discovered 13 entities
-simulated conveyor speed=35 and status color=#00ff00
+connected securely to conveyor-simulator; discovered 4 entities
+simulated conveyor belt on at speed=100 and status effect="Traveling Blink"
 ```
 
 That output means the executable created a simulated ESPHome peer, opened an
 encrypted client session, discovered entities, subscribed to state, sent a Fan
-command for conveyor speed, and sent an RGB Light command for the status color.
+command to run the belt, and sent a Light command that selected one of the
+effects the device declares.
+
+Four entities is the whole conveyor contract: the belt and the status light are
+commanded, and a brick-en-route sensor and a red-ratio sensor are reported. See
+the [conveyor acceptance profile](conveyor-demo.md) for why the set is that
+small.
 
 ## 2. Create your own tiny app module
 
@@ -72,8 +78,8 @@ go build -o standalone-esphome-sim .
 Expected final output:
 
 ```text
-connected securely to conveyor-simulator; discovered 13 entities
-simulated conveyor speed=35 and status color=#00ff00
+connected securely to conveyor-simulator; discovered 4 entities
+simulated conveyor belt on at speed=100 and status effect="Traveling Blink"
 ```
 
 ## 3. Read the program
@@ -92,7 +98,8 @@ The important calls are:
 - `client.ListEntities()` discovers the simulated ESPHome entities;
 - `client.SubscribeStates(nil)` starts state delivery;
 - `client.SetFan(...)` sends a motor-style Fan command;
-- `client.SetLight(...)` sends an RGB Light command.
+- `client.SetLight(...)` sends a Light command that names an effect the device
+  declared, rather than animating the light from the client side.
 
 ## 4. Clean up
 

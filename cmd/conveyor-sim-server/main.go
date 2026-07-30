@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/flavio-fernandes/go-aioesphomeapi/internal/mdns"
 	"github.com/flavio-fernandes/go-aioesphomeapi/pb"
@@ -23,6 +24,9 @@ import (
 func main() {
 	address := flag.String("listen", "127.0.0.1:6053", "loopback TCP address")
 	mdnsHost := flag.String("mdns-host", "", "optional synthetic .local name for isolated acceptance")
+	cycles := flag.Int("cycles", 0, "bricks to run through the simulated belt: 0 for a static device that only reports its boot state, negative to keep going until interrupted")
+	travel := flag.Duration("travel", 1200*time.Millisecond, "time a brick takes to travel from the entry sensor to the exit sensor")
+	dwell := flag.Duration("dwell", 1500*time.Millisecond, "time a measured brick is left at the exit before the simulated operator lifts it off")
 	flag.Parse()
 
 	listener, err := net.Listen("tcp", *address)
@@ -50,7 +54,15 @@ func main() {
 		<-ctx.Done()
 		_ = device.Close()
 	}()
-	go printCommands(device.Commands())
+	// With cycles requested the firmware model consumes the command stream, so
+	// it can react to the motor and print each command exactly once. A negative
+	// count runs bricks through until interrupted.
+	if *cycles != 0 {
+		firmware := newConveyorFirmware(device, *cycles, *travel, *dwell)
+		go firmware.run(device.Commands())
+	} else {
+		go printCommands(device.Commands())
+	}
 
 	fmt.Printf("secure conveyor simulator listening on %s\n", listener.Addr())
 	fmt.Printf("public test-only Noise key: %s\n", simulator.DefaultTestEncryptionKey)
@@ -62,17 +74,23 @@ func main() {
 
 func printCommands(commands <-chan proto.Message) {
 	for command := range commands {
-		switch value := command.(type) {
-		case *pb.FanCommandRequest:
-			direction := "forward"
-			if value.Direction == pb.FanDirection_FAN_DIRECTION_REVERSE {
-				direction = "reverse"
-			}
-			fmt.Printf("received fan command: state=%t speed=%d direction=%s\n", value.State, value.SpeedLevel, direction)
-		case *pb.LightCommandRequest:
-			fmt.Printf("received light command: state=%t brightness=%.2f rgb=#%02x%02x%02x\n",
-				value.State, value.Brightness, colorByte(value.Red), colorByte(value.Green), colorByte(value.Blue))
+		printCommand(command)
+	}
+}
+
+func printCommand(command proto.Message) {
+	switch value := command.(type) {
+	case *pb.FanCommandRequest:
+		direction := "forward"
+		if value.Direction == pb.FanDirection_FAN_DIRECTION_REVERSE {
+			direction = "reverse"
 		}
+		fmt.Printf("received fan command: state=%t speed=%d direction=%s\n", value.State, value.SpeedLevel, direction)
+	case *pb.LightCommandRequest:
+		// The effect is the interesting half of this command for the conveyor,
+		// so print it rather than only the color underneath it.
+		fmt.Printf("received light command: state=%t brightness=%.2f rgb=#%02x%02x%02x effect=%q\n",
+			value.State, value.Brightness, colorByte(value.Red), colorByte(value.Green), colorByte(value.Blue), value.Effect)
 	}
 }
 
