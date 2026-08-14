@@ -261,3 +261,36 @@ changed only in the colour spelling of its comments and its light field, and
 landed upstream and does not align trailing comments. Neither change touches a
 statement, resource, field, or value. The runners were re-pinned but not
 executed for this record; the hosted MGMT compatibility lane is the gate.
+
+## Signed fan speed and the current pinned MGMT revision
+
+The append-only
+[`mgmt-feat-esphome-fan-speed-contract.json`](../compatibility/mgmt-feat-esphome-fan-speed-contract.json)
+record is the newest one, so it is what the hosted lane checks out and what the
+acceptance runners must agree with. It moves the pin to MGMT
+[`da5fef98`](https://github.com/flavio-fernandes/mgmt/commit/da5fef98), the
+current head of [MGMT PR #961](https://github.com/purpleidea/mgmt/pull/961), and
+keeps this library at `597586f4`.
+
+MGMT's `esphome:fan` resource now takes one signed speed from -100 to 100
+instead of a speed and a separate direction: the magnitude is the discrete speed
+level and the sign is the direction, with negative meaning reverse. A reversible
+motor has one velocity, so the two fields could disagree and now cannot.
+
+Nothing in this library changes for it. The native api keeps `speed_level` and
+`direction` as separate fields and `FanCommandOpts` still exposes them that way;
+MGMT splits its signed speed back into those two halves when it builds the
+command. The bytes the simulated firmware receives are identical, which is why
+the conveyor runner's device assertions are untouched, and why MGMT's pinned
+module revision does not move for this record.
+
+`examples/lang/esphome-conveyor.mcl` drops the fan resource's
+`direction => "forward"` field, which a signed speed of 100 now implies, so the
+conveyor runner takes a new MCL hash. The belt still runs forward at full speed.
+The runners therefore prove only the forward half of the encoding; the negative
+half is covered by MGMT's own unit tests.
+
+Unlike the record it extends, this one is runtime verified: the conveyor runner,
+the baseline runner, and the blink demo were all executed against the pinned
+MGMT revision and passed, and the conveyor runner's device assertion still reads
+`received fan command: state=true speed=100 direction=forward`, unchanged.

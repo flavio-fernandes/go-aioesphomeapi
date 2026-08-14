@@ -38,7 +38,7 @@ jobs:
           # The conveyor MCL and this repository's simulated firmware are one
           # contract, so the lane must use the MGMT revision whose MCL hash
           # tools/test-mgmt-conveyor.sh pins.
-          record = json.load(open("library/compatibility/mgmt-feat-esphome-colour-contract.json"))
+          record = json.load(open("library/compatibility/mgmt-feat-esphome-fan-speed-contract.json"))
           mgmt = record["candidate"]
           repository = mgmt["fork_repository"].removeprefix("https://github.com/")
           print(f"repository={repository}")

@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-14",
+  "status": "runtime_verified",
+  "extends": "compatibility/mgmt-feat-esphome-colour-contract.json",
+  "candidate": {
+    "upstream_repository": "https://github.com/purpleidea/mgmt",
+    "fork_repository": "https://github.com/flavio-fernandes/mgmt",
+    "branch": "feat/esphome",
+    "revision": "da5fef9825d594b61b62caf646989e85bd393449",
+    "tree": "652d2d791a97639a737b9493eb76b7b3cc663616",
+    "subject": "engine: resources: Let the fan speed sign carry the direction",
+    "supersedes_pinned_revision": "b80a4b97aba88c03b308e9aefb7117242765cc8b",
+    "supersedes_note": "MGMT's feat/esphome was rewritten to respell four commit messages, so the revision this supersedes is no longer reachable from the branch. The tree it named is unchanged by that rewrite; the conveyor MCL below is what actually moved.",
+    "upstream_pull_request": "https://github.com/purpleidea/mgmt/pull/961",
+    "pin_note": "The hosted MGMT compatibility lane checks out this revision. The conveyor MCL and this library's simulated firmware are one contract, so the lane must use the MGMT revision whose MCL hash the acceptance runner pins."
+  },
+  "library": {
+    "repository": "https://github.com/flavio-fernandes/go-aioesphomeapi",
+    "base_revision": "597586f44a86f8e0a98569862179b1b7c5e2f41c",
+    "implementation_revision": "597586f44a86f8e0a98569862179b1b7c5e2f41c",
+    "module_pin": "github.com/flavio-fernandes/go-aioesphomeapi v0.0.0-20260814041323-597586f44a86",
+    "library_code_unchanged": true,
+    "library_code_note": "This record moves pins and acceptance-runner hashes only. No Go file changes, so the module that MGMT already pins is byte-identical and MGMT's go.mod and go.sum do not move."
+  },
+  "contract_change": {
+    "summary": "MGMT's esphome:fan resource takes one signed speed instead of a speed and a separate direction.",
+    "mgmt_api_break": "The esphome:fan resource drops its direction field. speed is now signed, from -100 to 100: the magnitude is the discrete speed level and the sign is the direction, with negative meaning reverse. Zero is not a speed, so state still stops the fan.",
+    "wire_protocol_unchanged": true,
+    "wire_protocol_note": "The native api keeps speed_level and direction as separate fields, and this library still exposes them that way through FanCommandOpts. MGMT splits its signed speed back into the two halves when it builds the command, so the bytes this library's simulated firmware receives are identical and the acceptance runner's device assertions are unchanged.",
+    "library_api_break": "none"
+  },
+  "mcl_contract": {
+    "source_changes": 1,
+    "source_change_note": "examples/lang/esphome-conveyor.mcl drops the fan resource's `direction => \"forward\"` field, which the signed speed of 100 now implies. No other statement, resource, field, or value changed, and the commanded speed and direction are the same as before.",
+    "files": [
+      {
+        "path": "examples/lang/esphome0.mcl",
+        "sha256": "c7c01de97153a34551d303763a112c18d5a49dd5b05245de36b502a15d6ec53a"
+      },
+      {
+        "path": "examples/lang/esphome-blink.mcl",
+        "sha256": "359cedc5b3fd1e6793a0705fc4d7c7f844f5d3dc825a372fdf0c6769ef30c187"
+      },
+      {
+        "path": "examples/lang/esphome-conveyor.mcl",
+        "sha256": "f558027c06a0034f71ce56292fbfe6370b7200a26e2d13a3c4ef655622f8b834",
+        "supersedes_sha256": "562f458c0b91906f05e706381739789b8b929c3d858ead79a0d4dd6b260d88c1"
+      }
+    ]
+  },
+  "verification": {
+    "library": [
+      "no library source changed, so the evidence in the record this extends still stands",
+      "tools/validate-repo.sh passes"
+    ],
+    "mgmt": [
+      "go vet and the esphome package tests pass under -race at the pinned revision",
+      "test/test-golangci-lint.sh reports 0 issues, and test/test-govet.sh, test/test-mclfmt.sh, test/test-misc.sh, and test/test-commit-message.sh pass",
+      "all three examples/lang esphome MCL files compile under `mgmt check lang`"
+    ],
+    "acceptance_runner": [
+      "tools/test-mgmt-conveyor.sh converged the reviewed conveyor MCL against the loopback simulator at this revision, including the new MCL hash, the MGMT fan log assertions, and the device-side `received fan command: state=true speed=100 direction=forward`",
+      "tools/test-mgmt-baselines.sh converged both reviewed baseline MCL examples at this revision",
+      "tools/demo-mgmt-blink.sh blinked the unchanged blink MCL for three continuous cycles at this revision",
+      "all three were run against an MGMT binary built with the `noaugeas novirt` tags; the hosted MGMT compatibility lane re-runs them on a clean checkout"
+    ]
+  },
+  "limitations": [
+    "A reverse-running belt is not exercised: the conveyor MCL asks for a positive speed, so the runners prove the forward half of the signed encoding and the negative half is covered only by MGMT's unit tests.",
+    "No physical device was flashed or actuated.",
+    "A simulator is not ESPHome firmware, so hardware evidence remains pending."
+  ]
+}
