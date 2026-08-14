@@ -204,7 +204,7 @@ record pins MGMT `feat/esphome` at `8d009e1c` against this library revision, and
 simulator's exported entity set shrank from thirteen to four.
 
 The earlier profile exported entry presence, exit presence, a run-request
-mirror, four raw color channels, an enable switch, a speed number, a reset
+mirror, four raw colour channels, an enable switch, a speed number, a reset
 button, and a status text sensor. The MCL read none of them. They are internal
 to the device now, so one brick costs four state messages instead of a
 telemetry stream, and the demo stays responsive without MGMT having to filter
@@ -227,3 +227,37 @@ MGMT's, independent of this library and of the conveyor feature.
 No physical device was flashed or actuated for this record. The red ratios the
 simulator publishes are the values from an earlier bench capture, not
 measurements taken during the run.
+
+## Colour spelling and the pinned MGMT revision
+
+The append-only
+[`mgmt-feat-esphome-colour-contract.json`](../compatibility/mgmt-feat-esphome-colour-contract.json)
+record moves the pin to MGMT
+[`b80a4b97`](https://github.com/flavio-fernandes/mgmt/commit/b80a4b97), the head
+of [MGMT PR #961](https://github.com/purpleidea/mgmt/pull/961), and pins this
+library at `18ad9f8b`.
+
+MGMT asked for `colour` throughout, so the handwritten light API is spelled that
+way: `LightEntity.SupportedColourModes`, `ColourMode`, `ColourBrightness`,
+`ColourTemperature`, and the matching `LightCommandOpts` fields. That is a
+breaking change to the light API and the only one in this record.
+
+Generated code under `pb/` keeps the upstream spelling. It is regenerated from
+the pinned `api.proto` and checked for drift, so `ColorMode` and the
+`COLOR_MODE_*` value names are wire truth rather than a spelling this project
+gets to choose. `colour.go` bridges the boundary with the `ColourMode` alias,
+the `ColourMode*` constants, and `ColourModeName` / `ParseColourMode`, so a
+caller never has to write `Color` to name a colour mode. MGMT matches on
+`COLOUR_MODE_RGB` and gets it.
+
+That boundary also fixed an MGMT defect. Its `LightColourModeRGB` constant held
+`COLOUR_MODE_RGB` while being compared against the name the generated enum
+stringifies to, so a light that really advertised RGB was rejected as
+unsupported. MGMT now names modes through `ColourModeName`.
+
+Both acceptance runners are re-pinned. `examples/lang/esphome-conveyor.mcl`
+changed only in the colour spelling of its comments and its light field, and
+`examples/lang/esphome0.mcl` is reformatted by MGMT's own `mgmt fmt`, which
+landed upstream and does not align trailing comments. Neither change touches a
+statement, resource, field, or value. The runners were re-pinned but not
+executed for this record; the hosted MGMT compatibility lane is the gate.

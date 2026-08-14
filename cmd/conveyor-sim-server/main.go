@@ -88,13 +88,13 @@ func printCommand(command proto.Message) {
 		fmt.Printf("received fan command: state=%t speed=%d direction=%s\n", value.State, value.SpeedLevel, direction)
 	case *pb.LightCommandRequest:
 		// The effect is the interesting half of this command for the conveyor,
-		// so print it rather than only the color underneath it.
+		// so print it rather than only the colour underneath it.
 		fmt.Printf("received light command: state=%t brightness=%.2f rgb=#%02x%02x%02x effect=%q\n",
-			value.State, value.Brightness, colorByte(value.Red), colorByte(value.Green), colorByte(value.Blue), value.Effect)
+			value.State, value.Brightness, colourByte(value.Red), colourByte(value.Green), colourByte(value.Blue), value.Effect)
 	}
 }
 
-func colorByte(value float32) uint8 {
+func colourByte(value float32) uint8 {
 	value = min(max(value, 0), 1)
 	return uint8(math.Round(float64(value * 255)))
 }

@@ -27,7 +27,7 @@ const (
 )
 
 // ExitRedRatioNoReading is what the conveyor publishes when it has no
-// trustworthy color reading: nothing at the exit, a brick lifted off
+// trustworthy colour reading: nothing at the exit, a brick lifted off
 // mid-capture, or a capture too dark to mean anything. A real ratio is a share
 // of a positive total, so a negative value can never collide with one.
 const ExitRedRatioNoReading float32 = -1
@@ -55,7 +55,7 @@ const (
 // telemetry stream that MGMT would have to filter.
 //
 // The initial states match what the firmware publishes on boot: the motor is
-// off, the light is off, no brick is en route, and there is no color reading.
+// off, the light is off, no brick is en route, and there is no colour reading.
 func ConveyorScenario() Scenario {
 	return Scenario{Name: "conveyor-simulator", Entities: []proto.Message{
 		&pb.ListEntitiesFanResponse{Key: ConveyorFanKey, ObjectId: "conveyor_motor", Name: "Conveyor Motor", SupportsSpeed: true, SupportsDirection: true, SupportedSpeedCount: 100},

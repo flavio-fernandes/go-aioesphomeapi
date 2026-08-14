@@ -62,13 +62,13 @@ The jam timeout has two stages on purpose. It first withdraws the run request, w
 2. Show discovery and live state without moving hardware.
 3. Drop a brick on the entry. The device reports a brick en route; MGMT starts the belt and blinks the light.
 4. The brick reaches the exit. The device reports that nothing is en route; MGMT stops the belt.
-5. The device publishes one averaged color reading. MGMT classifies it and the light goes solid red for a red brick or rainbow for anything else.
+5. The device publishes one averaged colour reading. MGMT classifies it and the light goes solid red for a red brick or rainbow for anything else.
 6. Lift the brick off. The reading goes negative and the light returns to idle white.
 7. Change the red threshold in the MCL and save. The next brick is classified by the new rule, with no reflash and no restart. This is the point of the demo.
 8. Introduce a network interruption. Local firmware stops the belt and clears the run request; the client reconnects with bounded backoff; MGMT observes rather than blindly replaying motion.
 9. Run the same scenario against the simulator with a contradictory-sensor fault and a slow-subscriber fault.
 10. Display an evidence panel separating MGMT decisions, library transport/session behavior, ESPHome local safeguards, and physical signals.
 
-Holding a brick against the exit sensor without using the belt at all turns the rig into a color tester: nothing is en route, so the belt never moves, and the light names the brick. That is the practical way to pick the threshold for a given set of bricks and a given amount of ambient light.
+Holding a brick against the exit sensor without using the belt at all turns the rig into a colour tester: nothing is en route, so the belt never moves, and the light names the brick. That is the practical way to pick the threshold for a given set of bricks and a given amount of ambient light.
 
 The demo may be playful and visually rich. Its safety state must be boring, obvious, and locally enforced.

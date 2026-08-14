@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-readonly expected_esphome0_sha="8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df"
+readonly expected_esphome0_sha="c7c01de97153a34551d303763a112c18d5a49dd5b05245de36b502a15d6ec53a"
 readonly expected_blink_sha="359cedc5b3fd1e6793a0705fc4d7c7f844f5d3dc825a372fdf0c6769ef30c187"
 
 if [[ "${1:-}" == "--inside" ]]; then

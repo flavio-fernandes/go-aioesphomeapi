@@ -121,7 +121,7 @@ graph remains two direct and two transitive runtime modules on Go 1.25.12.
 | Number | state/command | yes | yes | yes | yes | no | M1 |
 | Button | command seam | yes | yes | yes | no | no | M1 |
 | Fan | conveyor state/command | yes | yes | yes | yes | no | M1 |
-| Light | conveyor color/state/command | yes | yes | yes | yes | no | M1 |
+| Light | conveyor colour/state/command | yes | yes | yes | yes | no | M1 |
 | Select | no | yes | no | no | no | no | M2 |
 | Text | no | yes | no | no | no | no | M3 |
 | Climate | no | yes | no | no | no | no | M3 |

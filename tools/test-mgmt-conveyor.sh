@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-readonly expected_mcl_sha="a6666f7104f071f3ab4f5b6c2f26b694584197a0094859c8824f74740517e82a"
+readonly expected_mcl_sha="562f458c0b91906f05e706381739789b8b929c3d858ead79a0d4dd6b260d88c1"
 
 # Two bricks: the rotation starts with a red one and follows it with a blue one,
 # so a single run exercises both classifications and therefore both light
@@ -63,27 +63,27 @@ if [[ "${1:-}" == "--inside" ]]; then
 		grep -Fq "$1" "${evidence_dir}/simulator.log" || fail "the simulator did not receive: $1"
 	}
 
-	# The device boots with no brick en route and no color reading, and MGMT
+	# The device boots with no brick en route and no colour reading, and MGMT
 	# reads both. A ratio of exactly zero is the pre-subscription value and must
-	# not be classified, which is why the idle light shows no color.
+	# not be classified, which is why the idle light shows no colour.
 	want_mgmt "print[conveyor]: Msg: en_route=false red_ratio=-1 red=false other=false"
 
 	# A brick settles on the entry, so the device asks for a run and MGMT starts
 	# the belt and blinks the light.
 	want_mgmt "print[conveyor]: Msg: en_route=true red_ratio=-1 red=false other=false"
 	want_mgmt "esphome:fan[Conveyor Motor]: turning fan on at speed 100 in the forward direction"
-	want_mgmt "esphome:light[Status Light]: turning light on at brightness 0.35 with color white and effect Traveling Blink"
+	want_mgmt "esphome:light[Status Light]: turning light on at brightness 0.35 with colour white and effect Traveling Blink"
 
 	# The brick arrives, so the belt stops and one averaged reading arrives.
 	want_mgmt "esphome:fan[Conveyor Motor]: turning fan off at speed 100 in the forward direction"
 	want_mgmt "device log [info]: Exit red ratio 48.0% from 5 samples"
 	want_mgmt "print[conveyor]: Msg: en_route=false red_ratio=48 red=true other=false"
-	want_mgmt "esphome:light[Status Light]: turning light on at brightness 0.35 with color red and effect "
+	want_mgmt "esphome:light[Status Light]: turning light on at brightness 0.35 with colour red and effect "
 
 	# The second brick is not red, so it is honestly reported as other.
 	want_mgmt "device log [info]: Exit red ratio 29.0% from 5 samples"
 	want_mgmt "print[conveyor]: Msg: en_route=false red_ratio=29 red=false other=true"
-	want_mgmt "esphome:light[Status Light]: turning light on at brightness 0.35 with color white and effect Rainbow"
+	want_mgmt "esphome:light[Status Light]: turning light on at brightness 0.35 with colour white and effect Rainbow"
 
 	want_mgmt "converged for 3 seconds, exiting!"
 

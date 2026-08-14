@@ -139,10 +139,10 @@ func TestConveyorFirmwareRunsOneBrick(t *testing.T) {
 	}
 }
 
-// TestConveyorFirmwareRotatesBrickColors checks that a demo run exercises both
+// TestConveyorFirmwareRotatesBrickColours checks that a demo run exercises both
 // classifications. The acceptance test asserts a red brick and a non-red one,
 // so the rotation order is part of that contract.
-func TestConveyorFirmwareRotatesBrickColors(t *testing.T) {
+func TestConveyorFirmwareRotatesBrickColours(t *testing.T) {
 	recorder := &conveyorRecorder{}
 	firmware := newTestFirmware(recorder, 2, 20*time.Millisecond, 10*time.Millisecond)
 	commands := make(chan proto.Message)
@@ -191,7 +191,7 @@ func TestConveyorFirmwareRotatesBrickColors(t *testing.T) {
 			break
 		}
 		if time.Now().After(deadline) {
-			t.Fatalf("both brick colors were not measured: %q", events)
+			t.Fatalf("both brick colours were not measured: %q", events)
 		}
 		time.Sleep(time.Millisecond)
 	}

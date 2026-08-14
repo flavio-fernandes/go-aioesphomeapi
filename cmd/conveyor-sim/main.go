@@ -37,7 +37,7 @@ func main() {
 	}
 	// Selecting an effect by name is how the conveyor light works: the device
 	// owns the animation and the controller only names the one it wants.
-	if err := client.SetLight(simulator.StatusLightKey, api.LightCommandOpts{HasState: true, State: true, HasBrightness: true, Brightness: 0.35, HasColorMode: true, ColorMode: pb.ColorMode_COLOR_MODE_RGB, HasRGB: true, Red: 1, Green: 1, Blue: 1, HasEffect: true, Effect: simulator.ConveyorEffectTraveling}); err != nil {
+	if err := client.SetLight(simulator.StatusLightKey, api.LightCommandOpts{HasState: true, State: true, HasBrightness: true, Brightness: 0.35, HasColourMode: true, ColourMode: api.ColourModeRGB, HasRGB: true, Red: 1, Green: 1, Blue: 1, HasEffect: true, Effect: simulator.ConveyorEffectTraveling}); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Printf("simulated conveyor belt on at speed=100 and status effect=%q\n", simulator.ConveyorEffectTraveling)

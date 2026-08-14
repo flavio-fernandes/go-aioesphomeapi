@@ -60,35 +60,35 @@ func (c *Client) SetFan(key uint32, options FanCommandOpts) error {
 }
 
 type LightCommandOpts struct {
-	HasState            bool
-	State               bool
-	HasBrightness       bool
-	Brightness          float32
-	HasColorMode        bool
-	ColorMode           pb.ColorMode
-	HasColorBrightness  bool
-	ColorBrightness     float32
-	HasRGB              bool
-	Red, Green, Blue    float32
-	HasWhite            bool
-	White               float32
-	HasColorTemperature bool
-	ColorTemperature    float32
-	HasColdWhite        bool
-	ColdWhite           float32
-	HasWarmWhite        bool
-	WarmWhite           float32
-	HasTransitionLength bool
-	TransitionLength    uint32
-	HasFlashLength      bool
-	FlashLength         uint32
-	HasEffect           bool
-	Effect              string
+	HasState             bool
+	State                bool
+	HasBrightness        bool
+	Brightness           float32
+	HasColourMode        bool
+	ColourMode           ColourMode
+	HasColourBrightness  bool
+	ColourBrightness     float32
+	HasRGB               bool
+	Red, Green, Blue     float32
+	HasWhite             bool
+	White                float32
+	HasColourTemperature bool
+	ColourTemperature    float32
+	HasColdWhite         bool
+	ColdWhite            float32
+	HasWarmWhite         bool
+	WarmWhite            float32
+	HasTransitionLength  bool
+	TransitionLength     uint32
+	HasFlashLength       bool
+	FlashLength          uint32
+	HasEffect            bool
+	Effect               string
 }
 
 func (c *Client) SetLight(key uint32, options LightCommandOpts) error {
 	if err := c.validateEntity(key, DomainLight); err != nil {
 		return err
 	}
-	return c.send(&pb.LightCommandRequest{Key: key, HasState: options.HasState, State: options.State, HasBrightness: options.HasBrightness, Brightness: options.Brightness, HasColorMode: options.HasColorMode, ColorMode: options.ColorMode, HasColorBrightness: options.HasColorBrightness, ColorBrightness: options.ColorBrightness, HasRgb: options.HasRGB, Red: options.Red, Green: options.Green, Blue: options.Blue, HasWhite: options.HasWhite, White: options.White, HasColorTemperature: options.HasColorTemperature, ColorTemperature: options.ColorTemperature, HasColdWhite: options.HasColdWhite, ColdWhite: options.ColdWhite, HasWarmWhite: options.HasWarmWhite, WarmWhite: options.WarmWhite, HasTransitionLength: options.HasTransitionLength, TransitionLength: options.TransitionLength, HasFlashLength: options.HasFlashLength, FlashLength: options.FlashLength, HasEffect: options.HasEffect, Effect: options.Effect})
+	return c.send(&pb.LightCommandRequest{Key: key, HasState: options.HasState, State: options.State, HasBrightness: options.HasBrightness, Brightness: options.Brightness, HasColorMode: options.HasColourMode, ColorMode: options.ColourMode, HasColorBrightness: options.HasColourBrightness, ColorBrightness: options.ColourBrightness, HasRgb: options.HasRGB, Red: options.Red, Green: options.Green, Blue: options.Blue, HasWhite: options.HasWhite, White: options.White, HasColorTemperature: options.HasColourTemperature, ColorTemperature: options.ColourTemperature, HasColdWhite: options.HasColdWhite, ColdWhite: options.ColdWhite, HasWarmWhite: options.HasWarmWhite, WarmWhite: options.WarmWhite, HasTransitionLength: options.HasTransitionLength, TransitionLength: options.TransitionLength, HasFlashLength: options.HasFlashLength, FlashLength: options.FlashLength, HasEffect: options.HasEffect, Effect: options.Effect})
 }

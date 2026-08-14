@@ -66,14 +66,14 @@ type FanEntity struct {
 }
 type LightEntity struct {
 	entityBase
-	SupportedColorModes     []pb.ColorMode
+	SupportedColourModes    []ColourMode
 	Effects                 []string
 	State                   bool
 	Brightness              float32
-	ColorMode               pb.ColorMode
-	ColorBrightness         float32
+	ColourMode              ColourMode
+	ColourBrightness        float32
 	Red, Green, Blue, White float32
-	ColorTemperature        float32
+	ColourTemperature       float32
 	ColdWhite, WarmWhite    float32
 	Effect                  string
 }
@@ -120,7 +120,7 @@ func (r *EntityRegistry) handle(message proto.Message) {
 	case *pb.ListEntitiesFanResponse:
 		r.fans[m.Key] = &FanEntity{entityBase: entityBase{m.Key, m.ObjectId, m.Name}, SupportsOscillation: m.SupportsOscillation, SupportsSpeed: m.SupportsSpeed, SupportsDirection: m.SupportsDirection, SupportedSpeedCount: m.SupportedSpeedCount, SupportedPresetModes: append([]string(nil), m.SupportedPresetModes...)}
 	case *pb.ListEntitiesLightResponse:
-		r.lights[m.Key] = &LightEntity{entityBase: entityBase{m.Key, m.ObjectId, m.Name}, SupportedColorModes: append([]pb.ColorMode(nil), m.SupportedColorModes...), Effects: append([]string(nil), m.Effects...)}
+		r.lights[m.Key] = &LightEntity{entityBase: entityBase{m.Key, m.ObjectId, m.Name}, SupportedColourModes: append([]ColourMode(nil), m.SupportedColorModes...), Effects: append([]string(nil), m.Effects...)}
 	case *pb.BinarySensorStateResponse:
 		if e := r.binarySensors[m.Key]; e != nil {
 			e.State, e.MissingState = m.State, m.MissingState
@@ -147,7 +147,7 @@ func (r *EntityRegistry) handle(message proto.Message) {
 		}
 	case *pb.LightStateResponse:
 		if e := r.lights[m.Key]; e != nil {
-			e.State, e.Brightness, e.ColorMode, e.ColorBrightness, e.Red, e.Green, e.Blue, e.White, e.ColorTemperature, e.ColdWhite, e.WarmWhite, e.Effect = m.State, m.Brightness, m.ColorMode, m.ColorBrightness, m.Red, m.Green, m.Blue, m.White, m.ColorTemperature, m.ColdWhite, m.WarmWhite, m.Effect
+			e.State, e.Brightness, e.ColourMode, e.ColourBrightness, e.Red, e.Green, e.Blue, e.White, e.ColourTemperature, e.ColdWhite, e.WarmWhite, e.Effect = m.State, m.Brightness, m.ColorMode, m.ColorBrightness, m.Red, m.Green, m.Blue, m.White, m.ColorTemperature, m.ColdWhite, m.WarmWhite, m.Effect
 		}
 	}
 }
@@ -204,7 +204,7 @@ func (r *EntityRegistry) Lights() []*LightEntity {
 	defer r.mu.RUnlock()
 	result := values(r.lights)
 	for _, entity := range result {
-		entity.SupportedColorModes = append([]pb.ColorMode(nil), entity.SupportedColorModes...)
+		entity.SupportedColourModes = append([]ColourMode(nil), entity.SupportedColourModes...)
 		entity.Effects = append([]string(nil), entity.Effects...)
 	}
 	return result

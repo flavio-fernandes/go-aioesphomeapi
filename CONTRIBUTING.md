@@ -25,6 +25,7 @@ This project is architecture-first and uses pull requests for every non-bootstra
 ## Pull request expectations
 
 - Keep generated wire code, handwritten public APIs, and domain examples in separate changes where practical.
+- Spell British in everything we write: `colour`, not `color`. Generated code under `pb/` is exempt because it is regenerated from the pinned `api.proto` and checked for drift, so its `ColorMode` identifiers and `COLOR_MODE_*` value names are wire truth. Bridge the two in `colour.go` rather than at the call site: `ColourMode`, the `ColourMode*` constants, `ColourModeName`, and `ParseColourMode` exist so that no caller has to spell a colour mode the American way.
 - Add negative-path tests for malformed input, disconnects, cancellation, and resource limits.
 - State security, compatibility, provenance, and MGMT impact explicitly.
 - Preserve the pinned MCL files. A proposed change requires a linked MGMT defect decision and cross-repository regression test.

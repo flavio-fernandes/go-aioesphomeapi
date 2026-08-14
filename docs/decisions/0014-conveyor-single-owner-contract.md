@@ -6,7 +6,7 @@
 ## Context
 
 The conveyor scenario advertised thirteen entities: a fan, an RGB light, three
-binary sensors, four raw color sensors, a switch, a number, a button, and a text
+binary sensors, four raw colour sensors, a switch, a number, a button, and a text
 sensor. The MGMT conveyor MCL read four of them. The other nine existed because
 the acceptance profile listed them as illustrative, not because any controller
 used them.
@@ -20,7 +20,7 @@ stopped it, a brick placed after one was removed never restarted the belt. The
 observable was a wedged demo; the cause was that the motor had two owners and no
 tiebreak.
 
-Second, the exported raw color channels made the controller correlate values
+Second, the exported raw colour channels made the controller correlate values
 that arrive as separate messages. A presence sensor and four channel sensors
 describing the same brick can be observed in any order and at any spacing, so
 MGMT had to decide when it had a complete picture. That is a hard problem the
