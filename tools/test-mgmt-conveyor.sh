@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-readonly expected_mcl_sha="562f458c0b91906f05e706381739789b8b929c3d858ead79a0d4dd6b260d88c1"
+readonly expected_mcl_sha="f558027c06a0034f71ce56292fbfe6370b7200a26e2d13a3c4ef655622f8b834"
 
 # Two bricks: the rotation starts with a red one and follows it with a blue one,
 # so a single run exercises both classifications and therefore both light
