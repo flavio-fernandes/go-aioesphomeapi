@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-08-14",
+  "status": "pinned_not_yet_runtime_verified",
+  "extends": "compatibility/mgmt-feat-esphome-conveyor-contract.json",
+  "decision_record": "docs/decisions/0014-conveyor-single-owner-contract.md",
+  "candidate": {
+    "upstream_repository": "https://github.com/purpleidea/mgmt",
+    "fork_repository": "https://github.com/flavio-fernandes/mgmt",
+    "branch": "feat/esphome",
+    "revision": "b80a4b97aba88c03b308e9aefb7117242765cc8b",
+    "tree": "a245c024ecf4dcbc9ebeb739653fa23766ae1ae6",
+    "subject": "esphome: Pin the colour-spelled client library",
+    "supersedes_pinned_revision": "8d009e1cba1bf58c95453338ec78f94de6cb25e1",
+    "upstream_pull_request": "https://github.com/purpleidea/mgmt/pull/961",
+    "pin_note": "The hosted MGMT compatibility lane checks out this revision. The conveyor MCL and this library's simulated firmware are one contract, so the lane must use the MGMT revision whose MCL hash the acceptance runner pins."
+  },
+  "library": {
+    "repository": "https://github.com/flavio-fernandes/go-aioesphomeapi",
+    "base_revision": "2e0871490119eff052cf336279a0c9263a059611",
+    "branch": "feat/colour-spelling",
+    "implementation_revision": "18ad9f8b8f1f1ac866ed77d97235c3f05abc6afd",
+    "module_pin": "github.com/flavio-fernandes/go-aioesphomeapi v0.0.0-20260814031247-18ad9f8b8f1f"
+  },
+  "contract_change": {
+    "summary": "The light API is spelled colour, and MGMT pins the revision that spells it.",
+    "api_break": "LightEntity.SupportedColorModes, LightEntity.ColorMode, LightEntity.ColorBrightness, LightEntity.ColorTemperature, and the matching LightCommandOpts fields are renamed to their colour spellings. Nothing else moves.",
+    "generated_code_untouched": true,
+    "generated_code_note": "pb is regenerated from the pinned api.proto and checked for drift, so ColorMode and the COLOR_MODE_* value names keep the upstream ESPHome spelling. colour.go bridges the boundary with the ColourMode alias, the ColourMode* constants, ColourModeName, and ParseColourMode.",
+    "mgmt_defect_fixed": "MGMT's LightColourModeRGB constant held COLOUR_MODE_RGB while it was compared against the generated enum's own stringified name, so a light that really advertised RGB was rejected as unsupported. MGMT now names modes through ColourModeName, which produces COLOUR_MODE_RGB."
+  },
+  "mcl_contract": {
+    "source_changes": 1,
+    "source_change_note": "examples/lang/esphome0.mcl is reformatted by MGMT's own `mgmt fmt`, which landed upstream and does not align trailing comments. Whitespace only; no statement, resource, field, or value changed. examples/lang/esphome-conveyor.mcl changes only in the colour spelling of its comments and its light resource field.",
+    "files": [
+      {
+        "path": "examples/lang/esphome0.mcl",
+        "sha256": "c7c01de97153a34551d303763a112c18d5a49dd5b05245de36b502a15d6ec53a",
+        "supersedes_sha256": "8a5ba295eb0a649af89592c0f42899d0078c642fa521c73a7224e00304daa7df"
+      },
+      {
+        "path": "examples/lang/esphome-blink.mcl",
+        "sha256": "359cedc5b3fd1e6793a0705fc4d7c7f844f5d3dc825a372fdf0c6769ef30c187"
+      },
+      {
+        "path": "examples/lang/esphome-conveyor.mcl",
+        "sha256": "562f458c0b91906f05e706381739789b8b929c3d858ead79a0d4dd6b260d88c1",
+        "supersedes_sha256": "a6666f7104f071f3ab4f5b6c2f26b694584197a0094859c8824f74740517e82a"
+      }
+    ]
+  },
+  "verification": {
+    "library": [
+      "go build ./... passes",
+      "go vet ./... passes",
+      "go test ./... passes",
+      "tools/validate-repo.sh passes",
+      "colour_test.go proves every colour mode in the pinned protocol respells and round-trips, and that ColourModeRGB is still the protocol's RGB value under the name MGMT matches"
+    ],
+    "mgmt": [
+      "go build, go vet, and the esphome package tests pass against the committed module pin with GOFLAGS unset and GOWORK=off",
+      "test/test-gofmt.sh, test/test-govet.sh, test/test-vet.sh, test/test-mclfmt.sh, test/test-misc.sh, and test/test-commit-message.sh pass",
+      "the module zip hash committed to go.sum was reproduced locally, and the same method reproduced the previous pin's published hash exactly"
+    ],
+    "acceptance_runner": "not yet re-run against this revision; the hosted MGMT compatibility lane is the gate"
+  },
+  "limitations": [
+    "The acceptance runners are re-pinned but were not executed for this record, so the runtime evidence in the record this extends still stands on the previous MGMT revision.",
+    "The conveyor runner's MGMT log assertions were updated for MGMT's colour spelling and have not been observed passing.",
+    "No physical device was flashed or actuated.",
+    "A simulator is not ESPHome firmware, so hardware evidence remains pending."
+  ]
+}
