@@ -20,7 +20,7 @@ const (
 	// lifting a brick drags the reading through the threshold more than once,
 	// and each bounce would republish.
 	exitReleaseDebounce = 300 * time.Millisecond
-	// captureSettle plus captureSamples at captureInterval is the color
+	// captureSettle plus captureSamples at captureInterval is the colour
 	// capture: let the belt coast and the sensor finish one integration
 	// period, then average the samples.
 	captureSettle   = 500 * time.Millisecond
@@ -165,7 +165,7 @@ type conveyorFirmware struct {
 	redRatio     float32
 	ratioKnown   bool
 
-	// Color capture accumulator.
+	// Colour capture accumulator.
 	captureSampled int
 
 	// The bench sequence.
@@ -351,7 +351,7 @@ func (f *conveyorFirmware) onCapture(step int) {
 	}
 	if f.captureSampled < minUsableSamples {
 		f.log(pb.LogLevel_LOG_LEVEL_WARN,
-			fmt.Sprintf("Color capture rejected: %d usable samples", f.captureSampled))
+			fmt.Sprintf("Colour capture rejected: %d usable samples", f.captureSampled))
 		f.publishRatio(simulator.ExitRedRatioNoReading)
 		return
 	}

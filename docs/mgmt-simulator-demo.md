@@ -20,7 +20,7 @@ entire interface:
 | `Brick En Route` | binary sensor | device reports | a brick is on its way to the exit |
 | `Exit Red Ratio` | sensor | device reports | how red the brick at the exit is, or a negative value for no trustworthy reading |
 | `Conveyor Motor` | fan | MGMT commands | the belt |
-| `Status Light` | light | MGMT commands | color and effect |
+| `Status Light` | light | MGMT commands | colour and effect |
 
 The device never steers the belt while MGMT is connected. It reports what its
 sensors see; MGMT owns every decision. That single-owner rule is what the demo
@@ -97,7 +97,7 @@ responder inside that private network answers `esphome-conveyor.local`, so this
 walkthrough also tests the same name-resolution path used by an ESPHome device.
 
 Two lines in that file decide everything the light does. The threshold that
-separates a red brick from every other color, and the rules that pick an
+separates a red brick from every other colour, and the rules that pick an
 effect, are ordinary MCL. Change the threshold, save, and the next brick is
 classified by the new rule with no reflash and no restart.
 
@@ -123,13 +123,13 @@ That one line means the wrapper verified all of these checks:
 - MGMT resolved `esphome-conveyor.local` through multicast DNS, not
   `/etc/hosts`;
 - MGMT connected over the encrypted Native API path;
-- MGMT read the device's boot state: no brick en route and no color reading;
+- MGMT read the device's boot state: no brick en route and no colour reading;
 - a brick settled on the entry, so MGMT started the belt and selected the
   traveling blink effect;
-- the brick arrived, so MGMT stopped the belt and received one averaged color
+- the brick arrived, so MGMT stopped the belt and received one averaged colour
   reading;
 - MGMT classified a 48% red ratio as red and set the light to solid red;
-- MGMT classified a 29% red ratio as another color and selected the rainbow
+- MGMT classified a 29% red ratio as another colour and selected the rainbow
   effect;
 - the light returned to idle white with no effect after the last brick;
 - MGMT converged, exited, and left the belt stopped;
@@ -186,7 +186,7 @@ own policy says to, and the firmware backstop then finds nothing left to do.
 
 The demo asserts that the light ends idle, because that specific transition
 used to fail on real hardware. Removing a red brick worked; removing any other
-color left the rainbow running until something unrelated disturbed the light.
+colour left the rainbow running until something unrelated disturbed the light.
 
 The cause is an MGMT bug, not a device or library one:
 [purpleidea/mgmt#966](https://github.com/purpleidea/mgmt/issues/966). An `if`

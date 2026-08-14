@@ -204,7 +204,7 @@ record pins MGMT `feat/esphome` at `8d009e1c` against this library revision, and
 simulator's exported entity set shrank from thirteen to four.
 
 The earlier profile exported entry presence, exit presence, a run-request
-mirror, four raw color channels, an enable switch, a speed number, a reset
+mirror, four raw colour channels, an enable switch, a speed number, a reset
 button, and a status text sensor. The MCL read none of them. They are internal
 to the device now, so one brick costs four state messages instead of a
 telemetry stream, and the demo stays responsive without MGMT having to filter

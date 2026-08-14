@@ -61,7 +61,7 @@ func TestSecureEntityFamilyRoundTrip(t *testing.T) {
 		t.Fatalf("unexpected fan state: %#v", fanState)
 	}
 
-	if err := client.SetLight(simulator.StatusLightKey, api.LightCommandOpts{HasState: true, State: true, HasColorMode: true, ColorMode: pb.ColorMode_COLOR_MODE_RGB, HasRGB: true, Red: 1, Green: 0.25, Blue: 0}); err != nil {
+	if err := client.SetLight(simulator.StatusLightKey, api.LightCommandOpts{HasState: true, State: true, HasColourMode: true, ColourMode: api.ColourModeRGB, HasRGB: true, Red: 1, Green: 0.25, Blue: 0}); err != nil {
 		t.Fatalf("light command: %v", err)
 	}
 	lightState := waitForType[*pb.LightStateResponse](t, states)
